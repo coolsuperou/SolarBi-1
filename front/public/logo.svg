@@ -1,45 +1,188 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg viewBox="0 0 330 450" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-        <filter id="e" x="-.19068" y="-.57799" width="1.3814" height="2.156">
-            <feGaussianBlur stdDeviation="11.0093"/>
-        </filter>
-        <radialGradient id="d" cx="567.08" cy="492.36" r="135.41" fx="547.74" fy="430.03"
-                        gradientTransform="matrix(.73848 -1.1144e-7 2.006e-7 1.3293 166.94 -179.26)"
-                        gradientUnits="userSpaceOnUse">
-            <stop stop-color="#fff" offset="0"/>
-            <stop stop-color="#fff" stop-opacity="0" offset="1"/>
-        </radialGradient>
-        <radialGradient id="c" cx="377.5" cy="492.36" r="135.41" fx="370.47" fy="510.74"
-                        gradientTransform="matrix(1.6246 9.2193e-8 -1.6762e-7 2.9539 -167.59 -979.17)"
-                        gradientUnits="userSpaceOnUse">
-            <stop stop-color="#d45500" offset="0"/>
-            <stop stop-color="#d45500" stop-opacity=".3307" offset=".4545"/>
-            <stop stop-color="#d45500" stop-opacity="0" offset="1"/>
-        </radialGradient>
-        <radialGradient id="b" cx="437.68" cy="494.54" r="135.41"
-                        gradientTransform="matrix(1.327 .01189 -.01558 1.7389 -33.091 -398.53)"
-                        gradientUnits="userSpaceOnUse">
-            <stop stop-color="#fff" stop-opacity="0" offset="0"/>
-            <stop stop-color="#fff" stop-opacity="0" offset=".7"/>
-            <stop stop-color="#fff" offset="1"/>
-        </radialGradient>
-        <radialGradient id="a" cx="428.67" cy="493.46" r="135.41"
-                        gradientTransform="matrix(1.92 2.989e-8 -4.6128e-8 1.7723 -294.49 -409.36)"
-                        gradientUnits="userSpaceOnUse">
-            <stop stop-opacity="0" offset="0"/>
-            <stop stop-opacity="0" offset=".7"/>
-            <stop stop-color="#fff" offset="1"/>
-        </radialGradient>
-    </defs>
-    <g transform="translate(-357.3 -256.61)">
-        <path transform="matrix(1.16 0 0 1.2516 193.73 -220.14)"
-              d="m328.57 679.51c0 12.624-31.02 22.857-69.286 22.857s-69.286-10.233-69.286-22.857 31.02-22.857 69.286-22.857 69.286 10.233 69.286 22.857z"
-              filter="url(#e)" opacity=".655"/>
-        <path d="m525.71 295.22c160 0 200 360 0 360s-160-360 0-360z" fill="#fca"/>
-        <path d="m525.71 295.22c160 0 200 360 0 360s-160-360 0-360z" fill="url(#d)" opacity=".7244"/>
-        <path d="m525.71 295.22c160 0 200 360 0 360s-160-360 0-360z" fill="url(#c)" opacity=".7244"/>
-        <path d="m525.71 295.22c160 0 200 360 0 360s-160-360 0-360z" fill="url(#b)" opacity=".3517"/>
-        <path d="m525.71 295.22c160 0 200 360 0 360s-160-360 0-360z" fill="url(#a)" opacity=".4724"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 900" width="100%" height="100%">
+  <!-- Definitions -->
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%" spreadMethod="pad">
+      <stop offset="0%" stop-color="#0A1128" />
+      <stop offset="100%" stop-color="#1C2951" />
+    </linearGradient>
+    
+    <linearGradient id="circuitGradient" x1="0%" y1="0%" x2="100%" y2="100%" spreadMethod="pad">
+      <stop offset="0%" stop-color="#FC9E4F" />
+      <stop offset="100%" stop-color="#FFC857" />
+    </linearGradient>
+    
+    <linearGradient id="centerGlow" x1="0%" y1="0%" x2="100%" y2="100%" spreadMethod="pad">
+      <stop offset="0%" stop-color="#FFD700" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#FFA500" stop-opacity="0.4" />
+    </linearGradient>
+    
+    <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%" spreadMethod="pad">
+      <stop offset="0%" stop-color="#FFD700" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#FFA500" stop-opacity="0.5" />
+    </radialGradient>
+    
+    <!-- Filters -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    
+    <filter id="textShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+  
+  <!-- 0. Background -->
+  <rect id="bg_color" width="1200" height="900" fill="url(#bgGradient)" />
+  
+  <!-- 1. Logo Graphic -->
+  <g id="logoGraphic" transform="translate(0,0)" style="will-change: opacity; transform-box: fill-box" visibility="visible">
+    <!-- Outer Circuit Ring -->
+    <circle cx="600" cy="350" r="150" fill="none" stroke="url(#circuitGradient)" stroke-width="3" stroke-dasharray="1200" stroke-dashoffset="1200" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="1200" to="0" dur="3s" begin="0s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.9" dur="0.5s" begin="0s" fill="freeze" />
+    </circle>
+    
+    <!-- Middle Circuit Ring -->
+    <circle cx="600" cy="350" r="120" fill="none" stroke="url(#circuitGradient)" stroke-width="2.5" stroke-dasharray="800" stroke-dashoffset="800" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="800" to="0" dur="2.5s" begin="0.5s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.8" dur="0.5s" begin="0.5s" fill="freeze" />
+    </circle>
+    
+    <!-- Inner Circuit Ring -->
+    <circle cx="600" cy="350" r="90" fill="none" stroke="url(#circuitGradient)" stroke-width="2" stroke-dasharray="600" stroke-dashoffset="600" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="600" to="0" dur="2s" begin="1s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.7" dur="0.5s" begin="1s" fill="freeze" />
+    </circle>
+    
+    <!-- Center Energy Core -->
+    <circle cx="600" cy="350" r="40" fill="url(#centerGlow)" opacity="0.01" filter="url(#glow)">
+      <animate attributeName="opacity" from="0.01" to="0.9" dur="1s" begin="3s" fill="freeze" />
+      <animate attributeName="r" from="20" to="40" dur="1.5s" begin="3s" fill="freeze" />
+    </circle>
+    
+    <!-- Circuit Nodes -->
+    <!-- Node 1 -->
+    <circle class="node" cx="600" cy="200" r="8" fill="url(#nodeGlow)" opacity="0.01" filter="url(#glow)">
+      <animate attributeName="opacity" from="0.01" to="0.9" dur="0.3s" begin="3.5s" fill="freeze" />
+    </circle>
+    
+    <!-- Node 2 -->
+    <circle class="node" cx="730" cy="300" r="8" fill="url(#nodeGlow)" opacity="0.01" filter="url(#glow)">
+      <animate attributeName="opacity" from="0.01" to="0.9" dur="0.3s" begin="3.7s" fill="freeze" />
+    </circle>
+    
+    <!-- Node 3 -->
+    <circle class="node" cx="680" cy="450" r="8" fill="url(#nodeGlow)" opacity="0.01" filter="url(#glow)">
+      <animate attributeName="opacity" from="0.01" to="0.9" dur="0.3s" begin="3.9s" fill="freeze" />
+    </circle>
+    
+    <!-- Node 4 -->
+    <circle class="node" cx="520" cy="450" r="8" fill="url(#nodeGlow)" opacity="0.01" filter="url(#glow)">
+      <animate attributeName="opacity" from="0.01" to="0.9" dur="0.3s" begin="4.1s" fill="freeze" />
+    </circle>
+    
+    <!-- Node 5 -->
+    <circle class="node" cx="470" cy="300" r="8" fill="url(#nodeGlow)" opacity="0.01" filter="url(#glow)">
+      <animate attributeName="opacity" from="0.01" to="0.9" dur="0.3s" begin="4.3s" fill="freeze" />
+    </circle>
+    
+    <!-- Circuit Connections -->
+    <!-- Connection 1 -->
+    <path d="M 600 200 Q 620 240 650 270 T 730 300" fill="none" stroke="url(#circuitGradient)" stroke-width="2" stroke-dasharray="200" stroke-dashoffset="200" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="200" to="0" dur="0.7s" begin="4.5s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.8" dur="0.3s" begin="4.5s" fill="freeze" />
+    </path>
+    
+    <!-- Connection 2 -->
+    <path d="M 730 300 Q 720 350 700 400 T 680 450" fill="none" stroke="url(#circuitGradient)" stroke-width="2" stroke-dasharray="200" stroke-dashoffset="200" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="200" to="0" dur="0.7s" begin="4.8s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.8" dur="0.3s" begin="4.8s" fill="freeze" />
+    </path>
+    
+    <!-- Connection 3 -->
+    <path d="M 680 450 Q 620 460 570 455 T 520 450" fill="none" stroke="url(#circuitGradient)" stroke-width="2" stroke-dasharray="200" stroke-dashoffset="200" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="200" to="0" dur="0.7s" begin="5.1s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.8" dur="0.3s" begin="5.1s" fill="freeze" />
+    </path>
+    
+    <!-- Connection 4 -->
+    <path d="M 520 450 Q 490 400 480 350 T 470 300" fill="none" stroke="url(#circuitGradient)" stroke-width="2" stroke-dasharray="200" stroke-dashoffset="200" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="200" to="0" dur="0.7s" begin="5.4s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.8" dur="0.3s" begin="5.4s" fill="freeze" />
+    </path>
+    
+    <!-- Connection 5 -->
+    <path d="M 470 300 Q 500 250 550 220 T 600 200" fill="none" stroke="url(#circuitGradient)" stroke-width="2" stroke-dasharray="200" stroke-dashoffset="200" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="200" to="0" dur="0.7s" begin="5.7s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.8" dur="0.3s" begin="5.7s" fill="freeze" />
+    </path>
+    
+    <!-- Diagonal Connections -->
+    <path d="M 600 200 L 600 350" fill="none" stroke="url(#circuitGradient)" stroke-width="1.5" stroke-dasharray="150" stroke-dashoffset="150" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="150" to="0" dur="0.6s" begin="6s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.7" dur="0.3s" begin="6s" fill="freeze" />
+    </path>
+    
+    <path d="M 730 300 L 600 350" fill="none" stroke="url(#circuitGradient)" stroke-width="1.5" stroke-dasharray="150" stroke-dashoffset="150" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="150" to="0" dur="0.6s" begin="6.2s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.7" dur="0.3s" begin="6.2s" fill="freeze" />
+    </path>
+    
+    <path d="M 680 450 L 600 350" fill="none" stroke="url(#circuitGradient)" stroke-width="1.5" stroke-dasharray="150" stroke-dashoffset="150" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="150" to="0" dur="0.6s" begin="6.4s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.7" dur="0.3s" begin="6.4s" fill="freeze" />
+    </path>
+    
+    <path d="M 520 450 L 600 350" fill="none" stroke="url(#circuitGradient)" stroke-width="1.5" stroke-dasharray="150" stroke-dashoffset="150" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="150" to="0" dur="0.6s" begin="6.6s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.7" dur="0.3s" begin="6.6s" fill="freeze" />
+    </path>
+    
+    <path d="M 470 300 L 600 350" fill="none" stroke="url(#circuitGradient)" stroke-width="1.5" stroke-dasharray="150" stroke-dashoffset="150" opacity="0.01">
+      <animate attributeName="stroke-dashoffset" from="150" to="0" dur="0.6s" begin="6.8s" fill="freeze" />
+      <animate attributeName="opacity" from="0.01" to="0.7" dur="0.3s" begin="6.8s" fill="freeze" />
+    </path>
+    
+    <!-- Digital Lines Effect -->
+    <g id="digitalLines" opacity="0.01">
+      <animate attributeName="opacity" from="0.01" to="0.6" dur="1s" begin="7s" fill="freeze" />
+      
+      <!-- Digital Circuit Lines -->
+      <path d="M 580 320 L 620 320" stroke="#FFD700" stroke-width="1" fill="none" />
+      <path d="M 580 330 L 620 330" stroke="#FFD700" stroke-width="1" fill="none" />
+      <path d="M 580 340 L 620 340" stroke="#FFD700" stroke-width="1" fill="none" />
+      <path d="M 580 350 L 620 350" stroke="#FFD700" stroke-width="1" fill="none" />
+      <path d="M 580 360 L 620 360" stroke="#FFD700" stroke-width="1" fill="none" />
+      <path d="M 580 370 L 620 370" stroke="#FFD700" stroke-width="1" fill="none" />
+      <path d="M 580 380 L 620 380" stroke="#FFD700" stroke-width="1" fill="none" />
+      
+      <path d="M 600 320 L 600 380" stroke="#FFD700" stroke-width="1" fill="none" />
+      <path d="M 590 320 L 590 380" stroke="#FFD700" stroke-width="1" fill="none" />
+      <path d="M 610 320 L 610 380" stroke="#FFD700" stroke-width="1" fill="none" />
     </g>
+    
+    <!-- Pulse Animation -->
+    <circle cx="600" cy="350" r="70" fill="url(#centerGlow)" opacity="0.01">
+      <animate attributeName="opacity" from="0.01" to="0.5" dur="0.5s" begin="7.5s" fill="freeze" />
+      <animate attributeName="r" from="50" to="70" dur="1s" begin="7.5s" fill="freeze" />
+      <animate attributeName="opacity" from="0.5" to="0.2" dur="2s" begin="8.5s" fill="freeze" />
+    </circle>
+  </g>
+  
+  <!-- 2. Text Elements -->
+  <g id="textElements">
+    <!-- Brand Name -->
+    <text id="brandName" text-anchor="middle" x="600" y="550" font-family="Arial, 'Microsoft YaHei', SimHei, sans-serif" font-size="58" font-weight="bold" fill="#FFFFFF" opacity="0.01" filter="url(#textShadow)">
+      <animate attributeName="opacity" from="0.01" to="1" dur="1s" begin="8s" fill="freeze" />
+      SolarBI
+    </text>
+    
+    <!-- Brand Slogan -->
+    <text id="brandSlogan" text-anchor="middle" x="600" y="610" font-family="Arial, 'Microsoft YaHei', SimHei, sans-serif" font-size="26" font-weight="normal" fill="#FFD700" opacity="0.01" filter="url(#textShadow)">
+      <animate attributeName="opacity" from="0.01" to="1" dur="1s" begin="9s" fill="freeze" />
+      做最好的交互设计
+    </text>
+  </g>
 </svg>

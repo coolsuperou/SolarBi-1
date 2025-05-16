@@ -6,12 +6,12 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * 用户
- * @TableName user
+ * 图表信息表
+ * @TableName chart
  */
-@TableName(value ="user")
+@TableName(value ="chart")
 @Data
-public class User {
+public class Chart {
     /**
      * id
      */
@@ -19,29 +19,34 @@ public class User {
     private Long id;
 
     /**
-     * 账号
+     * 分析目标
      */
-    private String userAccount;
+    private String goal;
 
     /**
-     * 密码
+     * 图表数据
      */
-    private String userPassword;
+    private String chartData;
 
     /**
-     * 用户昵称
+     * 图表类型
      */
-    private String userName;
+    private String chartType;
 
     /**
-     * 用户头像
+     * 生成的图表数据
      */
-    private String userAvatar;
+    private String genChart;
 
     /**
-     * 用户角色：user/admin
+     * 生成的分析结论
      */
-    private String userRole;
+    private String genResult;
+
+    /**
+     * 创建用户 id
+     */
+    private Long userId;
 
     /**
      * 创建时间
@@ -59,5 +64,5 @@ public class User {
     @TableLogic
     private Integer isDelete;
     @TableField(exist = false)
-    private  static  final long serialVersionUID = 1L;
+    private  static  final  long serialVersionUID = 1L;
 }

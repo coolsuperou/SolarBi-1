@@ -1,4 +1,4 @@
-# 鱼皮前端万用模板
+# 前端万用模板
 
 > 作者：[每天十点睡](https://github.com/coolsuperou)
 

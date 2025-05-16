@@ -14,9 +14,11 @@ import com.yupi.springbootinit.model.entity.User;
 import com.yupi.springbootinit.model.vo.PostVO;
 import com.yupi.springbootinit.service.PostFavourService;
 import com.yupi.springbootinit.service.PostService;
-import com.yupi.springbootinit.service.UserService;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import com.yupi.springbootinit.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,18 +52,18 @@ public class PostFavourController {
      * @param request
      * @return resultNum 收藏变化数
      */
-    @PostMapping("/")
-    public BaseResponse<Integer> doPostFavour(@RequestBody PostFavourAddRequest postFavourAddRequest,
-            HttpServletRequest request) {
-        if (postFavourAddRequest == null || postFavourAddRequest.getPostId() <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        // 登录才能操作
-        final User loginUser = userService.getLoginUser(request);
-        long postId = postFavourAddRequest.getPostId();
-        int result = postFavourService.doPostFavour(postId, loginUser);
-        return ResultUtils.success(result);
-    }
+//    @PostMapping("/")
+//    public BaseResponse<Integer> doPostFavour(@RequestBody PostFavourAddRequest postFavourAddRequest,
+//            HttpServletRequest request) {
+//        if (postFavourAddRequest == null || postFavourAddRequest.getPostId() <= 0) {
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+//        }
+//        // 登录才能操作
+//        final User loginUser = userService.getLoginUser(request);
+//        long postId = postFavourAddRequest.getPostId();
+//        int result = postFavourService.doPostFavour(postId, loginUser);
+//        return ResultUtils.success(result);
+//    }
 
     /**
      * 获取我收藏的帖子列表

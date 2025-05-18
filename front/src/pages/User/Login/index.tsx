@@ -67,7 +67,7 @@ const Login: React.FC = () => {
           }}
           logo={<img alt="logo" style={{ height: '100%' }} src="/solarlogo.png" />}
           title="SolarBi"
-          subTitle={'欢迎使用'}
+          subTitle={'做最好的的Ai交互设计'}
           initialValues={{
             autoLogin: true,
           }}

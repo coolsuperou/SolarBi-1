@@ -1,5 +1,5 @@
 import Footer from '@/components/Footer';
-import { getLoginUserUsingGet } from '@/services/backend/userController';
+import { getLoginUserUsingGet } from '@/services/SolarBi-front/userController';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { history } from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';

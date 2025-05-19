@@ -3,21 +3,28 @@ export default [
     path: '/user',
     layout: false,
     routes: [
-      { path: '/user/login', component: './User/Login' },
-      { path: '/user/register', component: './User/Register' },
+      { path: 'login', component: './User/Login' }, // ✅ 相对路径
+      { path: 'register', component: './User/Register' }, // ✅ 相对路径
+      { path: '', redirect: '/welcome' }, // ✅ 空路径表示 /user 的默认子路由
     ],
   },
   { path: '/welcome', icon: 'smile', component: './Welcome', name: '欢迎页' },
+  {
+    path: '/add_chart',
+    name: '智能分析',
+    icon: 'barChart',
+    component: './AddChart',
+  },
   {
     path: '/admin',
     icon: 'crown',
     name: '管理页',
     access: 'canAdmin',
     routes: [
-      { path: '/admin', redirect: '/admin/user' },
-      { icon: 'table', path: '/admin/user', component: './Admin/User', name: '用户管理' },
+      { path: '', redirect: 'user' }, // ✅ 空路径表示 /admin 的默认子路由
+      { icon: 'table', path: 'user', component: './Admin/User', name: '用户管理' },
     ],
   },
-  { path: '/', redirect: '/welcome' },
+  { path: '/', redirect: '/welcome' }, // ✅ 统一的根路径重定向
   { path: '*', layout: false, component: './404' },
 ];

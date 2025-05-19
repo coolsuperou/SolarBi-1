@@ -29,7 +29,7 @@ public class GenChartByAiRequest implements Serializable {
      *
      * 图表类型
      */
-    private String charType;
+    private String chartType;
 
 
 

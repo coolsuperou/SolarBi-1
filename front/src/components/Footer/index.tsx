@@ -16,13 +16,13 @@ const Footer: React.FC = () => {
         {
           key: 'codeNav',
           title: '编程导航',
-          href: 'https://yupi.icu',
+          href: '',
           blankTarget: true,
         },
         {
           key: 'Ant Design',
           title: '编程宝典',
-          href: 'https://codefather.cn',
+          href: '',
           blankTarget: true,
         },
         {

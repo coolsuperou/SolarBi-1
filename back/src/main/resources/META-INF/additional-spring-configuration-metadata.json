@@ -1,6 +1,22 @@
 {
   "properties": [
     {
+      "name": "xun-fei.client.appId",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "xun-fei.client.apiSecret",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "xun-fei.client.apiKey",
+      "type": "java.lang.String"
+    },
+
+
+
+
+    {
       "name": "cos.client.accessKey",
       "type": "java.lang.String",
       "description": "Description for cos.client.accessKey."

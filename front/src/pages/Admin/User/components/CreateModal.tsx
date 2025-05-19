@@ -1,4 +1,4 @@
-import { addUserUsingPost } from '@/services/backend/userController';
+import { addUserUsingPost } from '@/services/SolarBi-front/userController';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import '@umijs/max';
 import { message, Modal } from 'antd';

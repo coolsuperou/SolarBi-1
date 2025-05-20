@@ -210,6 +210,7 @@ const MyChartPage: React.FC = () => {
                 >
                   编辑
                 </Button>,
+                // eslint-disable-next-line react/jsx-key
                 <Popconfirm
                   title="确定要删除这个图表吗？"
                   onConfirm={() => handleDelete(item.id as number)}

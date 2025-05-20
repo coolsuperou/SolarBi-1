@@ -16,6 +16,12 @@ export default [
     component: './AddChart',
   },
   {
+    path: '/my_chart',
+    name: '图表管理',
+    icon: 'pieChart',
+    component: './MyChart',
+  },
+  {
     path: '/admin',
     icon: 'crown',
     name: '管理页',
@@ -23,6 +29,7 @@ export default [
     routes: [
       { path: '', redirect: 'user' }, // ✅ 空路径表示 /admin 的默认子路由
       { icon: 'table', path: 'user', component: './Admin/User', name: '用户管理' },
+      { icon: 'table', path: 'chart', component: './Admin/Chart', name: '图表管理' },
     ],
   },
   { path: '/', redirect: '/welcome' }, // ✅ 统一的根路径重定向

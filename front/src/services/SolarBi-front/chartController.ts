@@ -89,7 +89,7 @@ export async function getChartByIdUsingGet(
 }
 
 /** listChartByPage POST /api/chart/list/page */
-export async function listChartByPageUsingPost(
+export async function listMyChartByPageUsingPOST(
   body: API.ChartQueryRequest,
   options?: { [key: string]: any },
 ) {
@@ -103,6 +103,21 @@ export async function listChartByPageUsingPost(
   });
 }
 
+
+/** listUserByPage POST /api/user/list/page */
+export async function listChartByPageUsingPost(
+  body: API.ChartQueryRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponsePageChart_>('/api/chart/list/page', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
 /** listMyChartByPage POST /api/chart/my/list/page */
 export async function listMyChartByPageUsingPost(
   body: API.ChartQueryRequest,

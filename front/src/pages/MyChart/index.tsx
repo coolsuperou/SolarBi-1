@@ -1,12 +1,12 @@
 import {
+  deleteChartUsingPost,
   listMyChartByPageUsingPOST,
-  updateChartUsingPost,
-  deleteChartUsingPost
+  updateChartUsingPost
 } from '@/services/SolarBi-front/chartController';
-import { useModel } from '@@/exports';
-import { Avatar, Card, List, message, Button, Space, Popconfirm } from 'antd';
+import {useModel} from '@@/exports';
+import {Avatar, Button, Card, List, message, Popconfirm} from 'antd';
 import ReactECharts from 'echarts-for-react';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import Search from "antd/es/input/Search";
 import UpdateModal from './components/UpdateModal';
 import {ProColumns} from "@ant-design/pro-components";

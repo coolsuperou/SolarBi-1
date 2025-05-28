@@ -4,12 +4,13 @@ import {
   updateChartUsingPost
 } from '@/services/SolarBi-front/chartController';
 import {useModel} from '@@/exports';
-import {Avatar, Button, Card, List, message, Popconfirm} from 'antd';
+import {Avatar, Button, Card, List, message, Popconfirm, Result} from 'antd';
 import ReactECharts from 'echarts-for-react';
 import React, {useEffect, useState} from 'react';
 import Search from "antd/es/input/Search";
 import UpdateModal from './components/UpdateModal';
 import {ProColumns} from "@ant-design/pro-components";
+import {useNavigate} from 'react-router-dom';
 
 /**
  * 我的图表页面
@@ -31,6 +32,7 @@ const MyChartPage: React.FC = () => {
   const [total, setTotal] = useState<number>(0);
   // 加载状态，用来控制页面是否加载，默认正在加载
   const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
 
   // 控制更新图表模态框的显示
   const [updateModalVisible, setUpdateModalVisible] = useState<boolean>(false);
@@ -87,13 +89,27 @@ const MyChartPage: React.FC = () => {
     },
   ];
 
+  // 检查用户是否已登录
+  useEffect(() => {
+    if (!currentUser) {
+      message.warning('请先登录以查看您的图表');
+      // navigate('/login'); // 假设登录页面路径为 /login
+    }
+  }, [currentUser, navigate]);
+
   const loadData = async () => {
+    // 如果用户未登录，不加载数据
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       // Add userId to the search parameters
       const res = await listMyChartByPageUsingPOST({
         ...searchParams,
-        userId: currentUser?.id,  // Add current user's ID
+        userId: currentUser.id,  // 确保 userId 存在
       });
       if (res.data) {
         setChartList(res.data.records ?? []);
@@ -116,10 +132,16 @@ const MyChartPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [searchParams]);
+  }, [searchParams, currentUser]); // 添加 currentUser 依赖，当用户登录状态变化时重新加载数据
 
   // 处理更新图表
   const handleUpdate = async (fields: API.ChartUpdateRequest) => {
+    // 确保用户已登录
+    if (!currentUser) {
+      message.warning('请先登录');
+      return false;
+    }
+
     const hide = message.loading('正在更新');
     try {
       await updateChartUsingPost(fields);
@@ -137,6 +159,12 @@ const MyChartPage: React.FC = () => {
 
   // 处理删除图表
   const handleDelete = async (id: number) => {
+    // 确保用户已登录
+    if (!currentUser) {
+      message.warning('请先登录');
+      return false;
+    }
+
     const hide = message.loading('正在删除');
     try {
       await deleteChartUsingPost({ id });
@@ -153,105 +181,121 @@ const MyChartPage: React.FC = () => {
 
   return (
     <div className="my-chart-page">
-      {/* 搜索区域 */}
-      <div style={{ marginBottom: 16 }}>
-        <Search
-          placeholder="请输入图表名称"
-          enterButton
-          loading={loading}
-          onSearch={(value) => {
-            setSearchParams({
-              ...initSearchParams,
-              name: value,
-            })
-          }}
+      {/* 如果用户未登录，显示提示信息 */}
+      {!currentUser ? (
+        <Result
+          status="warning"
+          title="未登录"
+          subTitle="请先登录以查看您的图表"
+          extra={
+            <Button type="primary" onClick={() => navigate('/login')}>
+              登录
+            </Button>
+          }
         />
-      </div>
+      ) : (
+        <>
+          {/* 搜索区域 */}
+          <div style={{ marginBottom: 16 }}>
+            <Search
+              placeholder="请输入图表名称"
+              enterButton
+              loading={loading}
+              onSearch={(value) => {
+                setSearchParams({
+                  ...initSearchParams,
+                  name: value,
+                })
+              }}
+            />
+          </div>
 
-      {/* 图表列表 */}
-      <List
-        grid={{
-          gutter: 16,
-          xs: 1,
-          sm: 1,
-          md: 1,
-          lg: 2,
-          xl: 2,
-          xxl: 2,
-        }}
-        pagination={{
-          onChange: (page, pageSize) => {
-            setSearchParams({
-              ...searchParams,
-              current: page,
-              pageSize,
-            })
-          },
-          current: searchParams.current,
-          pageSize: searchParams.pageSize,
-          total: total,
-        }}
-        loading={loading}
-        dataSource={chartList}
-        renderItem={(item) => (
-          <List.Item key={item.id}>
-            <Card
-              style={{ width: '100%' }}
-              actions={[
-                <Button
-                  type="link"
-                  key="edit"
-                  onClick={() => {
-                    setCurrentRow(item);
-                    setUpdateModalVisible(true);
-                  }}
+          {/* 图表列表 */}
+          <List
+            grid={{
+              gutter: 16,
+              xs: 1,
+              sm: 1,
+              md: 1,
+              lg: 2,
+              xl: 2,
+              xxl: 2,
+            }}
+            pagination={{
+              onChange: (page, pageSize) => {
+                setSearchParams({
+                  ...searchParams,
+                  current: page,
+                  pageSize,
+                })
+              },
+              current: searchParams.current,
+              pageSize: searchParams.pageSize,
+              total: total,
+            }}
+            loading={loading}
+            dataSource={chartList}
+            renderItem={(item) => (
+              <List.Item key={item.id}>
+                <Card
+                  style={{ width: '100%' }}
+                  actions={[
+                    <Button
+                      type="link"
+                      key="edit"
+                      onClick={() => {
+                        setCurrentRow(item);
+                        setUpdateModalVisible(true);
+                      }}
+                    >
+                      编辑
+                    </Button>,
+                    // eslint-disable-next-line react/jsx-key
+                    <Popconfirm
+                      title="确定要删除这个图表吗？"
+                      onConfirm={() => handleDelete(item.id as number)}
+                      okText="确定"
+                      cancelText="取消"
+                    >
+                      <Button type="link" danger key="delete">
+                        删除
+                      </Button>
+                    </Popconfirm>,
+                  ]}
                 >
-                  编辑
-                </Button>,
-                // eslint-disable-next-line react/jsx-key
-                <Popconfirm
-                  title="确定要删除这个图表吗？"
-                  onConfirm={() => handleDelete(item.id as number)}
-                  okText="确定"
-                  cancelText="取消"
-                >
-                  <Button type="link" danger key="delete">
-                    删除
-                  </Button>
-                </Popconfirm>,
-              ]}
-            >
-              <List.Item.Meta
-                avatar={<Avatar src={currentUser && currentUser.userAvatar} />}
-                title={item.name}
-                description={item.chartType ? '图表类型：' + item.chartType : undefined}
-              />
-              <div style={{ marginBottom: 16 }} />
-              <p>{'分析目标：' + item.goal}</p>
-              <div style={{ marginBottom: 16 }} />
-              <ReactECharts option={item.genChart && JSON.parse(item.genChart)} />
-            </Card>
-          </List.Item>
-        )}
-      />
+                  <List.Item.Meta
+                    avatar={<Avatar src={currentUser && currentUser.userAvatar} />}
+                    title={item.name}
+                    description={item.chartType ? '图表类型：' + item.chartType : undefined}
+                  />
+                  <div style={{ marginBottom: 16 }} />
+                  <p>{'分析目标：' + item.goal}</p>
+                  <div style={{ marginBottom: 16 }} />
+                  <ReactECharts option={item.genChart && JSON.parse(item.genChart)} />
+                </Card>
+              </List.Item>
+            )}
+          />
 
-      {/* 更新图表模态框 */}
-      {currentRow && (
-        <UpdateModal
-          oldData={currentRow}
-          visible={updateModalVisible}
-          columns={columns}
-          onCancel={() => {
-            setUpdateModalVisible(false);
-            setCurrentRow(undefined);
-          }}
-          onSubmit={async (values) => {
-            await handleUpdate({
-              ...values,
-              id: currentRow.id as any,
-            });
-          }}
-        />
+          {/* 更新图表模态框 */}
+          {currentRow && (
+            <UpdateModal
+              oldData={currentRow}
+              visible={updateModalVisible}
+              columns={columns}
+              onCancel={() => {
+                setUpdateModalVisible(false);
+                setCurrentRow(undefined);
+              }}
+              onSubmit={async (values) => {
+                await handleUpdate({
+                  ...values,
+                  id: currentRow.id as any,
+                });
+              }}
+            />
+          )}
+        </>
       )}
     </div>
   );

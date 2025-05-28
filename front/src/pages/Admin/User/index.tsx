@@ -75,11 +75,6 @@ const UserAdminPage: React.FC = () => {
       hideInSearch: true,
     },
     {
-      title: '简介',
-      dataIndex: 'userProfile',
-      valueType: 'textarea',
-    },
-    {
       title: '权限',
       dataIndex: 'userRole',
       valueEnum: {

@@ -88,21 +88,20 @@ const MyChartPage: React.FC = () => {
   ];
 
   const loadData = async () => {
-    // 获取数据中,还在加载中,把loading设置为true
     setLoading(true);
     try {
-      const res = await listMyChartByPageUsingPOST(searchParams);
+      // Add userId to the search parameters
+      const res = await listMyChartByPageUsingPOST({
+        ...searchParams,
+        userId: currentUser?.id,  // Add current user's ID
+      });
       if (res.data) {
         setChartList(res.data.records ?? []);
         setTotal(res.data.total ?? 0);
-        // 有些图表有标题,有些没有,直接把标题全部去掉
         if (res.data.records) {
           res.data.records.forEach(data => {
-            // 要把后端返回的图表字符串改为对象数组,如果后端返回空字符串，就返回'{}'
             const chartOption = JSON.parse(data.genChart ?? '{}');
-            // 把标题设为undefined
             chartOption.title = undefined;
-            // 然后把修改后的数据转换为json设置回去
             data.genChart = JSON.stringify(chartOption);
           })
         }
@@ -112,7 +111,6 @@ const MyChartPage: React.FC = () => {
     } catch (e: any) {
       message.error('获取我的图表失败，' + e.message);
     }
-    // 获取数据后，加载完毕，设置为false
     setLoading(false);
   };
 

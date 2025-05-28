@@ -25,13 +25,12 @@ spring:
     username: root
     password: 123456
   # Redis 配置
-  # todo 需替换配置，然后取消注释
-#  redis:
-#    database: 1
-#    host: localhost
-#    port: 6379
-#    timeout: 5000
-#    password: 123456
+  redis:
+    database: 1
+    host: localhost
+    port: 6379
+    timeout: 5000
+    password: 123456
   # Elasticsearch 配置
   # todo 需替换配置，然后取消注释
 #  elasticsearch:
@@ -106,6 +105,6 @@ knife4j:
 ## 讯飞 AI 配置
 xun-fei:
   client:
-    appId: ab3cd651
-    apiSecret: OGIyMTNiMmRmZmYzM2M4MjJjNjE2ZWIx
-    apiKey: c5f832a4b473cdcde7688cee1b7cb248
+    appId: 756c7a4f
+    apiSecret: ZDVlMWMwY2NkOWY4NDg4ZmUwNDhlYjg3
+    apiKey: 0a9646011570afc014d49f6dbf188d32

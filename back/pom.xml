@@ -116,7 +116,16 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-<!--        引入讯飞星火模型-->
+<!--        引入Redis限流-->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.21.3</version>
+        </dependency>
+
+
+
+        <!--        引入讯飞星火模型-->
         <dependency>
             <groupId>io.github.briqt</groupId>
             <artifactId>xunfei-spark4j</artifactId>

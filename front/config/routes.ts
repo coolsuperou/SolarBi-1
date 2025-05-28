@@ -17,7 +17,7 @@ export default [
   },
   {
     path: '/my_chart',
-    name: '图表管理',
+    name: '我的图表',
     icon: 'pieChart',
     component: './MyChart',
   },

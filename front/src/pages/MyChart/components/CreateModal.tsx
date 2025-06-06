@@ -1,4 +1,4 @@
-import { addChartUsingPost } from '@/services/SolarBi-front/chartController';
+import { addChartUsingPOST } from '@/services/SolarBi-front/chartController';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import '@umijs/max';
 import { message, Modal } from 'antd';
@@ -18,7 +18,7 @@ interface Props {
 const handleAdd = async (fields: API.ChartAddRequest) => {
   const hide = message.loading('正在添加');
   try {
-    await addChartUsingPost(fields);
+    await addChartUsingPOST(fields);
     hide();
     message.success('创建成功');
     return true;

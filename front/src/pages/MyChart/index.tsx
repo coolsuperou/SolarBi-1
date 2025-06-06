@@ -1,7 +1,7 @@
 import {
-  deleteChartUsingPost,
+  deleteChartUsingPOST,
   listMyChartByPageUsingPOST,
-  updateChartUsingPost
+  updateChartUsingPOST
 } from '@/services/SolarBi-front/chartController';
 import {useModel} from '@@/exports';
 import {Avatar, Button, Card, List, message, Popconfirm, Result} from 'antd';
@@ -20,8 +20,11 @@ const MyChartPage: React.FC = () => {
   const initSearchParams = {
     // 默认第一页
     current: 1,
-    // 每页展示4条数据
+    // 每页展示6条数据
     pageSize: 6,
+    // 按时间降序排序
+    sortField: 'createTime',
+    sortOrder: 'desc',
   };
 
   const [searchParams, setSearchParams] = useState<API.ChartQueryRequest>({ ...initSearchParams });
@@ -116,9 +119,11 @@ const MyChartPage: React.FC = () => {
         setTotal(res.data.total ?? 0);
         if (res.data.records) {
           res.data.records.forEach(data => {
-            const chartOption = JSON.parse(data.genChart ?? '{}');
-            chartOption.title = undefined;
-            data.genChart = JSON.stringify(chartOption);
+            if (data.genChart) {
+              const chartOption = JSON.parse(data.genChart ?? '{}');
+              chartOption.title = undefined;
+              data.genChart = JSON.stringify(chartOption);
+            }
           })
         }
       } else {
@@ -144,7 +149,7 @@ const MyChartPage: React.FC = () => {
 
     const hide = message.loading('正在更新');
     try {
-      await updateChartUsingPost(fields);
+      await updateChartUsingPOST(fields);
       hide();
       message.success('更新成功');
       setUpdateModalVisible(false);
@@ -167,7 +172,7 @@ const MyChartPage: React.FC = () => {
 
     const hide = message.loading('正在删除');
     try {
-      await deleteChartUsingPost({ id });
+      await deleteChartUsingPOST({ id });
       hide();
       message.success('删除成功');
       loadData(); // 刷新数据
@@ -268,10 +273,50 @@ const MyChartPage: React.FC = () => {
                     title={item.name}
                     description={item.chartType ? '图表类型：' + item.chartType : undefined}
                   />
-                  <div style={{ marginBottom: 16 }} />
-                  <p>{'分析目标：' + item.goal}</p>
-                  <div style={{ marginBottom: 16 }} />
-                  <ReactECharts option={item.genChart && JSON.parse(item.genChart)} />
+                  <>
+                    {
+                      // 当状态（item.status）为'wait'时，显示待生成的结果组件
+                      item.status === 'wait' && <>
+                        <Result
+                          // 状态为警告
+                          status="warning"
+                          title="待生成"
+                          // 子标题显示执行消息，如果执行消息为空，则显示'当前图表生成队列繁忙，请耐心等候'
+                          subTitle={item.execMessage ?? '当前图表生成队列繁忙，请耐心等候'}
+                        />
+                      </>
+                    }
+                    {
+                      item.status === 'running' && <>
+                        <Result
+                          // 状态为信息
+                          status="info"
+                          title="图表生成中"
+                          // 子标题显示执行消息
+                          subTitle={item.execMessage}
+                        />
+                      </>
+                    }
+                    {
+                      // 当状态（item.status）为'succeed'时，显示生成的图表
+                      item.status === 'succeed' && <>
+                        <div style={{ marginBottom: 16 }} />
+                        <p>{'分析目标：' + item.goal}</p>
+                        <div style={{ marginBottom: 16 }} />
+                        <ReactECharts option={item.genChart && JSON.parse(item.genChart)} />
+                      </>
+                    }
+                    {
+                      // 当状态（item.status）为'failed'时，显示生成失败的结果组件
+                      item.status === 'failed' && <>
+                        <Result
+                          status="error"
+                          title="图表生成失败"
+                          subTitle={item.execMessage}
+                        />
+                      </>
+                    }
+                  </>
                 </Card>
               </List.Item>
             )}

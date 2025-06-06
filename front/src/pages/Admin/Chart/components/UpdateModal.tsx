@@ -1,4 +1,4 @@
-import { updateChartUsingPost } from '@/services/SolarBi-front/chartController';
+import { updateChartUsingPOST } from '@/services/SolarBi-front/chartController';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import '@umijs/max';
 import { message, Modal } from 'antd';
@@ -20,7 +20,7 @@ interface Props {
 const handleUpdate = async (fields: API.ChartUpdateRequest) => {
   const hide = message.loading('正在更新');
   try {
-    await updateChartUsingPost(fields);
+    await updateChartUsingPOST(fields);
     hide();
     message.success('更新成功');
     return true;

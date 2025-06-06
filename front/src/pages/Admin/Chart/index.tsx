@@ -1,6 +1,6 @@
 import CreateModal from '@/pages/Admin/Chart/components/CreateModal';
 import UpdateModal from '@/pages/Admin/Chart/components/UpdateModal';
-import { deleteChartUsingPost, listChartByPageUsingPost } from '@/services/SolarBi-front/chartController';
+import { deleteChartUsingPOST, listChartByPageUsingPOST } from '@/services/SolarBi-front/chartController';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
@@ -32,7 +32,7 @@ const ChartAdminPage: React.FC = () => {
     const hide = message.loading('正在删除');
     if (!row) return true;
     try {
-      await deleteChartUsingPost({
+      await deleteChartUsingPOST({
         id: row.id as any,
       });
       hide();
@@ -158,7 +158,7 @@ const ChartAdminPage: React.FC = () => {
           const sortField = Object.keys(sort)?.[0];
           const sortOrder = sort?.[sortField] ?? undefined;
 
-          const { data, code } = await listChartByPageUsingPost({
+          const { data, code } = await listChartByPageUsingPOST({
             ...params,
             sortField,
             sortOrder,

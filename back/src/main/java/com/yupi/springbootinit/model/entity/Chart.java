@@ -50,6 +50,18 @@ public class Chart {
     private String genResult;
 
     /**
+     * 任务状态
+     */
+  private String status;
+
+
+    /**
+     * 执行信息
+     */
+
+    private String execMessage;
+
+    /**
      * 创建用户 id
      */
     private Long userId;

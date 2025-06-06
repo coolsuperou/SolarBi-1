@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 
 /**
- * 添加图表页面
+ * 添加图表（同步）页面
  * @constructor
  */
 const AddChart: React.FC = () => {
@@ -55,7 +55,7 @@ const AddChart: React.FC = () => {
     <div className="add-chart">
       <Row gutter={24}>
         <Col span={12}>
-          <Card title="智能分析">
+          <Card title="智能分析(同步)">
             <Form name="addChart" labelAlign="left" labelCol={{ span: 4 }}
                   wrapperCol={{ span: 16 }} onFinish={onFinish} initialValues={{}}>
               <Form.Item

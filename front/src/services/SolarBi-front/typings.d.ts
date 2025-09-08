@@ -411,4 +411,101 @@ declare namespace API {
     userProfile?: string;
     userRole?: string;
   };
+
+  type TempMonitor = {
+    id?: number;
+    deviceId?: string;
+    name?: string;
+    tem?: number;
+    hum?: number;
+    mac?: string;
+    updateTime?: string;
+    electricEnergy?: number;
+    nodeId?: number;
+    workshop?: string;
+  };
+
+  type BaseResponseListTempMonitor_ = {
+    code?: number;
+    data?: TempMonitor[];
+    message?: string;
+  };
+
+  type BaseResponsePageTempMonitor_ = {
+    code?: number;
+    data?: PageTempMonitor_;
+    message?: string;
+  };
+
+  type BaseResponseTempMonitorStatistics_ = {
+    code?: number;
+    data?: TempMonitorStatistics;
+    message?: string;
+  };
+
+  type PageTempMonitor_ = {
+    countId?: string;
+    current?: number;
+    maxLimit?: number;
+    optimizeCountSql?: boolean;
+    orders?: OrderItem[];
+    pages?: number;
+    records?: TempMonitor[];
+    searchCount?: boolean;
+    size?: number;
+    total?: number;
+  };
+
+  type TempMonitorQueryRequest = {
+    current?: number;
+    pageSize?: number;
+    sortField?: string;
+    sortOrder?: string;
+    deviceId?: string;
+    name?: string;
+    workshop?: string;
+    startTime?: string;
+    endTime?: string;
+  };
+
+  type TempMonitorStatistics = {
+    avgTemperature?: number;
+    minTemperature?: number;
+    maxTemperature?: number;
+    avgHumidity?: number;
+    minHumidity?: number;
+    maxHumidity?: number;
+    totalElectricEnergy?: number;
+    avgElectricEnergy?: number;
+    totalDevices?: number;
+  };
+
+  type BaseResponseListString_ = {
+    code?: number;
+    data?: string[];
+    message?: string;
+  };
+
+  type getDataByWorkshopUsingGETParams = {
+    /** 车间名称 */
+    workshop: string;
+  };
+
+  type HourlyEnergyConsumption = {
+    deviceId?: string;
+    name?: string;
+    workshop?: string;
+    hour?: string;
+    energyConsumption?: number;
+    startEnergy?: number;
+    endEnergy?: number;
+    startTime?: string;
+    endTime?: string;
+  };
+
+  type BaseResponseListHourlyEnergyConsumption_ = {
+    code?: number;
+    data?: HourlyEnergyConsumption[];
+    message?: string;
+  };
 }

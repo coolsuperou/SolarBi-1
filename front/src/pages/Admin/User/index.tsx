@@ -7,6 +7,7 @@ import { PageContainer, ProTable } from '@ant-design/pro-components';
 import '@umijs/max';
 import { Button, message, Space, Typography } from 'antd';
 import React, { useRef, useState } from 'react';
+import darkThemeStyles from '@/pages/PowerMonitor/styles/darkThemeStyles';
 
 /**
  * 用户管理页面
@@ -64,6 +65,21 @@ const UserAdminPage: React.FC = () => {
       title: '用户名',
       dataIndex: 'userName',
       valueType: 'text',
+    },
+    {
+      title: '密码',
+      dataIndex: 'userPassword',
+      valueType: 'password',
+      hideInTable: true,
+      hideInSearch: true,
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: '密码是必填项！',
+          },
+        ],
+      },
     },
     {
       title: '头像',
@@ -124,7 +140,176 @@ const UserAdminPage: React.FC = () => {
     },
   ];
   return (
-    <PageContainer>
+    <div style={{
+      ...darkThemeStyles.pageContainer,
+      minHeight: '100vh',
+      position: 'relative'
+    }}>
+      {/* 背景装饰效果 */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        pointerEvents: 'none',
+        background: `
+          radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+          radial-gradient(circle at 60% 40%, rgba(0, 255, 136, 0.06) 0%, transparent 50%)
+        `,
+        zIndex: -1
+      }}></div>
+
+      {/* 网格背景效果 */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        pointerEvents: 'none',
+        backgroundImage: `
+          linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px)
+        `,
+        backgroundSize: '50px 50px',
+        zIndex: -1
+      }}></div>
+
+      <style>{`
+        /* 管理页面深色主题样式 */
+        .ant-pro-page-container {
+          background: transparent !important;
+        }
+        
+        .ant-pro-table-card {
+          background: linear-gradient(135deg, rgba(10, 25, 41, 0.9), rgba(26, 35, 126, 0.7)) !important;
+          border: 2px solid #00d4ff !important;
+          border-radius: 12px !important;
+          backdrop-filter: blur(15px) !important;
+          box-shadow: 0 0 30px rgba(0, 212, 255, 0.4), inset 0 0 40px rgba(0, 212, 255, 0.12) !important;
+        }
+        
+        .ant-card-head {
+          background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 212, 255, 0.08)) !important;
+          border-bottom: 2px solid #00d4ff !important;
+        }
+        
+        .ant-card-head-title {
+          color: #00d4ff !important;
+          font-weight: 700 !important;
+          text-shadow: 0 0 15px rgba(0, 212, 255, 0.8) !important;
+        }
+        
+        .ant-card-body {
+          background: transparent !important;
+        }
+        
+        .ant-table {
+          background: transparent !important;
+          color: #fff !important;
+        }
+        
+        .ant-table-thead th {
+          background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 212, 255, 0.1)) !important;
+          border-bottom: 2px solid #00d4ff !important;
+          color: #00d4ff !important;
+          font-weight: 700 !important;
+          text-shadow: 0 0 8px rgba(0, 212, 255, 0.8) !important;
+        }
+        
+        .ant-table-tbody td {
+          background: transparent !important;
+          border-bottom: 1px solid rgba(0, 212, 255, 0.15) !important;
+          color: #fff !important;
+          font-weight: 600 !important;
+        }
+        
+        .ant-table-tbody tr:hover td {
+          background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(0, 212, 255, 0.05)) !important;
+        }
+        
+        .ant-btn-primary {
+          background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%) !important;
+          border: 2px solid #00d4ff !important;
+          border-radius: 8px !important;
+          color: #fff !important;
+          font-weight: bold !important;
+          box-shadow: 0 0 20px rgba(0, 212, 255, 0.5) !important;
+          text-shadow: 0 0 8px rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        .ant-btn-primary:hover {
+          background: linear-gradient(135deg, #00ffff 0%, #00ccff 100%) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 0 25px rgba(0, 212, 255, 0.7) !important;
+        }
+        
+        .ant-input {
+          background: linear-gradient(135deg, rgba(10, 25, 41, 0.8), rgba(26, 35, 126, 0.6)) !important;
+          border: 2px solid rgba(0, 212, 255, 0.4) !important;
+          border-radius: 8px !important;
+          color: #fff !important;
+          box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.1) !important;
+        }
+        
+        .ant-input:focus {
+          border-color: #00d4ff !important;
+          box-shadow: 0 0 15px rgba(0, 212, 255, 0.5) !important;
+        }
+        
+        .ant-select-selector {
+          background: linear-gradient(135deg, rgba(10, 25, 41, 0.8), rgba(26, 35, 126, 0.6)) !important;
+          border: 2px solid rgba(0, 212, 255, 0.4) !important;
+          border-radius: 8px !important;
+          color: #fff !important;
+        }
+        
+        .ant-select-selection-item {
+          color: #fff !important;
+        }
+        
+        .ant-typography {
+          color: #fff !important;
+        }
+        
+        .ant-typography-caption {
+          color: rgba(255, 255, 255, 0.7) !important;
+        }
+        
+        .ant-pagination {
+          margin-top: 20px !important;
+        }
+        
+        .ant-pagination .ant-pagination-item {
+          background: linear-gradient(135deg, rgba(10, 25, 41, 0.8), rgba(26, 35, 126, 0.6)) !important;
+          border: 2px solid rgba(0, 212, 255, 0.4) !important;
+          border-radius: 6px !important;
+        }
+        
+        .ant-pagination .ant-pagination-item a {
+          color: #00d4ff !important;
+          font-weight: 600 !important;
+        }
+        
+        .ant-pagination .ant-pagination-item-active {
+          background: linear-gradient(135deg, #00d4ff, #0099cc) !important;
+          border-color: #00d4ff !important;
+        }
+        
+        .ant-pagination .ant-pagination-item-active a {
+          color: #fff !important;
+        }
+      `}</style>
+      
+      <PageContainer
+        header={{
+          title: <span style={{ ...darkThemeStyles.title, fontSize: '24px' }}>用户管理</span>,
+          breadcrumb: {},
+        }}
+        style={{ background: 'transparent' }}
+      >
       <ProTable<API.User>
         headerTitle={'查询表格'}
         actionRef={actionRef}
@@ -164,7 +349,6 @@ const UserAdminPage: React.FC = () => {
       />
       <CreateModal
         visible={createModalVisible}
-        columns={columns}
         onSubmit={() => {
           setCreateModalVisible(false);
           actionRef.current?.reload();
@@ -175,7 +359,6 @@ const UserAdminPage: React.FC = () => {
       />
       <UpdateModal
         visible={updateModalVisible}
-        columns={columns}
         oldData={currentRow}
         onSubmit={() => {
           setUpdateModalVisible(false);
@@ -186,7 +369,8 @@ const UserAdminPage: React.FC = () => {
           setUpdateModalVisible(false);
         }}
       />
-    </PageContainer>
+      </PageContainer>
+    </div>
   );
 };
 export default UserAdminPage;

@@ -56,7 +56,18 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {
   if (!currentUser) {
     return (
       <Link to="/user/login">
-        <Button type="primary" shape="round">
+        <Button 
+          type="primary" 
+          shape="round"
+          style={{
+            background: 'linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)',
+            border: '2px solid #00d4ff',
+            color: '#fff',
+            fontWeight: 'bold',
+            boxShadow: '0 0 15px rgba(0, 212, 255, 0.5)',
+            textShadow: '0 0 8px rgba(255, 255, 255, 0.6)'
+          }}
+        >
           登录
         </Button>
       </Link>
@@ -98,11 +109,23 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {
     >
       <Space>
         {currentUser?.userAvatar ? (
-          <Avatar size="small" src={currentUser?.userAvatar} />
+          <Avatar size="small" src={currentUser?.userAvatar} style={{
+            border: '2px solid #00d4ff',
+            boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)'
+          }} />
         ) : (
-          <Avatar size="small" icon={<UserOutlined />} />
+          <Avatar size="small" icon={<UserOutlined />} style={{
+            backgroundColor: '#00d4ff',
+            border: '2px solid #00d4ff',
+            boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)'
+          }} />
         )}
-        <span className="anticon">{currentUser?.userName ?? '无名'}</span>
+        <span style={{
+          color: '#ffffff',
+          fontWeight: '600',
+          textShadow: '0 0 8px rgba(255, 255, 255, 0.6)',
+          fontSize: '14px'
+        }}>{currentUser?.userName ?? '无名'}</span>
       </Space>
     </HeaderDropdown>
   );

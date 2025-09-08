@@ -119,6 +119,28 @@ export default defineConfig({
       async: true,
     },
   ],
+  /**
+   * @name <head> 中额外的配置
+   * @description 配置移动端适配的viewport meta标签
+   */
+  metas: [
+    {
+      name: 'viewport',
+      content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0',
+    },
+    {
+      name: 'apple-mobile-web-app-capable',
+      content: 'yes',
+    },
+    {
+      name: 'apple-mobile-web-app-status-bar-style',
+      content: 'black-translucent',
+    },
+    {
+      name: 'format-detection',
+      content: 'telephone=no',
+    },
+  ],
   //================ pro 插件配置 =================
   presets: ['umi-presets-pro'],
   /**

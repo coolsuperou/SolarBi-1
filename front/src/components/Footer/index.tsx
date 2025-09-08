@@ -1,39 +1,37 @@
-import { GithubOutlined } from '@ant-design/icons';
 import { DefaultFooter } from '@ant-design/pro-components';
 import '@umijs/max';
 import React from 'react';
 
 const Footer: React.FC = () => {
-  const defaultMessage = '每天十点睡';
   const currentYear = new Date().getFullYear();
   return (
     <DefaultFooter
       style={{
-        background: 'none',
+        background: 'linear-gradient(135deg, #0a1929 0%, #1a237e 50%, #000051 100%)',
+        color: '#fff',
+        borderTop: '2px solid rgba(0, 212, 255, 0.3)',
+        padding: '24px 0',
+        textAlign: 'center',
       }}
-      copyright={`${currentYear} ${defaultMessage}`}
+      copyright={`${currentYear} SolarBi 智能监控系统`}
       links={[
         {
-          key: 'codeNav',
-          title: '编程导航',
-          href: '',
-          blankTarget: true,
+          key: 'system',
+          title: '系统管理',
+          href: '#',
+          blankTarget: false,
         },
         {
-          key: 'Ant Design',
-          title: '编程宝典',
-          href: '',
-          blankTarget: true,
+          key: 'help',
+          title: '帮助文档',
+          href: '#',
+          blankTarget: false,
         },
         {
-          key: 'github',
-          title: (
-            <>
-              <GithubOutlined /> 每天十点睡
-            </>
-          ),
-          href: 'https://github.com/coolsuperou/SolarBi-1',
-          blankTarget: true,
+          key: 'about',
+          title: '关于系统',
+          href: '#',
+          blankTarget: false,
         },
       ]}
     />

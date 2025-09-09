@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Space, Typography, Button, message } from 'antd';
-import { EyeOutlined, SearchOutlined, ReloadOutlined, UpOutlined, DownOutlined } from '@ant-design/icons';
+import { EyeOutlined, SearchOutlined, ReloadOutlined, UpOutlined, DownOutlined, ClockCircleOutlined, CalendarOutlined, BarChartOutlined } from '@ant-design/icons';
 
 type DarkThemeStyles = {
   pageContainer: React.CSSProperties;
@@ -28,6 +28,8 @@ interface SearchFormProps {
   setShowChart: React.Dispatch<React.SetStateAction<boolean>>;
   startTimeRef: React.MutableRefObject<any>;
   endTimeRef: React.MutableRefObject<any>;
+  currentMode?: string;
+  onModeChange?: (mode: string) => void;
 }
 
 const { Title } = Typography;
@@ -41,174 +43,310 @@ const SearchForm: React.FC<SearchFormProps> = ({
   showChart,
   setShowChart,
   startTimeRef,
-  endTimeRef
+  endTimeRef,
+  currentMode = 'hour',
+  onModeChange
 }) => {
+  // 调试信息
+  console.log('SearchForm 渲染, currentMode:', currentMode);
+
   return (
     <Card style={{ ...darkThemeStyles.card, marginBottom: 16 }}>
-      <div style={{ marginBottom: 16 }}>
-        <Space size="middle">
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
           <Title level={4} style={{ ...darkThemeStyles.title, margin: 0 }}>
             <EyeOutlined /> 实时监控数据
           </Title>
-        </Space>
+        </div>
+
+        {/* 模式切换按钮组 */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+
+          <div style={{
+            display: 'flex',
+            border: '2px solid rgba(0, 212, 255, 0.4)',
+            borderRadius: '8px',
+            background: 'linear-gradient(135deg, rgba(10, 25, 41, 0.8), rgba(26, 35, 126, 0.6))',
+            overflow: 'hidden'
+          }}>
+            <Button
+              size="small"
+              className={currentMode === 'hour' ? 'mode-button-active' : 'mode-button-inactive'}
+              style={{
+                border: 'none',
+                borderRadius: '0',
+                height: '32px',
+                padding: '0 12px',
+                fontSize: '13px',
+                transition: 'all 0.3s ease'
+              }}
+              onClick={() => {
+                console.log('点击小时模式, 当前mode:', currentMode);
+                onModeChange?.('hour');
+              }}
+              icon={<ClockCircleOutlined style={{ filter: 'drop-shadow(0 0 6px rgba(0, 212, 255, 0.6))' }} />}
+            >
+              小时模式
+            </Button>
+            <div style={{ width: '1px', background: 'rgba(0, 212, 255, 0.3)', alignSelf: 'stretch' }}></div>
+            <Button
+              size="small"
+              className={currentMode === 'day' ? 'mode-button-active' : 'mode-button-inactive'}
+              style={{
+                border: 'none',
+                borderRadius: '0',
+                height: '32px',
+                padding: '0 12px',
+                fontSize: '13px',
+                transition: 'all 0.3s ease'
+              }}
+              onClick={() => onModeChange?.('day')}
+              icon={<CalendarOutlined style={{ filter: 'drop-shadow(0 0 6px rgba(0, 212, 255, 0.6))' }} />}
+            >
+              日模式
+            </Button>
+         
+
+          </div>
+        </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-        {/* 开始时间组合 */}
-        <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap' }}>开始时间:</label>
-          <div className="time-combo-container" style={{
-            display: 'flex',
-            border: '2px solid rgba(0, 212, 255, 0.4)',
-            borderRadius: '8px',
-            background: 'linear-gradient(135deg, rgba(10, 25, 41, 0.8), rgba(26, 35, 126, 0.6))',
-            overflow: 'hidden',
-            height: '32px'
-          }}>
-            <input
-              ref={startTimeRef}
-              type="date"
-              style={{
-                ...darkThemeStyles.input,
-                width: '140px',
-                height: '28px',
-                padding: '4px 8px',
-                fontSize: '13px',
-                border: 'none',
-                borderRadius: '0',
-                background: 'transparent',
-                color: '#fff',
-                outline: 'none'
-              }}
-              onChange={(e) => {
-                const dateValue = e.target.value;
-                const hourValue = (document.getElementById('startHour') as HTMLSelectElement)?.value || '00';
-                if (dateValue) {
-                  const formattedValue = `${dateValue} ${hourValue}:00:00`;
-                  setSearchParams(prev => ({ ...prev, startTime: formattedValue }));
-                }
-              }}
-            />
-            <div className="combo-divider" style={{ width: '1px', background: 'rgba(0, 212, 255, 0.3)', alignSelf: 'stretch' }}></div>
-            <select
-              id="startHour"
-              style={{
-                ...darkThemeStyles.input,
-                width: '98px',
-                height: '28px',
-                padding: '4px 8px',
-                fontSize: '13px',
-                border: 'none',
-                borderRadius: '0',
-                background: 'transparent',
-                color: '#fff',
-                outline: 'none',
-                appearance: 'none',
-                backgroundImage: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%2300d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"></polyline></svg>\')',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 6px center',
-                backgroundSize: '12px 12px',
-                paddingRight: '24px'
-              }}
-              onChange={(e) => {
-                const hourValue = e.target.value;
-                const dateValue = startTimeRef.current?.value;
-                if (dateValue) {
-                  const formattedValue = `${dateValue} ${hourValue}:00:00`;
-                  setSearchParams(prev => ({ ...prev, startTime: formattedValue }));
-                }
-              }}
-            >
-              {Array.from({ length: 24 }, (_, i) => (
-                <option key={i} value={i.toString().padStart(2, '0')}>
-                  {i.toString().padStart(2, '0')}时
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        {currentMode === 'hour' ? (
+          <>
+            {/* 小时模式 - 开始时间组合 */}
+            <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap' }}>开始时间:</label>
+              <div className="time-combo-container" style={{
+                display: 'flex',
+                border: '2px solid rgba(0, 212, 255, 0.4)',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, rgba(10, 25, 41, 0.8), rgba(26, 35, 126, 0.6))',
+                overflow: 'hidden',
+                height: '32px'
+              }}>
+                <input
+                  ref={startTimeRef}
+                  type="date"
+                  style={{
+                    ...darkThemeStyles.input,
+                    width: '140px',
+                    height: '28px',
+                    padding: '4px 8px',
+                    fontSize: '13px',
+                    border: 'none',
+                    borderRadius: '0',
+                    background: 'transparent',
+                    color: '#fff',
+                    outline: 'none'
+                  }}
+                  onChange={(e) => {
+                    const dateValue = e.target.value;
+                    const hourValue = (document.getElementById('startHour') as HTMLSelectElement)?.value || '00';
+                    if (dateValue) {
+                      const formattedValue = `${dateValue} ${hourValue}:00:00`;
+                      setSearchParams((prev: any) => ({ ...prev, startTime: formattedValue }));
+                    }
+                  }}
+                />
+                <div className="combo-divider" style={{ width: '1px', background: 'rgba(0, 212, 255, 0.3)', alignSelf: 'stretch' }}></div>
+                <select
+                  id="startHour"
+                  style={{
+                    ...darkThemeStyles.input,
+                    width: '98px',
+                    height: '28px',
+                    padding: '4px 8px',
+                    fontSize: '13px',
+                    border: 'none',
+                    borderRadius: '0',
+                    background: 'transparent',
+                    color: '#fff',
+                    outline: 'none',
+                    appearance: 'none',
+                    backgroundImage: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%2300d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"></polyline></svg>\')',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 6px center',
+                    backgroundSize: '12px 12px',
+                    paddingRight: '24px'
+                  }}
+                  onChange={(e) => {
+                    const hourValue = e.target.value;
+                    const dateValue = startTimeRef.current?.value;
+                    if (dateValue) {
+                      const formattedValue = `${dateValue} ${hourValue}:00:00`;
+                      setSearchParams((prev: any) => ({ ...prev, startTime: formattedValue }));
+                    }
+                  }}
+                >
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={i.toString().padStart(2, '0')}>
+                      {i.toString().padStart(2, '0')}时
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-        {/* 结束时间组合 */}
-        <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap' }}>结束时间:</label>
-          <div className="time-combo-container" style={{
-            display: 'flex',
-            border: '2px solid rgba(0, 212, 255, 0.4)',
-            borderRadius: '8px',
-            background: 'linear-gradient(135deg, rgba(10, 25, 41, 0.8), rgba(26, 35, 126, 0.6))',
-            overflow: 'hidden',
-            height: '32px'
-          }}>
-            <input
-              ref={endTimeRef}
-              type="date"
-              style={{
-                ...darkThemeStyles.input,
-                width: '140px',
-                height: '28px',
-                padding: '4px 8px',
-                fontSize: '13px',
-                border: 'none',
-                borderRadius: '0',
-                background: 'transparent',
-                color: '#fff',
-                outline: 'none'
-              }}
-              onChange={(e) => {
-                const dateValue = e.target.value;
-                const hourValue = (document.getElementById('endHour') as HTMLSelectElement)?.value || '23';
-                if (dateValue) {
-                  const formattedValue = `${dateValue} ${hourValue}:05:00`;
-                  setSearchParams(prev => ({ ...prev, endTime: formattedValue }));
-                }
-              }}
-            />
-            <div className="combo-divider" style={{ width: '1px', background: 'rgba(0, 212, 255, 0.3)', alignSelf: 'stretch' }}></div>
-            <select
-              id="endHour"
-              style={{
-                ...darkThemeStyles.input,
-                width: '98px',
-                height: '28px',
-                padding: '4px 8px',
-                fontSize: '13px',
-                border: 'none',
-                borderRadius: '0',
-                background: 'transparent',
-                color: '#fff',
-                outline: 'none',
-                appearance: 'none',
-                backgroundImage: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%2300d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"></polyline></svg>\')',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 6px center',
-                backgroundSize: '12px 12px',
-                paddingRight: '24px'
-              }}
-              onChange={(e) => {
-                const hourValue = e.target.value;
-                const dateValue = endTimeRef.current?.value;
-                if (dateValue) {
-                  const formattedValue = `${dateValue} ${hourValue}:05:00`;
-                  setSearchParams(prev => ({ ...prev, endTime: formattedValue }));
-                }
-              }}
-            >
-              {Array.from({ length: 24 }, (_, i) => (
-                <option key={i} value={i.toString().padStart(2, '0')}>
-                  {i.toString().padStart(2, '0')}时
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+            {/* 小时模式 - 结束时间组合 */}
+            <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap' }}>结束时间:</label>
+              <div className="time-combo-container" style={{
+                display: 'flex',
+                border: '2px solid rgba(0, 212, 255, 0.4)',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, rgba(10, 25, 41, 0.8), rgba(26, 35, 126, 0.6))',
+                overflow: 'hidden',
+                height: '32px'
+              }}>
+                <input
+                  ref={endTimeRef}
+                  type="date"
+                  style={{
+                    ...darkThemeStyles.input,
+                    width: '140px',
+                    height: '28px',
+                    padding: '4px 8px',
+                    fontSize: '13px',
+                    border: 'none',
+                    borderRadius: '0',
+                    background: 'transparent',
+                    color: '#fff',
+                    outline: 'none'
+                  }}
+                  onChange={(e) => {
+                    const dateValue = e.target.value;
+                    const hourValue = (document.getElementById('endHour') as HTMLSelectElement)?.value || '23';
+                    if (dateValue) {
+                      const formattedValue = `${dateValue} ${hourValue}:05:00`;
+                      setSearchParams((prev: any) => ({ ...prev, endTime: formattedValue }));
+                    }
+                  }}
+                />
+                <div className="combo-divider" style={{ width: '1px', background: 'rgba(0, 212, 255, 0.3)', alignSelf: 'stretch' }}></div>
+                <select
+                  id="endHour"
+                  style={{
+                    ...darkThemeStyles.input,
+                    width: '98px',
+                    height: '28px',
+                    padding: '4px 8px',
+                    fontSize: '13px',
+                    border: 'none',
+                    borderRadius: '0',
+                    background: 'transparent',
+                    color: '#fff',
+                    outline: 'none',
+                    appearance: 'none',
+                    backgroundImage: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%2300d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"></polyline></svg>\')',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 6px center',
+                    backgroundSize: '12px 12px',
+                    paddingRight: '24px'
+                  }}
+                  onChange={(e) => {
+                    const hourValue = e.target.value;
+                    const dateValue = endTimeRef.current?.value;
+                    if (dateValue) {
+                      const formattedValue = `${dateValue} ${hourValue}:05:00`;
+                      setSearchParams((prev: any) => ({ ...prev, endTime: formattedValue }));
+                    }
+                  }}
+                >
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={i.toString().padStart(2, '0')}>
+                      {i.toString().padStart(2, '0')}时
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* 日模式 - 开始日期 */}
+            <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap' }}>开始日期:</label>
+              <div className="time-combo-container" style={{
+                display: 'flex',
+                border: '2px solid rgba(0, 212, 255, 0.4)',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, rgba(10, 25, 41, 0.8), rgba(26, 35, 126, 0.6))',
+                overflow: 'hidden',
+                height: '32px'
+              }}>
+                <input
+                  ref={startTimeRef}
+                  type="date"
+                  style={{
+                    ...darkThemeStyles.input,
+                    width: '140px',
+                    height: '28px',
+                    padding: '4px 8px',
+                    fontSize: '13px',
+                    border: 'none',
+                    borderRadius: '0',
+                    background: 'transparent',
+                    color: '#fff',
+                    outline: 'none'
+                  }}
+                  onChange={(e) => {
+                    const dateValue = e.target.value;
+                    if (dateValue) {
+                      const formattedValue = `${dateValue} 00:00:00`;
+                      setSearchParams((prev: any) => ({ ...prev, startTime: formattedValue }));
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* 日模式 - 结束日期 */}
+            <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap' }}>结束日期:</label>
+              <div className="time-combo-container" style={{
+                display: 'flex',
+                border: '2px solid rgba(0, 212, 255, 0.4)',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, rgba(10, 25, 41, 0.8), rgba(26, 35, 126, 0.6))',
+                overflow: 'hidden',
+                height: '32px'
+              }}>
+                <input
+                  ref={endTimeRef}
+                  type="date"
+                  style={{
+                    ...darkThemeStyles.input,
+                    width: '140px',
+                    height: '28px',
+                    padding: '4px 8px',
+                    fontSize: '13px',
+                    border: 'none',
+                    borderRadius: '0',
+                    background: 'transparent',
+                    color: '#fff',
+                    outline: 'none'
+                  }}
+                  onChange={(e) => {
+                    const dateValue = e.target.value;
+                    if (dateValue) {
+                      const formattedValue = `${dateValue} 23:59:59`;
+                      setSearchParams((prev: any) => ({ ...prev, endTime: formattedValue }));
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </>
+        )}
 
         {/* 操作按钮 */}
         <div style={{ flex: '0 0 auto', display: 'flex', gap: '8px' }}>
           <Button
             type="primary"
             style={{ ...darkThemeStyles.button, height: '32px', padding: '0 16px' }}
-            title={searchParams.startTime && searchParams.endTime 
-              ? '查询指定时间范围的数据' 
+            title={searchParams.startTime && searchParams.endTime
+              ? '查询指定时间范围的数据'
               : '查询最近24小时数据（未选择时间时的默认查询）'
             }
             onClick={() => {
@@ -304,6 +442,33 @@ const SearchForm: React.FC<SearchFormProps> = ({
           /* 分隔线在悬停时的效果 */
           .time-combo-container:hover .combo-divider {
             background: rgba(0, 212, 255, 0.6) !important;
+          }
+
+          /* 模式切换按钮样式 */
+          .mode-button-active {
+            background: linear-gradient(135deg, #00d4ff, #0099cc) !important;
+            color: #0a1929 !important;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;
+            font-weight: 600 !important;
+          }
+
+          .mode-button-inactive {
+            background: transparent !important;
+            color: #00d4ff !important;
+            box-shadow: none !important;
+            font-weight: 400 !important;
+          }
+
+          .mode-button-active:hover,
+          .mode-button-active:focus {
+            background: linear-gradient(135deg, #00d4ff, #0099cc) !important;
+            color: #0a1929 !important;
+          }
+
+          .mode-button-inactive:hover,
+          .mode-button-inactive:focus {
+            background: rgba(0, 212, 255, 0.1) !important;
+            color: #00d4ff !important;
           }
         `}
       </style>

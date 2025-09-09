@@ -508,4 +508,22 @@ declare namespace API {
     data?: HourlyEnergyConsumption[];
     message?: string;
   };
+
+  type DailyEnergyConsumption = {
+    deviceId?: string;
+    name?: string;
+    workshop?: string;
+    day?: string;
+    energyConsumption?: number;
+    startEnergy?: number;
+    endEnergy?: number;
+    startTime?: string;
+    endTime?: string;
+  };
+
+  type BaseResponseListDailyEnergyConsumption_ = {
+    code?: number;
+    data?: DailyEnergyConsumption[];
+    message?: string;
+  };
 }

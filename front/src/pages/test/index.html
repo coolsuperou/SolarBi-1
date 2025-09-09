@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电能监控系统 - 双模式展示</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a1929 0%, #1a237e 35%, #000051 70%, #0a1929 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .page-container {
+            min-height: 100vh;
+            padding: 24px;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.03) 0%, transparent 50%);
+        }
+
+        .header {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .main-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #00d4ff;
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 400;
+        }
+
+        .workshop-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(168, 85, 247, 0.1));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            padding: 8px 16px;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #00d4ff;
+            backdrop-filter: blur(10px);
+        }
+
+
+        .mode-button {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .mode-button:hover::before {
+            left: 100%;
+        }
+
+        .mode-button:hover {
+            color: #00d4ff;
+            transform: translateY(-1px);
+        }
+
+        .mode-button.active {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #0a1929;
+            font-weight: 700;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .mode-button.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 212, 255, 0.5);
+        }
+
+        .statistics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: rgba(10, 25, 41, 0.7);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-color, #00d4ff), transparent);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 212, 255, 0.4);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-card.workshop { --accent-color: #a855f7; }
+        .stat-card.energy { --accent-color: #00d4ff; }
+        .stat-card.temperature { --accent-color: #22c55e; }
+        .stat-card.humidity { --accent-color: #f59e0b; }
+
+        .stat-icon {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: var(--accent-color, #00d4ff);
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+
+        .stat-title {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-color, #00d4ff);
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        .stat-unit {
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.6);
+            margin-left: 4px;
+        }
+
+        .chart-card {
+            background: rgba(10, 25, 41, 0.7);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 24px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .chart-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #00d4ff;
+        }
+
+        .chart-title i {
+            font-size: 20px;
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+
+        .real-time-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: #00d4ff;
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: #00d4ff;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(0, 212, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }
+        }
+
+        .chart-container {
+            height: 450px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .chart {
+            height: 100%;
+            width: 100%;
+        }
+
+        .info-panel {
+            background: rgba(10, 25, 41, 0.7);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 20px;
+        }
+
+        .info-list {
+            list-style: none;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .info-value {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .page-container {
+                padding: 16px;
+            }
+
+            .main-title {
+                font-size: 22px;
+            }
+
+            .statistics-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .chart-container {
+                height: 350px;
+            }
+
+            .mode-button {
+                padding: 10px 18px;
+                font-size: 14px;
+            }
+
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .statistics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+            .stat-card {
+                padding: 20px;
+            }
+        }
+
+        /* 数据表格样式 */
+        .data-table-card {
+            background: rgba(10, 25, 41, 0.7);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 24px;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .table-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #00d4ff;
+        }
+
+        .table-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .table-search {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            width: 200px;
+        }
+
+        .table-search:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+        }
+
+        .table-search::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .table-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(168, 85, 247, 0.2));
+            color: #00d4ff;
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table th i {
+            margin-right: 6px;
+            font-size: 16px;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+        }
+
+        .data-table tbody tr {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(0, 212, 255, 0.05);
+            transform: scale(1.01);
+        }
+
+        .device-id {
+            color: #a855f7;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .device-name {
+            color: #00d4ff;
+            font-weight: 500;
+        }
+
+        .energy-value {
+            color: #22c55e;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .time-value {
+            color: #f59e0b;
+            font-size: 13px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-online {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .status-offline {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .table-pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .pagination-info {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pagination-btn {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: #00d4ff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.active {
+            background: #00d4ff;
+            color: #0a1929;
+            font-weight: 600;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #00d4ff;
+            font-size: 16px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 212, 255, 0.3);
+            border-top: 4px solid #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 查询框样式 */
+        .query-section {
+            background: rgba(10, 25, 41, 0.7);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .query-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #00d4ff;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .query-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .query-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: end;
+        }
+
+        /* 集成模式切换器样式 */
+        .integrated-mode-toggle {
+            display: flex;
+            background: rgba(10, 25, 41, 0.6);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 6px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+        }
+
+        .form-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            height: 44px;
+        }
+
+        .form-input:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .datetime-input {
+            color-scheme: dark;
+        }
+
+        .query-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .query-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 44px;
+            min-width: 100px;
+            justify-content: center;
+        }
+
+        .query-btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #0a1929;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .query-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 212, 255, 0.4);
+        }
+
+        .query-btn-secondary {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: #00d4ff;
+        }
+
+        .query-btn-secondary:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .query-btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #0a1929;
+            box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+        }
+
+        .query-btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(34, 197, 94, 0.4);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .query-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 16px;
+            }
+
+            .query-title {
+                justify-content: center;
+            }
+
+            .integrated-mode-toggle {
+                justify-content: center;
+            }
+
+            .mode-button {
+                font-size: 14px;
+                padding: 10px 16px;
+            }
+
+            .query-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .form-group {
+                min-width: auto;
+                width: 100%;
+            }
+
+            .query-buttons {
+                width: 100%;
+                justify-content: center;
+                margin-top: 16px;
+            }
+
+            .query-btn {
+                flex: 1;
+                max-width: 120px;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .table-search {
+                width: 100%;
+            }
+
+            .data-table {
+                font-size: 12px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 8px 6px;
+            }
+
+            .table-pagination {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .pagination-controls {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .query-section {
+                padding: 16px;
+            }
+
+            .query-header {
+                gap: 12px;
+            }
+
+            .integrated-mode-toggle {
+                flex-wrap: wrap;
+                gap: 4px;
+                justify-content: center;
+            }
+
+            .mode-button {
+                font-size: 12px;
+                padding: 8px 12px;
+                min-width: auto;
+            }
+
+            .query-form {
+                gap: 16px;
+            }
+
+            .query-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .query-btn {
+                width: 100%;
+                max-width: none;
+            }
+
+            .data-table-card {
+                padding: 16px;
+            }
+
+            .data-table th:not(:first-child):not(:nth-child(2)):not(:last-child) {
+                display: none;
+            }
+
+            .data-table td:not(:first-child):not(:nth-child(2)):not(:last-child) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- 页面头部 -->
+        <div class="header">
+            <h1 class="main-title">电能监控系统</h1>
+            <p class="subtitle">实时监控电能消耗趋势</p>
+            <div class="workshop-badge">
+                <i class="fas fa-building"></i>
+                <span>114_空调水机主机</span>
+            </div>
+        </div>
+
+        <!-- 查询框区域 -->
+        <div class="query-section">
+            <div class="query-header">
+                <div class="query-title">
+                    <i class="fas fa-search"></i>
+                    <span>实时监控数据</span>
+                </div>
+                <div class="integrated-mode-toggle">
+                    <button class="mode-button active" data-mode="hour">
+                        <i class="fas fa-clock"></i>
+                        小时模式
+                    </button>
+                    <button class="mode-button" data-mode="day">
+                        <i class="fas fa-calendar-day"></i>
+                        日模式
+                    </button>
+                    <button class="mode-button" data-mode="month">
+                        <i class="fas fa-calendar-alt"></i>
+                        月模式
+                    </button>
+                </div>
+            </div>
+            <div class="query-form">
+                <div class="form-group">
+                    <label class="form-label">开始时间</label>
+                    <input type="datetime-local" class="form-input datetime-input" id="startTime" value="">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">结束时间</label>
+                    <input type="datetime-local" class="form-input datetime-input" id="endTime" value="">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">设备名称</label>
+                    <input type="text" class="form-input" id="deviceName" placeholder="请输入设备名称">
+                </div>
+                <div class="query-buttons">
+                    <button class="query-btn query-btn-primary" id="queryBtn">
+                        <i class="fas fa-search"></i>
+                        查询
+                    </button>
+                    <button class="query-btn query-btn-secondary" id="resetBtn">
+                        <i class="fas fa-redo"></i>
+                        重置
+                    </button>
+                    <button class="query-btn query-btn-success" id="addBtn">
+                        <i class="fas fa-plus"></i>
+                        新增
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计卡片区域 -->
+        <div class="statistics-grid">
+            <div class="stat-card workshop">
+                <div class="stat-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-title">监控车间</div>
+                <div class="stat-value">114_空调水机主机</div>
+            </div>
+
+            <div class="stat-card energy">
+                <div class="stat-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div class="stat-title">累计电能消耗</div>
+                <div class="stat-value" id="energyValue">128.5<span class="stat-unit">kWh</span></div>
+            </div>
+
+            <div class="stat-card temperature">
+                <div class="stat-icon">
+                    <i class="fas fa-thermometer-half"></i>
+                </div>
+                <div class="stat-title">平均温度</div>
+                <div class="stat-value" id="temperatureValue">24.5<span class="stat-unit">°C</span></div>
+            </div>
+
+            <div class="stat-card humidity">
+                <div class="stat-icon">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <div class="stat-title">平均湿度</div>
+                <div class="stat-value" id="humidityValue">65.8<span class="stat-unit">%</span></div>
+            </div>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <i class="fas fa-chart-line"></i>
+                    <span id="chartTitle">电能消耗趋势 - 小时模式</span>
+                </div>
+                <div class="real-time-badge">
+                    <div class="pulse"></div>
+                    <span>实时更新中</span>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div id="powerChart" class="chart"></div>
+            </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="data-table-card">
+            <div class="table-header">
+                <div class="table-title">
+                    <i class="fas fa-table"></i>
+                    <span>监控数据详情</span>
+                </div>
+                <div class="table-controls">
+                    <input type="text" class="table-search" id="tableSearch" placeholder="搜索设备ID或名称...">
+                    <div class="real-time-badge">
+                        <div class="pulse"></div>
+                        <span>实时数据</span>
+                    </div>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-id-badge"></i>设备ID</th>
+                            <th><i class="fas fa-tag"></i>设备名称</th>
+                            <th><i class="fas fa-bolt"></i>电能度数</th>
+                            <th><i class="fas fa-thermometer-half"></i>温度</th>
+                            <th><i class="fas fa-tint"></i>湿度</th>
+                            <th><i class="fas fa-clock"></i>更新时间</th>
+                            <th><i class="fas fa-signal"></i>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <!-- 数据行将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
+                <div class="table-pagination">
+                    <div class="pagination-info">
+                        <span id="paginationInfo">显示 1-10 条，共 50 条数据</span>
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" id="prevPage" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="pagination-btn active" id="page1">1</button>
+                        <button class="pagination-btn" id="page2">2</button>
+                        <button class="pagination-btn" id="page3">3</button>
+                        <button class="pagination-btn" id="nextPage">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 信息面板 -->
+        <div class="info-panel">
+            <div class="info-title">
+                <i class="fas fa-info-circle"></i>
+                <span>系统信息</span>
+            </div>
+            <ul class="info-list">
+                <li class="info-item">
+                    <span class="info-label">更新频率</span>
+                    <span class="info-value">5秒/次</span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label">数据来源</span>
+                    <span class="info-value">实时传感器</span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label">最后更新</span>
+                    <span class="info-value" id="lastUpdate">刚刚</span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label">当前模式</span>
+                    <span class="info-value" id="currentMode">小时模式</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        class PowerMonitorSystem {
+            constructor() {
+                this.currentMode = 'hour';
+                this.chart = null;
+                this.updateInterval = null;
+                this.currentPage = 1;
+                this.pageSize = 10;
+                this.totalData = [];
+                this.filteredData = [];
+                this.searchKeyword = '';
+                this.queryStartTime = null;
+                this.queryEndTime = null;
+                this.queryDeviceName = '';
+                this.init();
+            }
+
+            init() {
+                this.initChart();
+                this.initTable();
+                this.initQueryForm();
+                this.bindEvents();
+                this.startRealTimeUpdate();
+                this.updateChart();
+                this.updateTable();
+            }
+
+            initChart() {
+                const chartDom = document.getElementById('powerChart');
+                this.chart = echarts.init(chartDom);
+                
+                // 监听窗口大小变化
+                window.addEventListener('resize', () => {
+                    if (this.chart) {
+                        this.chart.resize();
+                    }
+                });
+            }
+
+            initTable() {
+                this.generateTableData();
+                this.renderTable();
+            }
+
+            generateTableData() {
+                this.totalData = [];
+                const deviceTypes = [
+                    '空调水机主机', '冷水机组', '循环水泵', '冷却塔风机', '新风机组', 
+                    '变频器柜', '配电柜', '照明系统', '电梯系统', '消防系统'
+                ];
+                
+                for (let i = 1; i <= 50; i++) {
+                    const deviceType = deviceTypes[Math.floor(Math.random() * deviceTypes.length)];
+                    const deviceId = `3010${(7339 + i).toString()}`;
+                    const isOnline = Math.random() > 0.1; // 90%在线率
+                    
+                    // 生成基于当前时间的数据
+                    const now = new Date();
+                    const baseEnergy = 70000 + Math.random() * 10000;
+                    const temperature = 20 + Math.random() * 15;
+                    const humidity = 45 + Math.random() * 30;
+                    
+                    // 更新时间随机分布在最近10分钟内
+                    const updateTime = new Date(now.getTime() - Math.random() * 10 * 60 * 1000);
+                    
+                    this.totalData.push({
+                        id: deviceId,
+                        name: `${i.toString().padStart(3, '0')}_${deviceType}`,
+                        energy: baseEnergy.toFixed(2),
+                        temperature: temperature.toFixed(1),
+                        humidity: humidity.toFixed(1),
+                        updateTime: updateTime,
+                        status: isOnline ? 'online' : 'offline'
+                    });
+                }
+                
+                // 按更新时间排序（最新的在前）
+                this.totalData.sort((a, b) => b.updateTime - a.updateTime);
+                this.filteredData = [...this.totalData];
+            }
+
+            renderTable() {
+                const tbody = document.getElementById('dataTableBody');
+                const startIndex = (this.currentPage - 1) * this.pageSize;
+                const endIndex = startIndex + this.pageSize;
+                const pageData = this.filteredData.slice(startIndex, endIndex);
+                
+                tbody.innerHTML = '';
+                
+                pageData.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="device-id">${item.id}</td>
+                        <td class="device-name">${item.name}</td>
+                        <td class="energy-value">${item.energy}</td>
+                        <td>${item.temperature}°C</td>
+                        <td>${item.humidity}%</td>
+                        <td class="time-value">${item.updateTime.toLocaleTimeString('zh-CN')}</td>
+                        <td>
+                            <span class="status-indicator ${item.status === 'online' ? 'status-online' : 'status-offline'}">
+                                <i class="fas fa-circle"></i>
+                                ${item.status === 'online' ? '在线' : '离线'}
+                            </span>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                this.updatePaginationInfo();
+            }
+
+            updatePaginationInfo() {
+                const total = this.filteredData.length;
+                const start = (this.currentPage - 1) * this.pageSize + 1;
+                const end = Math.min(this.currentPage * this.pageSize, total);
+                
+                document.getElementById('paginationInfo').textContent = 
+                    `显示 ${start}-${end} 条，共 ${total} 条数据`;
+                
+                // 更新分页按钮状态
+                const totalPages = Math.ceil(total / this.pageSize);
+                document.getElementById('prevPage').disabled = this.currentPage === 1;
+                document.getElementById('nextPage').disabled = this.currentPage === totalPages;
+                
+                // 更新页码按钮
+                for (let i = 1; i <= 3; i++) {
+                    const pageBtn = document.getElementById(`page${i}`);
+                    if (pageBtn) {
+                        pageBtn.textContent = i;
+                        pageBtn.classList.toggle('active', this.currentPage === i);
+                        pageBtn.style.display = i <= totalPages ? 'block' : 'none';
+                    }
+                }
+            }
+
+            filterTable() {
+                if (!this.searchKeyword.trim()) {
+                    this.filteredData = [...this.totalData];
+                } else {
+                    const keyword = this.searchKeyword.toLowerCase();
+                    this.filteredData = this.totalData.filter(item => 
+                        item.id.toLowerCase().includes(keyword) || 
+                        item.name.toLowerCase().includes(keyword)
+                    );
+                }
+                this.currentPage = 1;
+                this.renderTable();
+            }
+
+            updateTable() {
+                // 更新电能数据（模拟实时变化）
+                this.totalData.forEach(item => {
+                    if (item.status === 'online') {
+                        const currentEnergy = parseFloat(item.energy);
+                        const increment = 0.1 + Math.random() * 0.5; // 每次更新增加0.1-0.6
+                        item.energy = (currentEnergy + increment).toFixed(2);
+                        
+                        // 随机更新温度和湿度
+                        if (Math.random() < 0.3) { // 30%概率更新
+                            item.temperature = (20 + Math.random() * 15).toFixed(1);
+                            item.humidity = (45 + Math.random() * 30).toFixed(1);
+                            item.updateTime = new Date();
+                        }
+                    }
+                });
+                
+                // 重新排序并渲染
+                this.totalData.sort((a, b) => b.updateTime - a.updateTime);
+                this.filterTable();
+            }
+
+            initQueryForm() {
+                // 初始化时间选择器默认值
+                const now = new Date();
+                const today = now.toISOString().slice(0, 16);
+                const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+                
+                document.getElementById('startTime').value = yesterday;
+                document.getElementById('endTime').value = today;
+                
+                this.queryStartTime = new Date(yesterday);
+                this.queryEndTime = new Date(today);
+            }
+
+            performQuery() {
+                const startTime = document.getElementById('startTime').value;
+                const endTime = document.getElementById('endTime').value;
+                const deviceName = document.getElementById('deviceName').value.trim();
+                
+                if (startTime && endTime) {
+                    this.queryStartTime = new Date(startTime);
+                    this.queryEndTime = new Date(endTime);
+                    
+                    if (this.queryStartTime >= this.queryEndTime) {
+                        alert('开始时间不能大于或等于结束时间');
+                        return;
+                    }
+                } else {
+                    alert('请选择查询时间范围');
+                    return;
+                }
+                
+                this.queryDeviceName = deviceName;
+                
+                // 根据查询条件过滤数据
+                this.filterDataByQuery();
+                
+                // 更新图表和表格
+                this.updateChart();
+                this.updateTable();
+                
+                // 显示查询成功提示
+                this.showQuerySuccess();
+            }
+
+            resetQuery() {
+                // 重置表单
+                const now = new Date();
+                const today = now.toISOString().slice(0, 16);
+                const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+                
+                document.getElementById('startTime').value = yesterday;
+                document.getElementById('endTime').value = today;
+                document.getElementById('deviceName').value = '';
+                
+                // 重置查询条件
+                this.queryStartTime = new Date(yesterday);
+                this.queryEndTime = new Date(today);
+                this.queryDeviceName = '';
+                
+                // 重新生成数据
+                this.generateTableData();
+                this.filterTable();
+                this.updateChart();
+            }
+
+            filterDataByQuery() {
+                // 根据查询条件过滤表格数据
+                let filteredData = [...this.totalData];
+                
+                // 按时间范围过滤
+                if (this.queryStartTime && this.queryEndTime) {
+                    filteredData = filteredData.filter(item => {
+                        return item.updateTime >= this.queryStartTime && item.updateTime <= this.queryEndTime;
+                    });
+                }
+                
+                // 按设备名称过滤
+                if (this.queryDeviceName) {
+                    const keyword = this.queryDeviceName.toLowerCase();
+                    filteredData = filteredData.filter(item => 
+                        item.name.toLowerCase().includes(keyword) || 
+                        item.id.toLowerCase().includes(keyword)
+                    );
+                }
+                
+                this.filteredData = filteredData;
+                this.currentPage = 1;
+                this.renderTable();
+            }
+
+            showQuerySuccess() {
+                // 创建成功提示
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #22c55e, #16a34a);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+                    z-index: 9999;
+                    font-size: 14px;
+                    font-weight: 500;
+                    opacity: 0;
+                    transition: all 0.3s ease;
+                `;
+                toast.innerHTML = '<i class="fas fa-check-circle" style="margin-right: 8px;"></i>查询成功';
+                
+                document.body.appendChild(toast);
+                
+                // 显示动画
+                setTimeout(() => {
+                    toast.style.opacity = '1';
+                    toast.style.transform = 'translateX(0)';
+                }, 10);
+                
+                // 3秒后移除
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }
+
+            bindEvents() {
+                // 模式切换事件
+                const modeButtons = document.querySelectorAll('.mode-button');
+                modeButtons.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const mode = e.currentTarget.getAttribute('data-mode');
+                        this.switchMode(mode);
+                    });
+                });
+
+                // 表格搜索事件
+                const searchInput = document.getElementById('tableSearch');
+                searchInput.addEventListener('input', (e) => {
+                    this.searchKeyword = e.target.value;
+                    this.filterTable();
+                });
+
+                // 分页按钮事件
+                document.getElementById('prevPage').addEventListener('click', () => {
+                    if (this.currentPage > 1) {
+                        this.currentPage--;
+                        this.renderTable();
+                    }
+                });
+
+                document.getElementById('nextPage').addEventListener('click', () => {
+                    const totalPages = Math.ceil(this.filteredData.length / this.pageSize);
+                    if (this.currentPage < totalPages) {
+                        this.currentPage++;
+                        this.renderTable();
+                    }
+                });
+
+                // 页码按钮事件
+                for (let i = 1; i <= 3; i++) {
+                    const pageBtn = document.getElementById(`page${i}`);
+                    if (pageBtn) {
+                        pageBtn.addEventListener('click', () => {
+                            this.currentPage = i;
+                            this.renderTable();
+                        });
+                    }
+                }
+
+                // 查询表单事件
+                document.getElementById('queryBtn').addEventListener('click', () => {
+                    this.performQuery();
+                });
+
+                document.getElementById('resetBtn').addEventListener('click', () => {
+                    this.resetQuery();
+                });
+
+                document.getElementById('addBtn').addEventListener('click', () => {
+                    this.showAddDialog();
+                });
+
+                // 回车键查询
+                document.getElementById('deviceName').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.performQuery();
+                    }
+                });
+            }
+
+            showAddDialog() {
+                // 显示添加设备对话框（占位功能）
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #00d4ff, #0099cc);
+                    color: #0a1929;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+                    z-index: 9999;
+                    font-size: 14px;
+                    font-weight: 500;
+                    opacity: 0;
+                    transition: all 0.3s ease;
+                `;
+                toast.innerHTML = '<i class="fas fa-info-circle" style="margin-right: 8px;"></i>新增功能开发中...';
+                
+                document.body.appendChild(toast);
+                
+                // 显示动画
+                setTimeout(() => {
+                    toast.style.opacity = '1';
+                    toast.style.transform = 'translateX(0)';
+                }, 10);
+                
+                // 3秒后移除
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }
+
+            switchMode(mode) {
+                if (this.currentMode === mode) return;
+
+                this.currentMode = mode;
+
+                // 更新按钮状态
+                document.querySelectorAll('.mode-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+
+                // 更新显示
+                const modeText = mode === 'hour' ? '小时' : mode === 'day' ? '日' : '月';
+                document.getElementById('chartTitle').textContent = 
+                    `电能消耗趋势 - ${modeText}模式`;
+                document.getElementById('currentMode').textContent = 
+                    `${modeText}模式`;
+
+                // 更新图表
+                this.updateChart();
+            }
+
+            generateSampleData(mode) {
+                const data = [];
+                const now = new Date();
+
+                if (mode === 'hour') {
+                    // 生成24小时的数据
+                    for (let i = 0; i < 24; i++) {
+                        const time = new Date(now.getTime() - (23 - i) * 60 * 60 * 1000);
+                        // 模拟电能消耗变化：工作时间较高，夜间较低
+                        const hour = time.getHours();
+                        let baseValue = 50;
+                        if (hour >= 8 && hour <= 18) {
+                            baseValue = 80 + Math.random() * 40; // 工作时间：80-120
+                        } else if (hour >= 19 && hour <= 22) {
+                            baseValue = 60 + Math.random() * 30; // 晚上：60-90
+                        } else {
+                            baseValue = 30 + Math.random() * 20; // 夜间：30-50
+                        }
+                        data.push([time.getTime(), Number(baseValue.toFixed(2))]);
+                    }
+                } else if (mode === 'day') {
+                    // 生成30天的数据
+                    for (let i = 0; i < 30; i++) {
+                        const time = new Date(now.getTime() - (29 - i) * 24 * 60 * 60 * 1000);
+                        // 模拟日耗电量：工作日较高，周末较低
+                        const dayOfWeek = time.getDay();
+                        let baseValue = 1500;
+                        if (dayOfWeek === 0 || dayOfWeek === 6) {
+                            baseValue = 800 + Math.random() * 400; // 周末：800-1200
+                        } else {
+                            baseValue = 1500 + Math.random() * 600; // 工作日：1500-2100
+                        }
+                        data.push([time.getTime(), Number(baseValue.toFixed(1))]);
+                    }
+                } else if (mode === 'month') {
+                    // 生成12个月的数据
+                    for (let i = 0; i < 12; i++) {
+                        const time = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+                        // 模拟月耗电量：夏冬季较高（空调使用），春秋季较低
+                        const month = time.getMonth() + 1;
+                        let baseValue = 30000;
+                        if (month >= 6 && month <= 8) {
+                            baseValue = 45000 + Math.random() * 15000; // 夏季：45000-60000
+                        } else if (month >= 12 || month <= 2) {
+                            baseValue = 40000 + Math.random() * 12000; // 冬季：40000-52000
+                        } else {
+                            baseValue = 25000 + Math.random() * 10000; // 春秋季：25000-35000
+                        }
+                        data.push([time.getTime(), Number(baseValue.toFixed(0))]);
+                    }
+                }
+
+                return data;
+            }
+
+            getChartOption() {
+                const data = this.generateSampleData(this.currentMode);
+                const isMobile = window.innerWidth <= 768;
+
+                const option = {
+                    backgroundColor: {
+                        type: 'linear',
+                        x: 0, y: 0, x2: 0, y2: 1,
+                        colorStops: [
+                            { offset: 0, color: 'rgba(10, 25, 41, 0.8)' },
+                            { offset: 0.5, color: 'rgba(26, 35, 126, 0.6)' },
+                            { offset: 1, color: 'rgba(0, 0, 81, 0.8)' }
+                        ]
+                    },
+                    title: {
+                        text: this.currentMode === 'hour' ? '24小时电能消耗趋势' : 
+                              this.currentMode === 'day' ? '30天电能消耗趋势' : '12个月电能消耗趋势',
+                        textStyle: {
+                            color: '#00d4ff',
+                            fontSize: isMobile ? 14 : 16,
+                            fontWeight: 'bold'
+                        },
+                        left: 'center',
+                        top: 10
+                    },
+                    grid: {
+                        left: isMobile ? 50 : 60,
+                        right: isMobile ? 20 : 30,
+                        top: isMobile ? 50 : 60,
+                        bottom: isMobile ? 50 : 60
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross',
+                            crossStyle: {
+                                color: '#00d4ff'
+                            }
+                        },
+                        backgroundColor: 'rgba(10, 25, 41, 0.95)',
+                        borderColor: '#00d4ff',
+                        borderWidth: 2,
+                        textStyle: {
+                            color: '#fff',
+                            fontSize: isMobile ? 12 : 14
+                        },
+                        formatter: (params) => {
+                            const param = params[0];
+                            const time = new Date(param.value[0]);
+                            const value = param.value[1];
+                            
+                            if (this.currentMode === 'hour') {
+                                return `时间: ${time.toLocaleString('zh-CN')}<br/>电能: ${value} kWh`;
+                            } else if (this.currentMode === 'day') {
+                                return `日期: ${time.toLocaleDateString('zh-CN')}<br/>电能: ${value} kWh`;
+                            } else if (this.currentMode === 'month') {
+                                return `月份: ${time.getFullYear()}年${time.getMonth() + 1}月<br/>电能: ${value} kWh`;
+                            }
+                        }
+                    },
+                    xAxis: {
+                        type: 'time',
+                        boundaryGap: false,
+                        axisLine: {
+                            lineStyle: { color: '#00d4ff' }
+                        },
+                        axisLabel: {
+                            color: '#00d4ff',
+                            fontSize: isMobile ? 10 : 12,
+                            formatter: (value) => {
+                                const date = new Date(value);
+                                if (this.currentMode === 'hour') {
+                                    return date.toLocaleTimeString('zh-CN', { 
+                                        hour: '2-digit', 
+                                        minute: '2-digit' 
+                                    });
+                                } else if (this.currentMode === 'day') {
+                                    return `${date.getMonth() + 1}/${date.getDate()}`;
+                                } else if (this.currentMode === 'month') {
+                                    return `${date.getFullYear()}年${date.getMonth() + 1}月`;
+                                }
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: 'rgba(0, 212, 255, 0.1)',
+                                type: 'dashed'
+                            }
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '电能 (kWh)',
+                        nameTextStyle: {
+                            color: '#00d4ff',
+                            fontSize: isMobile ? 11 : 13
+                        },
+                        axisLine: {
+                            lineStyle: { color: '#00d4ff' }
+                        },
+                        axisLabel: {
+                            color: '#00d4ff',
+                            fontSize: isMobile ? 10 : 12
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: 'rgba(0, 212, 255, 0.15)',
+                                type: 'dashed'
+                            }
+                        }
+                    },
+                    series: [{
+                        name: '114_空调水机主机',
+                        type: 'line',
+                        smooth: true,
+                        showSymbol: true,
+                        symbolSize: isMobile ? 4 : 6,
+                        lineStyle: {
+                            color: '#00e5ff',
+                            width: isMobile ? 2 : 3
+                        },
+                        itemStyle: {
+                            color: '#00e5ff',
+                            shadowColor: '#00e5ff',
+                            shadowBlur: 8
+                        },
+                        areaStyle: {
+                            color: {
+                                type: 'linear',
+                                x: 0, y: 0, x2: 0, y2: 1,
+                                colorStops: [
+                                    { offset: 0, color: 'rgba(0, 229, 255, 0.3)' },
+                                    { offset: 1, color: 'rgba(0, 229, 255, 0.05)' }
+                                ]
+                            }
+                        },
+                        emphasis: {
+                            focus: 'series',
+                            itemStyle: {
+                                color: '#00d4ff',
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            }
+                        },
+                        data: data
+                    }],
+                    animation: true,
+                    animationDuration: 1000,
+                    animationEasing: 'cubicOut'
+                };
+
+                return option;
+            }
+
+            updateChart() {
+                if (this.chart) {
+                    const option = this.getChartOption();
+                    this.chart.setOption(option, true);
+                }
+            }
+
+            updateStatistics() {
+                // 模拟统计数据更新
+                const data = this.generateSampleData(this.currentMode);
+                
+                if (this.currentMode === 'hour') {
+                    // 小时模式：显示当前小时消耗
+                    const currentHourConsumption = data[data.length - 1][1];
+                    document.getElementById('energyValue').innerHTML = 
+                        `${currentHourConsumption}<span class="stat-unit">kWh</span>`;
+                } else if (this.currentMode === 'day') {
+                    // 日模式：显示当日总消耗
+                    const totalConsumption = data.reduce((sum, item) => sum + item[1], 0);
+                    document.getElementById('energyValue').innerHTML = 
+                        `${totalConsumption.toFixed(1)}<span class="stat-unit">kWh</span>`;
+                } else if (this.currentMode === 'month') {
+                    // 月模式：显示当月消耗
+                    const currentMonthConsumption = data[data.length - 1][1];
+                    document.getElementById('energyValue').innerHTML = 
+                        `${(currentMonthConsumption / 1000).toFixed(1)}<span class="stat-unit">MWh</span>`;
+                }
+
+                // 更新其他统计数据
+                const temperature = (22 + Math.random() * 6).toFixed(1);
+                const humidity = (60 + Math.random() * 20).toFixed(1);
+                
+                document.getElementById('temperatureValue').innerHTML = 
+                    `${temperature}<span class="stat-unit">°C</span>`;
+                document.getElementById('humidityValue').innerHTML = 
+                    `${humidity}<span class="stat-unit">%</span>`;
+                
+                // 更新最后更新时间
+                document.getElementById('lastUpdate').textContent = 
+                    new Date().toLocaleTimeString('zh-CN');
+            }
+
+            startRealTimeUpdate() {
+                // 停止之前的定时器
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                }
+
+                // 每5秒更新一次
+                this.updateInterval = setInterval(() => {
+                    this.updateChart();
+                    this.updateStatistics();
+                    this.updateTable();
+                }, 5000);
+            }
+
+            destroy() {
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                }
+                if (this.chart) {
+                    this.chart.dispose();
+                }
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const monitor = new PowerMonitorSystem();
+            
+            // 页面卸载时清理资源
+            window.addEventListener('beforeunload', () => {
+                monitor.destroy();
+            });
+        });
+    </script>
+</body>
+</html>

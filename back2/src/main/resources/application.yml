@@ -1,0 +1,96 @@
+# 公共配置文件
+#@author <a href="https://github.com/coolsuperou">每天十点睡</a>
+#  
+spring:
+  application:
+    name: springboot-init
+  # 默认 dev 环境
+  profiles:
+    active: dev
+  # 支持 swagger3
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  # session 配置
+  session:
+    # todo 取消注释开启分布式 session（须先配置 Redis）
+    # store-type: redis
+    # 30 天过期
+    timeout: 2592000
+  # 多数据源配置 - 参考CSDN博客标准实现
+  # todo 需替换配置
+  datasource:
+    # MySQL 主数据源配置
+    primary:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: jdbc:mysql://47.105.82.96:3306/solarbi?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+      username: ozh
+      password: 123456
+      hikari:
+        pool-name: PrimaryHikariPool
+        maximum-pool-size: 20
+        minimum-idle: 5
+        connection-timeout: 30000
+        idle-timeout: 600000
+        max-lifetime: 1800000
+    
+    # SQL Server 辅助数据源配置
+    secondary:
+      driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+      jdbc-url: jdbc:sqlserver://192.168.1.238:1433;databaseName=iEMP;encrypt=false;trustServerCertificate=true
+      username: ozh
+      password: 250829
+      hikari:
+        pool-name: SecondaryHikariPool
+        maximum-pool-size: 10
+        minimum-idle: 2
+        connection-timeout: 30000
+        idle-timeout: 600000
+        max-lifetime: 1800000
+  # Redis 配置
+  redis:
+    host: 47.105.82.96
+    port: 6379
+    timeout: 5000
+    password: 123456
+    database: 0
+  # 缓存配置
+  cache:
+    type: redis
+
+
+
+server:
+  address: 0.0.0.0
+  port: 8101
+  servlet:
+    context-path: /api
+    # cookie 30 天过期
+    session:
+      cookie:
+        max-age: 2592000
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false  # 数据库列名已是驼峰格式，无需转换
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 启用SQL日志输出
+    cache-enabled: false  # 禁用MyBatis缓存
+  mapper-locations: classpath:mapper/**/*.xml  # 指定mapper xml文件位置
+  global-config:
+    db-config:
+      logic-delete-field: isDelete # 全局逻辑删除的实体字段名
+      logic-delete-value: 1 # 逻辑已删除值（默认为 1）
+      logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
+
+
+# 接口文档配置
+knife4j:
+  enable: true
+  openapi:
+    title: "接口文档"
+    version: 1.0
+    group:
+      default:
+        api-rule: package
+        api-rule-resources:
+          - com.yupi.springbootinit.controller
+

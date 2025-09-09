@@ -3,6 +3,7 @@ package com.yupi.springbootinit.service.impl;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yupi.springbootinit.mapper.sqlserver.TempMonitorMapper;
 import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
+import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorQueryRequest;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
 import com.yupi.springbootinit.model.entity.TempMonitor;
@@ -164,6 +165,34 @@ public class TempMonitorServiceImpl implements TempMonitorService {
                 log.info("设备: {}, 小时: {}, 开始能耗: {}, 结束能耗: {}, 消耗量: {}, 开始时间: {}, 结束时间: {}", 
                     item.getDeviceId(), 
                     item.getHour(), 
+                    item.getStartEnergy(), 
+                    item.getEndEnergy(), 
+                    item.getEnergyConsumption(),
+                    item.getStartTime(),
+                    item.getEndTime());
+            }
+            log.info("=== 调试信息结束 ===");
+        }
+        
+        return result;
+    }
+
+    @Override
+    @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
+    public List<DailyEnergyConsumption> getDailyEnergyConsumptionQuery(String workshop, String deviceId, Date startTime, Date endTime) {
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        log.debug("从数据库获取每日电能消耗数据（查询模式-历史数据），车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}", fixedWorkshop, deviceId, startTime, endTime);
+        
+        List<DailyEnergyConsumption> result = tempMonitorMapper.selectDailyEnergyConsumptionQuery(fixedWorkshop, deviceId, startTime, endTime);
+        
+        // 添加调试日志，输出实际查询结果
+        if (result != null && !result.isEmpty()) {
+            log.info("=== 每日电能消耗数据调试信息（查询模式） ===");
+            for (DailyEnergyConsumption item : result) {
+                log.info("设备: {}, 日期: {}, 开始能耗: {}, 结束能耗: {}, 消耗量: {}, 开始时间: {}, 结束时间: {}", 
+                    item.getDeviceId(), 
+                    item.getDay(), 
                     item.getStartEnergy(), 
                     item.getEndEnergy(), 
                     item.getEnergyConsumption(),

@@ -6,7 +6,8 @@ import {
   getStatisticsUsingGET,
   getElectricEnergyTrendUsingGET,
   getHourlyEnergyConsumptionUsingGET,
-  getHourlyEnergyConsumptionQueryUsingGET
+  getHourlyEnergyConsumptionQueryUsingGET,
+  getDailyEnergyConsumptionQueryUsingGET
 } from '@/services/SolarBi-front/tempMonitorController';
 import { DatabaseOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
@@ -18,6 +19,7 @@ import moment from 'moment';
 import StatisticsCards from './components/StatisticsCards';
 import SearchForm from './components/SearchForm';
 import PowerChart from './components/PowerChart';
+import DailyPowerChart from './components/DailyPowerChart';
 import DataTable from './components/DataTable';
 import darkThemeStyles from './styles/darkThemeStyles';
 import { getColumns } from './config/columns';
@@ -48,6 +50,7 @@ const PowerMonitorPage: React.FC = () => {
     totalElectricEnergy: 0,
   });
   const [energyConsumption, setEnergyConsumption] = useState<number>(0);
+  const [currentMode, setCurrentMode] = useState<string>('hour');
   const [searchParams, setSearchParams] = useState<API.TempMonitorQueryRequest>({});
   const [isDefaultTimeRange, setIsDefaultTimeRange] = useState<boolean>(true); // 跟踪是否为默认24小时05分范围
   const [tempSearchParams, setTempSearchParams] = useState<API.TempMonitorQueryRequest>({}); // 临时搜索参数，用于表格刷新
@@ -61,6 +64,8 @@ const PowerMonitorPage: React.FC = () => {
   const [trendData, setTrendData] = useState<any[]>([]);
   const [showChart, setShowChart] = useState(true);
   const [chartOptions, setChartOptions] = useState<any>({});
+  const [dailyChartOptions, setDailyChartOptions] = useState<any>({});
+  const [dailyTrendData, setDailyTrendData] = useState<any[]>([]);
   const [pollingInterval, setPollingInterval] = useState(5); // 默认5秒
   const [chartRef, setChartRef] = useState<any>(null);
   const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
@@ -338,13 +343,23 @@ const PowerMonitorPage: React.FC = () => {
       pageSize: 20,
     };
 
-    // 处理时间范围
+    // 处理时间范围 - 根据当前模式使用不同的时间格式
     if (values.startTime) {
-      queryParams.startTime = moment(values.startTime).format('YYYY-MM-DD HH:00:00');
+      if (currentMode === 'hour') {
+        queryParams.startTime = moment(values.startTime).format('YYYY-MM-DD HH:00:00');
+      } else {
+        // 日模式：开始时间使用当天00:00:00
+        queryParams.startTime = moment(values.startTime).format('YYYY-MM-DD 00:00:00');
+      }
     }
     if (values.endTime) {
-      // 结束时间改为选择小时后的05分，例如选择8时查询的是8:05之前的数据
-      queryParams.endTime = moment(values.endTime).format('YYYY-MM-DD HH:05:00');
+      if (currentMode === 'hour') {
+        // 小时模式：结束时间改为选择小时后的05分，例如选择8时查询的是8:05之前的数据
+        queryParams.endTime = moment(values.endTime).format('YYYY-MM-DD HH:05:00');
+      } else {
+        // 日模式：结束时间使用当天23:59:59
+        queryParams.endTime = moment(values.endTime).format('YYYY-MM-DD 23:59:59');
+      }
     }
 
     setSearchParams(queryParams);
@@ -356,15 +371,15 @@ const PowerMonitorPage: React.FC = () => {
     setTempSearchParams(isDefaultMode ? {} : queryParams); // 默认模式下表格不使用时间范围限制
     actionRef.current?.reload();
 
-    // 计算电能消耗
-    if (queryParams.startTime && queryParams.endTime) {
+    // 计算电能消耗（仅在小时模式下）
+    if (currentMode === 'hour' && queryParams.startTime && queryParams.endTime) {
       console.log('准备计算电能消耗，参数:', {
         startTime: queryParams.startTime,
         endTime: queryParams.endTime,
         workshop: TARGET_WORKSHOP
       });
       calculateEnergyConsumption(queryParams.startTime, queryParams.endTime);
-    } else {
+    } else if (currentMode === 'hour' && (!queryParams.startTime || !queryParams.endTime)) {
       console.log('没有时间范围，回到默认模式');
       // 回到默认模式时，重新初始化默认时间范围
       initializeDefaultTimeRange();
@@ -374,8 +389,12 @@ const PowerMonitorPage: React.FC = () => {
     // 更新统计数据
     loadStatistics(values.workshop, queryParams.startTime, queryParams.endTime);
 
-    // 更新图表数据
-    loadTrendData(false, queryParams.startTime, queryParams.endTime);
+    // 根据模式更新对应的图表数据
+    if (currentMode === 'hour') {
+      loadTrendData(false, queryParams.startTime, queryParams.endTime);
+    } else if (currentMode === 'day') {
+      loadDailyTrendData(false, queryParams.startTime, queryParams.endTime);
+    }
   };
 
   // 重置搜索
@@ -385,21 +404,89 @@ const PowerMonitorPage: React.FC = () => {
     setEnergyConsumption(0);
     setIsDefaultTimeRange(true); // 重置后回到默认时间范围
     setTempSearchParams({}); // 清空表格搜索参数
-    // 清空日期和小时选择器
+    
+    // 清空日期选择器
     if (startTimeRef.current) {
       startTimeRef.current.value = '';
     }
     if (endTimeRef.current) {
       endTimeRef.current.value = '';
     }
-    const startHourSelect = document.getElementById('startHour') as HTMLSelectElement;
-    const endHourSelect = document.getElementById('endHour') as HTMLSelectElement;
-    if (startHourSelect) startHourSelect.selectedIndex = 0;
-    if (endHourSelect) endHourSelect.selectedIndex = 0;
+    
+    // 只在小时模式下清空小时选择器
+    if (currentMode === 'hour') {
+      const startHourSelect = document.getElementById('startHour') as HTMLSelectElement;
+      const endHourSelect = document.getElementById('endHour') as HTMLSelectElement;
+      if (startHourSelect) startHourSelect.selectedIndex = 0;
+      if (endHourSelect) endHourSelect.selectedIndex = 0;
+    }
+    
+    // 清空对应模式的图表数据
+    if (currentMode === 'day') {
+      setDailyTrendData([]);
+      setDailyChartOptions({});
+    } else {
+      setTrendData([]);
+      setChartOptions({});
+    }
+    
     actionRef.current?.reload();
     loadStatistics();
-    // 重新初始化默认24小时05分时间范围，而不是加载全部数据
-    initializeDefaultTimeRange();
+    
+    // 根据当前模式重新初始化数据
+    if (currentMode === 'hour') {
+      // 重新初始化默认24小时05分时间范围，而不是加载全部数据
+      initializeDefaultTimeRange();
+    } else if (currentMode === 'day') {
+      // 日模式重置后，加载默认7天数据
+      const now = moment();
+      const endTime = now.format('YYYY-MM-DD HH:mm:ss');
+      const startTime = now.clone().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
+      loadDailyTrendData(false, startTime, endTime);
+    }
+  };
+
+  // 处理模式切换
+  const handleModeChange = (mode: string) => {
+    setCurrentMode(mode);
+    message.success(`已切换到${mode === 'hour' ? '小时' : mode === 'day' ? '日' : '月'}模式`);
+    
+    // 根据模式调整查询参数或数据展示逻辑
+    console.log('当前模式已切换为:', mode);
+    
+    if (mode === 'day') {
+      // 切换到日模式时，执行与重置相同的行为：清空输入并加载默认7天
+      setSearchParams({});
+      setSelectedWorkshop('');
+      setEnergyConsumption(0);
+      setIsDefaultTimeRange(true);
+      setTempSearchParams({});
+
+      // 清空日期选择器
+      if (startTimeRef.current) {
+        startTimeRef.current.value = '';
+      }
+      if (endTimeRef.current) {
+        endTimeRef.current.value = '';
+      }
+
+      // 清空日模式图表数据
+      setDailyTrendData([]);
+      setDailyChartOptions({});
+
+      // 加载默认7天范围
+      const now = moment();
+      const endTime = now.format('YYYY-MM-DD HH:mm:ss');
+      const startTime = now.clone().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
+      loadDailyTrendData(false, startTime, endTime);
+    } else if (mode === 'hour') {
+      // 切换回小时模式时，重新加载小时数据
+      if (searchParams.startTime && searchParams.endTime) {
+        loadTrendData(false, searchParams.startTime, searchParams.endTime);
+      } else {
+        loadTrendData(false);
+      }
+    }
   };
 
   // 计算电能消耗
@@ -460,6 +547,406 @@ const PowerMonitorPage: React.FC = () => {
       console.error('计算电能消耗失败：', error);
       setEnergyConsumption(0);
       message.error(`计算电能消耗失败: ${error.message}`);
+    }
+  };
+
+  // 加载每日电能消耗数据 - 显示日用电量差值（结束日期以后最近记录 - 开始日期以后最近记录）
+  const loadDailyTrendData = async (isRealtime = false, startTime?: string, endTime?: string) => {
+    try {
+      const requestStartTime = moment().format('HH:mm:ss');
+      setLastRequestTime(requestStartTime);
+
+      const targetWorkshop = TARGET_WORKSHOP;
+
+      // 构建请求参数
+      const rawStartTime = startTime || searchParams.startTime || undefined;
+      const rawEndTime = endTime || searchParams.endTime || undefined;
+
+      const requestParams: any = {
+        workshop: targetWorkshop,
+        deviceId: undefined,
+        startTime: rawStartTime ? moment(rawStartTime).format('YYYY-MM-DD HH:mm:ss') : undefined,
+        endTime: rawEndTime ? moment(rawEndTime).format('YYYY-MM-DD HH:mm:ss') : undefined,
+      };
+
+      console.log('请求每日电能消耗数据参数:', requestParams);
+      
+      // 日模式只使用查询模式API
+      console.log('🟡 调用日模式查询API - /electric-energy-daily-consumption-query');
+      const response = await getDailyEnergyConsumptionQueryUsingGET(requestParams);
+
+      if (response?.code === 0 && response.data) {
+        console.log('获取到每日电能消耗数据:', response.data);
+        console.log('数据点数量:', response.data.length);
+        console.log('时间范围:', response.data.length > 0 ? {
+          first: response.data[0].day,
+          last: response.data[response.data.length - 1].day
+        } : '无数据');
+
+        // 按设备分组数据
+        const deviceGroups: { [key: string]: any[] } = {};
+
+        response.data.forEach((item: API.DailyEnergyConsumption, index: number) => {
+          const deviceName = `114_空调水机主机 `;
+          if (!deviceGroups[deviceName]) {
+            deviceGroups[deviceName] = [];
+          }
+
+          // 将数据点直接对应x轴刻度（例如某天的数据显示在当天00:00）
+          const dayTime = new Date(item.day || '').getTime();
+
+          const dataPoint = {
+            x: dayTime, // 直接使用日期的时间戳，对应x轴刻度
+            y: Number(item.energyConsumption) || 0, // 每日用电量：结束日期以后最近记录 - 开始日期以后最近记录
+            time: moment(item.day).format('MM-DD'),
+            device: deviceName,
+            originalDay: item.day,
+            originalEnergyConsumption: item.energyConsumption,
+            startEnergy: item.startEnergy, // 日期开始以后最近记录的度数
+            endEnergy: item.endEnergy,     // 日期结束以后最近记录的度数
+            isRealData: true
+          };
+
+          deviceGroups[deviceName].push(dataPoint);
+        });
+
+        // 转换为图表系列数据
+        const series = Object.keys(deviceGroups).map((deviceName, index) => {
+          const colors = ['#40a9ff', '#73d13d', '#faad14', '#ff7a45', '#b37feb', '#36cfc9', '#f759ab', '#ffc53d'];
+          const sortedData = deviceGroups[deviceName].sort((a, b) => a.x - b.x);
+
+          // 为了确保线条完整连接，在数据序列的开始和结束处添加延伸点
+          if (sortedData.length > 0) {
+            const firstPoint = sortedData[0];
+            const lastPoint = sortedData[sortedData.length - 1];
+            
+            // 在第一个数据点前添加一个延伸点（时间往前1天，值保持一样）
+            const extendedStartPoint = {
+              ...firstPoint,
+              x: firstPoint.x - (24 * 60 * 60 * 1000), // 往前1天
+              time: moment(firstPoint.x - (24 * 60 * 60 * 1000)).format('MM-DD'),
+              isExtendedPoint: true // 标记为延伸点
+            };
+            
+            // 将延伸点添加到数据序列中（仅保留开始侧延伸点）
+            sortedData.unshift(extendedStartPoint);
+          }
+
+          return {
+            name: deviceName,
+            data: sortedData,
+            color: colors[index % colors.length]
+          };
+        });
+
+        // 计算X轴和Y轴范围
+        let maxTime = -Infinity;
+        let minTime = Infinity;
+        let minValue = Infinity, maxValue = -Infinity;
+
+        series.forEach((s: any) => {
+          s.data.forEach((point: any) => {
+            maxTime = Math.max(maxTime, point.x);
+            minTime = Math.min(minTime, point.x);
+            minValue = Math.min(minValue, point.y);
+            maxValue = Math.max(maxValue, point.y);
+          });
+        });
+
+        // 设置轴范围
+        let adjustedMaxTime, adjustedMinTime, adjustedMinValue, adjustedMaxValue;
+
+        if (isFinite(maxTime) && isFinite(minTime)) {
+          // 如果有搜索时间范围，优先使用搜索范围
+          if (startTime && endTime) {
+            adjustedMinTime = moment(startTime).valueOf();
+            adjustedMaxTime = moment(endTime).valueOf();
+          } else {
+            // 默认模式：使用固定的7天范围
+            const now = moment();
+            adjustedMinTime = now.clone().subtract(7, 'days').valueOf();
+            adjustedMaxTime = now.clone().add(1, 'days').valueOf();
+          }
+        } else {
+          const now = moment();
+          adjustedMaxTime = now.clone().add(1, 'days').valueOf();
+          adjustedMinTime = now.clone().subtract(7, 'days').valueOf();
+        }
+
+        if (isFinite(minValue) && isFinite(maxValue)) {
+          const valueSpan = maxValue - minValue;
+          if (valueSpan < 1) {
+            const center = (minValue + maxValue) / 2;
+            adjustedMinValue = Math.max(0, center - 5);
+            adjustedMaxValue = center + 5;
+          } else {
+            const valueMargin = valueSpan * 0.1;
+            adjustedMinValue = Math.max(0, minValue - valueMargin);
+            adjustedMaxValue = maxValue + valueMargin;
+          }
+        } else {
+          adjustedMinValue = 0;
+          adjustedMaxValue = undefined;
+        }
+
+        // 构建 ECharts 配置
+        const echartsSeries = series.map((s: any, index: number) => {
+          const techColors = [
+            '#00d4ff', '#00ff88', '#ff6b35', '#ff3d71', 
+            '#a855f7', '#06ffa5', '#ff1744', '#00e5ff'
+          ];
+          const seriesColor = techColors[index % techColors.length];
+
+          const processedData = (s.data || [])
+            .sort((a:any,b:any)=>a.x-b.x)
+            .filter((p: any) => p.x && p.y !== null && p.y !== undefined) // 过滤掉无效数据
+            .map((p: any) => ({
+              value: [p.x, p.y],
+              symbol: p.isExtendedPoint ? 'none' : 'circle', // 延伸点不显示符号
+              symbolSize: p.isExtendedPoint ? 0 : (isMobile() ? (isSmallMobile() ? 4 : 5) : 6),
+              itemStyle: p.isExtendedPoint ? undefined : {
+                color: seriesColor,
+                borderColor: '#ffffff',
+                borderWidth: 1,
+                shadowColor: seriesColor,
+                shadowBlur: 8
+              }
+            }));
+
+          return {
+            name: s.name,
+            type: 'line',
+            smooth: true,
+            showSymbol: true,
+            connectNulls: true, // 强制连接所有数据点，包括延伸点
+            areaStyle: {
+              color: {
+                type: 'linear',
+                x: 0, y: 0, x2: 0, y2: 1,
+                colorStops: [
+                  { offset: 0, color: `${seriesColor}40` },
+                  { offset: 1, color: `${seriesColor}08` }
+                ]
+              }
+            },
+            lineStyle: {
+              width: 3,
+              color: seriesColor,
+              shadowColor: seriesColor,
+              shadowBlur: 10,
+              shadowOffsetY: 2
+            },
+            step: false, // 确保使用直线连接，不使用阶梯线
+            sampling: 'none', // 不进行采样，保留所有数据点包括延伸点
+            emphasis: {
+              lineStyle: {
+                width: 4,
+                shadowBlur: 15
+              }
+            },
+            data: processedData,
+            color: seriesColor
+          };
+        });
+
+        const options = {
+          backgroundColor: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: '#0a1929' },
+              { offset: 0.5, color: '#1a237e' },
+              { offset: 1, color: '#000051' }
+            ]
+          },
+          title: {
+            text: '',
+            textStyle: { color: '#00d4ff' }
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'cross',
+              label: { show: false },
+              lineStyle: {
+                color: '#00d4ff',
+                width: 2,
+                shadowColor: '#00d4ff',
+                shadowBlur: 8
+              }
+            },
+            backgroundColor: 'rgba(10, 25, 41, 0.95)',
+            borderColor: '#00d4ff',
+            borderWidth: 2,
+            textStyle: {
+              color: '#ffffff',
+              fontSize: isMobile() ? (isSmallMobile() ? 11 : 12) : 13,
+              fontWeight: 'bold'
+            },
+            extraCssText: 'box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); border-radius: 8px;',
+            formatter: (params: any[]) => {
+              if (!params || params.length === 0) return '';
+
+              const firstParam = params[0];
+              if (!firstParam || !firstParam.value || !Array.isArray(firstParam.value) || firstParam.value.length < 2) {
+                return '';
+              }
+
+              const datetime = moment(firstParam.value[0]);
+              const date = datetime.format('YYYY-MM-DD');
+
+              const lines = params
+                .filter(p => p && p.value && Array.isArray(p.value) && p.value.length >= 2)
+                .map(p => `<span style="color:${p.color}">●</span> ${p.seriesName}: <span style="color:#00d4ff; font-weight:bold">${Number(p.value[1]).toFixed(2)} kWh</span>`);
+
+              const headerFontSize = isMobile() ? (isSmallMobile() ? '12px' : '13px') : '14px';
+              return `<div style="color:#fff; text-align:center;">
+                        <div style="color:#00d4ff; font-size:${headerFontSize}; font-weight:bold; margin-bottom:6px;">${date} 日用电量</div>
+                        ${lines.join('<br/>')}
+                      </div>`;
+            }
+          },
+          legend: {
+            top: 5,
+            textStyle: {
+              color: '#00d4ff',
+              fontSize: isMobile() ? (isSmallMobile() ? 10 : 11) : 12,
+              fontWeight: 'bold'
+            }
+          },
+          grid: {
+            left: isMobile() ? (isSmallMobile() ? 45 : 50) : 60,
+            right: isMobile() ? 8 : 10,
+            top: isMobile() ? (isSmallMobile() ? 40 : 45) : 50,
+            bottom: isMobile() ? (isSmallMobile() ? 50 : 55) : 60,
+            borderColor: 'rgba(0, 212, 255, 0.2)',
+            show: true,
+            backgroundColor: 'rgba(0, 212, 255, 0.03)'
+          },
+          xAxis: {
+            type: 'time',
+            min: adjustedMinTime,
+            max: adjustedMaxTime,
+            boundaryGap: [0, 0],
+            minInterval: 24 * 3600 * 1000, // 最小间隔1天
+            maxInterval: 7 * 24 * 3600 * 1000, // 最大间隔7天
+            axisLabel: {
+              show: true,
+              formatter: (value: number) => moment(value).format('MM-DD'),
+              interval: 0,
+              showMinLabel: true,
+              showMaxLabel: true,
+              color: '#00d4ff',
+              fontSize: isMobile() ? (isSmallMobile() ? 9 : 10) : 11,
+              fontWeight: 'bold',
+              rotate: isMobile() ? 45 : 0
+            },
+            splitNumber: startTime && endTime ?
+              Math.max(3, Math.ceil((moment(endTime).valueOf() - moment(startTime).valueOf()) / (1000 * 60 * 60 * 24))) : // 按天数计算
+              7, // 默认7天
+            axisLine: {
+              lineStyle: {
+                color: '#00d4ff',
+                width: 2,
+                shadowColor: '#00d4ff',
+                shadowBlur: 4
+              }
+            },
+            axisTick: {
+              lineStyle: {
+                color: '#00d4ff',
+                width: 2
+              }
+            },
+            splitLine: {
+              lineStyle: {
+                color: 'rgba(0, 212, 255, 0.15)',
+                width: 1,
+                type: 'dashed'
+              }
+            }
+          },
+          yAxis: {
+            type: 'value',
+            name: isMobile() ? '' : '每日用电量 (kWh)',
+            nameTextStyle: {
+              color: '#00d4ff',
+              fontSize: isMobile() ? (isSmallMobile() ? 10 : 11) : 12,
+              fontWeight: 'bold'
+            },
+            min: adjustedMinValue,
+            max: adjustedMaxValue,
+            splitNumber: isMobile() ? 4 : 6,
+            scale: false,
+            axisLabel: {
+              formatter: (val: number) => {
+                if (val >= 1000) {
+                  return `${(val / 1000).toFixed(1)}k`;
+                } else if (val >= 1) {
+                  return `${val.toFixed(1)}`;
+                } else {
+                  return `${val.toFixed(2)}`;
+                }
+              },
+              color: '#00d4ff',
+              fontSize: isMobile() ? (isSmallMobile() ? 9 : 10) : 11,
+              fontWeight: 'bold'
+            },
+            axisLine: {
+              lineStyle: {
+                color: '#00d4ff',
+                width: 2,
+                shadowColor: '#00d4ff',
+                shadowBlur: 4
+              }
+            },
+            axisTick: {
+              lineStyle: {
+                color: '#00d4ff',
+                width: 2
+              }
+            },
+            splitLine: {
+              lineStyle: {
+                color: 'rgba(0, 212, 255, 0.15)',
+                width: 1,
+                type: 'dashed'
+              }
+            }
+          },
+          series: echartsSeries
+        } as any;
+
+        setDailyChartOptions(options);
+        setDailyTrendData(series);
+
+        // 调试信息：输出图表数据
+        console.log('日模式图表系列数据:', series);
+        series.forEach((s, index) => {
+          console.log(`设备 ${s.name} 数据点:`, s.data.map(p => ({
+            time: moment(p.x).format('MM-DD'),
+            value: p.y,
+            isExtended: p.isExtendedPoint || false
+          })));
+        });
+
+        // 更新时间显示
+        setLastUpdateTime(moment().format('HH:mm:ss'));
+
+        if (series.length === 0) {
+          if (!isRealtime) {
+            message.warning('查询时间范围内没有有效的每日电能消耗数据，请调整时间范围或检查数据源');
+          }
+        } else {
+          const totalDataPoints = series.reduce((sum, s) => sum + s.data.length, 0);
+          console.log(`成功加载 ${totalDataPoints} 个每日电能消耗数据点`);
+        }
+      } else {
+        message.error(response?.message || '获取每日电能消耗数据失败');
+      }
+    } catch (error: any) {
+      console.error('获取每日电能消耗数据失败：', error);
+      message.error('获取每日电能消耗数据失败：' + error.message);
     }
   };
 
@@ -1621,17 +2108,32 @@ const PowerMonitorPage: React.FC = () => {
         setShowChart={setShowChart}
         startTimeRef={startTimeRef}
         endTimeRef={endTimeRef}
+        currentMode={currentMode}
+        onModeChange={handleModeChange}
       />
 
       {/* 电能趋势图表 */}
       {showChart && (
-        <PowerChart
-          chartOptions={chartOptions}
-          trendData={trendData}
-          isMobile={isMobile()}
-          isSmallMobile={isSmallMobile()}
-          darkThemeStyles={darkThemeStyles}
-        />
+        <>
+          {currentMode === 'hour' && (
+            <PowerChart
+              chartOptions={chartOptions}
+              trendData={trendData}
+              isMobile={isMobile()}
+              isSmallMobile={isSmallMobile()}
+              darkThemeStyles={darkThemeStyles}
+            />
+          )}
+          {currentMode === 'day' && (
+            <DailyPowerChart
+              chartOptions={dailyChartOptions}
+              trendData={dailyTrendData}
+              isMobile={isMobile()}
+              isSmallMobile={isSmallMobile()}
+              darkThemeStyles={darkThemeStyles}
+            />
+          )}
+        </>
       )}
 
       {/* 数据表格 */}

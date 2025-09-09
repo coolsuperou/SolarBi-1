@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Space, Typography, Button, message } from 'antd';
 import { EyeOutlined, SearchOutlined, ReloadOutlined, UpOutlined, DownOutlined, ClockCircleOutlined, CalendarOutlined, BarChartOutlined } from '@ant-design/icons';
+import moment from 'moment'; // Added import for moment
 
 type DarkThemeStyles = {
   pageContainer: React.CSSProperties;
@@ -48,7 +49,13 @@ const SearchForm: React.FC<SearchFormProps> = ({
   onModeChange
 }) => {
   // 调试信息
-  console.log('SearchForm 渲染, currentMode:', currentMode);
+  console.log('SearchForm 渲染, currentMode:', currentMode, 'searchParams:', searchParams);
+
+  // 从 searchParams 中解析日期和小时，为表单控件提供 value
+  const startDate = searchParams.startTime ? moment(searchParams.startTime).format('YYYY-MM-DD') : '';
+  const startHour = searchParams.startTime ? moment(searchParams.startTime).format('HH') : '00';
+  const endDate = searchParams.endTime ? moment(searchParams.endTime).format('YYYY-MM-DD') : '';
+  const endHour = searchParams.endTime ? moment(searchParams.endTime).format('HH') : '00';
 
   return (
     <Card style={{ ...darkThemeStyles.card, marginBottom: 16 }}>
@@ -140,6 +147,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     color: '#fff',
                     outline: 'none'
                   }}
+                  value={startDate} // 设置 value
                   onChange={(e) => {
                     const dateValue = e.target.value;
                     const hourValue = (document.getElementById('startHour') as HTMLSelectElement)?.value || '00';
@@ -170,6 +178,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     backgroundSize: '12px 12px',
                     paddingRight: '24px'
                   }}
+                  value={startHour} // 设置 value
                   onChange={(e) => {
                     const hourValue = e.target.value;
                     const dateValue = startTimeRef.current?.value;
@@ -214,6 +223,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     color: '#fff',
                     outline: 'none'
                   }}
+                  value={endDate} // 设置 value
                   onChange={(e) => {
                     const dateValue = e.target.value;
                     const hourValue = (document.getElementById('endHour') as HTMLSelectElement)?.value || '23';
@@ -244,6 +254,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     backgroundSize: '12px 12px',
                     paddingRight: '24px'
                   }}
+                  value={endHour} // 设置 value
                   onChange={(e) => {
                     const hourValue = e.target.value;
                     const dateValue = endTimeRef.current?.value;
@@ -290,6 +301,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     color: '#fff',
                     outline: 'none'
                   }}
+                  value={startDate} // 设置 value
                   onChange={(e) => {
                     const dateValue = e.target.value;
                     if (dateValue) {
@@ -327,6 +339,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     color: '#fff',
                     outline: 'none'
                   }}
+                  value={endDate} // 设置 value
                   onChange={(e) => {
                     const dateValue = e.target.value;
                     if (dateValue) {

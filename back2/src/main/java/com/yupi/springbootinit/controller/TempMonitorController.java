@@ -5,6 +5,7 @@ import com.yupi.springbootinit.common.BaseResponse;
 import com.yupi.springbootinit.common.ErrorCode;
 import com.yupi.springbootinit.common.ResultUtils;
 import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
+import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorQueryRequest;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
 import com.yupi.springbootinit.model.entity.TempMonitor;
@@ -164,6 +165,28 @@ public class TempMonitorController {
         } catch (Exception e) {
             log.error("获取每小时电能消耗数据（查询模式）失败", e);
             return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取每小时电能消耗数据（查询模式）失败");
+        }
+    }
+
+    @ApiOperation("获取每日电能消耗数据（查询模式-历史数据）- 结束日期以后最新记录减去开始日期以后最新记录")
+    @GetMapping("/electric-energy-daily-consumption-query")
+    public BaseResponse<List<DailyEnergyConsumption>> getDailyEnergyConsumptionQuery(
+            @ApiParam("车间") @RequestParam(required = false) String workshop,
+            @ApiParam("设备ID") @RequestParam(required = false) String deviceId,
+            @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
+            @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
+        try {
+            // 强制限定车间为 114_空调水机主机
+            String fixedWorkshop = "114_空调水机主机";
+            
+            log.info("🟡 Controller调用日模式查询API: /electric-energy-daily-consumption-query - 车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}", 
+                fixedWorkshop, deviceId, startTime, endTime);
+
+            List<DailyEnergyConsumption> consumptionData = tempMonitorService.getDailyEnergyConsumptionQuery(fixedWorkshop, deviceId, startTime, endTime);
+            return ResultUtils.success(consumptionData);
+        } catch (Exception e) {
+            log.error("获取每日电能消耗数据（查询模式）失败", e);
+            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取每日电能消耗数据（查询模式）失败");
         }
     }
 }

@@ -165,3 +165,27 @@ export async function getHourlyEnergyConsumptionQueryUsingGET(
   });
 }
 
+/** 获取每日电能消耗数据（查询模式-历史数据） GET /api/temp-monitor/electric-energy-daily-consumption-query */
+export async function getDailyEnergyConsumptionQueryUsingGET(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: {
+    /** 车间 */
+    workshop?: string;
+    /** 设备ID */
+    deviceId?: string;
+    /** 开始时间 */
+    startTime?: string;
+    /** 结束时间 */
+    endTime?: string;
+  },
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseListDailyEnergyConsumption_>('/api/temp-monitor/electric-energy-daily-consumption-query', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+

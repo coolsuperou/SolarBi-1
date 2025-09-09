@@ -3,6 +3,7 @@ package com.yupi.springbootinit.mapper.sqlserver;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
+import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
 import com.yupi.springbootinit.model.entity.TempMonitor;
 import org.apache.ibatis.annotations.Mapper;
@@ -105,4 +106,13 @@ public interface TempMonitorMapper extends BaseMapper<TempMonitor> {
                                                                    @Param("deviceId") String deviceId,
                                                                    @Param("startTime") Date startTime,
                                                                    @Param("endTime") Date endTime);
+
+    /**
+     * 查询每日电能消耗数据（查询模式-历史数据）
+     * 所有日期都用标准逻辑：结束日期以后最近记录 - 开始日期以后最近记录
+     */
+    List<DailyEnergyConsumption> selectDailyEnergyConsumptionQuery(@Param("workshop") String workshop,
+                                                                 @Param("deviceId") String deviceId,
+                                                                 @Param("startTime") Date startTime,
+                                                                 @Param("endTime") Date endTime);
 }

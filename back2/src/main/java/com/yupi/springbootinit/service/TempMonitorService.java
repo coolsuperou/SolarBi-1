@@ -2,6 +2,7 @@ package com.yupi.springbootinit.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
+import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorQueryRequest;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
 import com.yupi.springbootinit.model.entity.TempMonitor;
@@ -65,4 +66,9 @@ public interface TempMonitorService {
      * 获取每小时电能消耗数据（查询模式-历史数据）
      */
     List<HourlyEnergyConsumption> getHourlyEnergyConsumptionQuery(String workshop, String deviceId, Date startTime, Date endTime);
+
+    /**
+     * 获取每日电能消耗数据（查询模式-历史数据）
+     */
+    List<DailyEnergyConsumption> getDailyEnergyConsumptionQuery(String workshop, String deviceId, Date startTime, Date endTime);
 }

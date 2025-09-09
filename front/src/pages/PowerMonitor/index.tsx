@@ -73,131 +73,47 @@ const PowerMonitorPage: React.FC = () => {
   const [nextUpdateTime, setNextUpdateTime] = useState<string>('');
   const [chartInstance, setChartInstance] = useState<any>(null);
   // 每个设备系列最后一次追加点的时间戳（毫秒），用于防止重复追加
-  const lastXBySeriesRef = useRef<Record<string, number>>({});
+  const [lastXBySeriesRef, setLastXBySeriesRef] = useState<Record<string, number>>({});
   const [axisUpdateTimer, setAxisUpdateTimer] = useState<NodeJS.Timeout | null>(null);
   // 移除手动控制，固定为自动刷新模式
 
-  // 加载车间列表和统计数据
-  // 初始化默认时间范围
-  const initializeDefaultTimeRange = async () => {
-      try {
-        // 获取BI图表默认数据（全部记录）
-        const response = await getElectricEnergyTrendUsingGET({
-          workshop: TARGET_WORKSHOP,
-          deviceId: undefined,
-          startTime: undefined,
-          endTime: undefined
-          // 不设置limit，获取全部数据
-        });
+  // 重构: 将所有重置和默认加载逻辑统一
+  const loadDefaults = (mode: string) => {
+    const now = moment();
+    let startTime;
+    let endTime;
 
-        if (response?.code === 0 && response.data && response.data.length > 0) {
-          // 按时间排序数据
-          const sortedData = response.data.sort((a, b) =>
-            moment(a.updateTime).valueOf() - moment(b.updateTime).valueOf()
-          );
+    if (mode === 'hour') {
+      // 小时模式默认加载最近24小时
+      endTime = now.format('YYYY-MM-DD HH:mm:ss');
+      startTime = now.clone().subtract(24, 'hours').format('YYYY-MM-DD HH:mm:ss');
+      
+      setTrendData([]);
+      setChartOptions({});
+      loadTrendData(false, startTime, endTime);
+      calculateEnergyConsumption(startTime, endTime);
+    } else { // 'day' mode
+      // 日模式默认加载最近7天
+      endTime = now.format('YYYY-MM-DD HH:mm:ss');
+      startTime = now.clone().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
 
-          // 获取最新记录的时间作为结束时间
-          const lastRecord = sortedData[sortedData.length - 1];
-          const endMoment = moment(lastRecord.updateTime);
+      setDailyTrendData([]);
+      setDailyChartOptions({});
+      loadDailyTrendData(false, startTime, endTime);
+      calculateDailyEnergyConsumption(startTime, endTime);
+    }
 
-          // 计算24小时05分前的时间作为开始时间
-          const startMoment = endMoment.clone().subtract(24, 'hours').subtract(5, 'minutes');
+    // 核心: 更新searchParams状态，让表单显示默认值
+    setSearchParams({ startTime, endTime });
 
-          // 设置时间选择器的默认值
-          const startDate = startMoment.format('YYYY-MM-DD');
-          const startHour = startMoment.format('HH');
-          const endDate = endMoment.format('YYYY-MM-DD');
-          const endHour = endMoment.format('HH');
-
-          // 更新UI控件
-          setTimeout(() => {
-            if (startTimeRef.current) {
-              startTimeRef.current.value = startDate;
-            }
-            if (endTimeRef.current) {
-              endTimeRef.current.value = endDate;
-            }
-            const startHourSelect = document.getElementById('startHour') as HTMLSelectElement;
-            const endHourSelect = document.getElementById('endHour') as HTMLSelectElement;
-            if (startHourSelect) startHourSelect.value = startHour;
-            if (endHourSelect) endHourSelect.value = endHour;
-          }, 100);
-
-          // 设置搜索参数状态
-          // 默认24小时05分模式：结束时间使用最新记录的实际时间，开始时间使用精确的24小时05分前时间
-          // 确保时间格式为 yyyy-MM-dd HH:mm:ss
-          const defaultEndTime = lastRecord.updateTime ?
-            moment(lastRecord.updateTime).format('YYYY-MM-DD HH:mm:ss') :
-            endMoment.format('YYYY-MM-DD HH:mm:ss');
-          // 开始时间：最新记录时间减去精确的24小时05分
-          const defaultStartTime = lastRecord.updateTime ?
-            moment(lastRecord.updateTime).subtract(24, 'hours').subtract(5, 'minutes').format('YYYY-MM-DD HH:mm:ss') :
-            startMoment.format('YYYY-MM-DD HH:mm:ss');
-          setSearchParams({
-            startTime: defaultStartTime,
-            endTime: defaultEndTime
-          });
-          setIsDefaultTimeRange(true); // 标记为默认时间范围
-          setTempSearchParams({}); // 默认模式下表格不使用时间范围限制
-
-          // 使用统一的电能消耗计算函数来确保准确性
-          calculateEnergyConsumption(defaultStartTime, defaultEndTime);
-
-          console.log('设置默认24小时05分时间范围:', {
-            startTime: defaultStartTime,
-            endTime: defaultEndTime,
-            totalRecords: sortedData.length
-          });
-
-          // 使用设置好的时间范围加载图表数据和统计数据
-          loadTrendData(false, defaultStartTime, defaultEndTime);
-          loadStatistics(TARGET_WORKSHOP, defaultStartTime, defaultEndTime);
-        }
-      } catch (error: any) {
-        console.log('获取默认时间范围失败，使用当前时间作为默认:', error.message);
-        // 如果获取失败，使用当前时间设置默认24小时05分范围
-        const now = moment();
-        const endMoment = now;
-        const startMoment = now.clone().subtract(24, 'hours').subtract(5, 'minutes');
-
-        const startDate = startMoment.format('YYYY-MM-DD');
-        const startHour = startMoment.format('HH');
-        const endDate = endMoment.format('YYYY-MM-DD');
-        const endHour = endMoment.format('HH');
-
-        // 设置默认时间范围
-        // 默认24小时05分模式：结束时间使用当前实际时间，开始时间使用精确的24小时05分前时间
-        const defaultEndTime = now.format('YYYY-MM-DD HH:mm:ss'); // 使用当前实际时间
-        const defaultStartTime = now.subtract(24, 'hours').subtract(5, 'minutes').format('YYYY-MM-DD HH:mm:ss'); // 精确的24小时05分前
-        setSearchParams({
-          startTime: defaultStartTime,
-          endTime: defaultEndTime
-        });
-        setIsDefaultTimeRange(true); // 标记为默认时间范围
-        setTempSearchParams({}); // 默认模式下表格不使用时间范围限制
-
-        // 更新UI控件
-        setTimeout(() => {
-          if (startTimeRef.current) {
-            startTimeRef.current.value = startDate;
-          }
-          if (endTimeRef.current) {
-            endTimeRef.current.value = endDate;
-          }
-          const startHourSelect = document.getElementById('startHour') as HTMLSelectElement;
-          const endHourSelect = document.getElementById('endHour') as HTMLSelectElement;
-          if (startHourSelect) startHourSelect.value = startHour;
-          if (endHourSelect) endHourSelect.value = endHour;
-        }, 100);
-
-        // 计算24小时05分电能消耗（即使获取失败也要尝试计算）
-        calculateEnergyConsumption(defaultStartTime, defaultEndTime);
-
-        // 使用默认时间范围加载图表数据和统计数据
-        loadTrendData(false, defaultStartTime, defaultEndTime);
-        loadStatistics(TARGET_WORKSHOP, defaultStartTime, defaultEndTime);
-      }
-    };
+    // 重置其他相关状态
+    setSelectedWorkshop('');
+    setEnergyConsumption(0);
+    setIsDefaultTimeRange(true);
+    setTempSearchParams({});
+    actionRef.current?.reload();
+    loadStatistics();
+  };
 
   // 监听窗口大小变化
   useEffect(() => {
@@ -280,6 +196,7 @@ const PowerMonitorPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [screenSize.width]); // 依赖屏幕宽度变化
 
+  // 重构: 使用一个useEffect处理模式切换和初始加载
   useEffect(() => {
     const loadWorkshops = async () => {
       try {
@@ -293,8 +210,8 @@ const PowerMonitorPage: React.FC = () => {
     };
 
     loadWorkshops();
-    initializeDefaultTimeRange(); // 先设置默认时间范围，内部会调用loadTrendData
-  }, []);
+    loadDefaults(currentMode); // 初始加载和模式切换时，加载对应模式的默认数据
+  }, [currentMode]); // 当模式改变时，此hook会重新运行
 
   // 加载统计数据
   const loadStatistics = async (workshop?: string, startTime?: string, endTime?: string) => {
@@ -371,26 +288,29 @@ const PowerMonitorPage: React.FC = () => {
     setTempSearchParams(isDefaultMode ? {} : queryParams); // 默认模式下表格不使用时间范围限制
     actionRef.current?.reload();
 
-    // 根据模式计算电能消耗
-    if (currentMode === 'hour' && queryParams.startTime && queryParams.endTime) {
-      console.log('准备计算小时模式电能消耗，参数:', {
-        startTime: queryParams.startTime,
-        endTime: queryParams.endTime,
-        workshop: TARGET_WORKSHOP
-      });
-      calculateEnergyConsumption(queryParams.startTime, queryParams.endTime);
-    } else if (currentMode === 'day' && queryParams.startTime && queryParams.endTime) {
-      console.log('准备计算日模式电能消耗，参数:', {
-        startTime: queryParams.startTime,
-        endTime: queryParams.endTime,
-        workshop: TARGET_WORKSHOP
-      });
-      calculateDailyEnergyConsumption(queryParams.startTime, queryParams.endTime);
-    } else if (currentMode === 'hour' && (!queryParams.startTime || !queryParams.endTime)) {
-      console.log('没有时间范围，回到默认模式');
-      // 回到默认模式时，重新初始化默认时间范围
-      initializeDefaultTimeRange();
-      return; // 由initializeDefaultTimeRange内部处理后续逻辑
+    // 根据模式和是否有时间范围来计算电能消耗
+    if (queryParams.startTime && queryParams.endTime) {
+      // 有时间范围：按范围查询
+      if (currentMode === 'hour') {
+        console.log('准备计算小时模式电能消耗，参数:', {
+          startTime: queryParams.startTime,
+          endTime: queryParams.endTime,
+          workshop: TARGET_WORKSHOP
+        });
+        calculateEnergyConsumption(queryParams.startTime, queryParams.endTime);
+      } else if (currentMode === 'day') {
+        console.log('准备计算日模式电能消耗，参数:', {
+          startTime: queryParams.startTime,
+          endTime: queryParams.endTime,
+          workshop: TARGET_WORKSHOP
+        });
+        calculateDailyEnergyConsumption(queryParams.startTime, queryParams.endTime);
+      }
+    } else {
+      // 没有时间范围：回到默认模式
+      console.log('没有时间范围，触发默认模式加载');
+      loadDefaults(currentMode);
+      return; // 由 loadDefaults 处理后续逻辑
     }
 
     // 更新统计数据
@@ -404,102 +324,16 @@ const PowerMonitorPage: React.FC = () => {
     }
   };
 
-  // 重置搜索
+  // 重构: 简化重置处理函数
   const handleReset = () => {
-    setSearchParams({});
-    setSelectedWorkshop('');
-    setEnergyConsumption(0);
-    setIsDefaultTimeRange(true); // 重置后回到默认时间范围
-    setTempSearchParams({}); // 清空表格搜索参数
-    
-    // 清空日期选择器
-    if (startTimeRef.current) {
-      startTimeRef.current.value = '';
-    }
-    if (endTimeRef.current) {
-      endTimeRef.current.value = '';
-    }
-    
-    // 只在小时模式下清空小时选择器
-    if (currentMode === 'hour') {
-      const startHourSelect = document.getElementById('startHour') as HTMLSelectElement;
-      const endHourSelect = document.getElementById('endHour') as HTMLSelectElement;
-      if (startHourSelect) startHourSelect.selectedIndex = 0;
-      if (endHourSelect) endHourSelect.selectedIndex = 0;
-    }
-    
-    // 清空对应模式的图表数据
-    if (currentMode === 'day') {
-      setDailyTrendData([]);
-      setDailyChartOptions({});
-    } else {
-      setTrendData([]);
-      setChartOptions({});
-    }
-    
-    actionRef.current?.reload();
-    loadStatistics();
-    
-    // 根据当前模式重新初始化数据
-    if (currentMode === 'hour') {
-      // 重新初始化默认24小时05分时间范围，而不是加载全部数据
-      initializeDefaultTimeRange();
-    } else if (currentMode === 'day') {
-      // 日模式重置后，加载默认7天数据
-      const now = moment();
-      const endTime = now.format('YYYY-MM-DD HH:mm:ss');
-      const startTime = now.clone().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
-      loadDailyTrendData(false, startTime, endTime);
-      
-      // 计算默认7天的电能消耗
-      calculateDailyEnergyConsumption(startTime, endTime);
-    }
+    loadDefaults(currentMode);
   };
 
-  // 处理模式切换
+  // 重构: 简化模式切换处理函数
   const handleModeChange = (mode: string) => {
-    setCurrentMode(mode);
-    message.success(`已切换到${mode === 'hour' ? '小时' : mode === 'day' ? '日' : '月'}模式`);
-    
-    // 根据模式调整查询参数或数据展示逻辑
-    console.log('当前模式已切换为:', mode);
-    
-    if (mode === 'day') {
-      // 切换到日模式时，执行与重置相同的行为：清空输入并加载默认7天
-      setSearchParams({});
-      setSelectedWorkshop('');
-      setEnergyConsumption(0);
-      setIsDefaultTimeRange(true);
-      setTempSearchParams({});
-
-      // 清空日期选择器
-      if (startTimeRef.current) {
-        startTimeRef.current.value = '';
-      }
-      if (endTimeRef.current) {
-        endTimeRef.current.value = '';
-      }
-
-      // 清空日模式图表数据
-      setDailyTrendData([]);
-      setDailyChartOptions({});
-
-      // 加载默认7天范围
-      const now = moment();
-      const endTime = now.format('YYYY-MM-DD HH:mm:ss');
-      const startTime = now.clone().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
-      loadDailyTrendData(false, startTime, endTime);
-      
-      // 计算默认7天的电能消耗
-      calculateDailyEnergyConsumption(startTime, endTime);
-    } else if (mode === 'hour') {
-      // 切换回小时模式时，重新加载小时数据
-      if (searchParams.startTime && searchParams.endTime) {
-        loadTrendData(false, searchParams.startTime, searchParams.endTime);
-      } else {
-        loadTrendData(false);
-      }
-    }
+    if (mode === currentMode) return;
+    setCurrentMode(mode); // 触发useEffect
+    message.success(`已切换到${mode === 'hour' ? '小时' : '日'}模式`);
   };
 
   // 计算电能消耗
@@ -1586,7 +1420,6 @@ const PowerMonitorPage: React.FC = () => {
   //     }
   //   };
   // }, [selectedWorkshop, searchParams]);
-
 
 
 

@@ -371,14 +371,21 @@ const PowerMonitorPage: React.FC = () => {
     setTempSearchParams(isDefaultMode ? {} : queryParams); // 默认模式下表格不使用时间范围限制
     actionRef.current?.reload();
 
-    // 计算电能消耗（仅在小时模式下）
+    // 根据模式计算电能消耗
     if (currentMode === 'hour' && queryParams.startTime && queryParams.endTime) {
-      console.log('准备计算电能消耗，参数:', {
+      console.log('准备计算小时模式电能消耗，参数:', {
         startTime: queryParams.startTime,
         endTime: queryParams.endTime,
         workshop: TARGET_WORKSHOP
       });
       calculateEnergyConsumption(queryParams.startTime, queryParams.endTime);
+    } else if (currentMode === 'day' && queryParams.startTime && queryParams.endTime) {
+      console.log('准备计算日模式电能消耗，参数:', {
+        startTime: queryParams.startTime,
+        endTime: queryParams.endTime,
+        workshop: TARGET_WORKSHOP
+      });
+      calculateDailyEnergyConsumption(queryParams.startTime, queryParams.endTime);
     } else if (currentMode === 'hour' && (!queryParams.startTime || !queryParams.endTime)) {
       console.log('没有时间范围，回到默认模式');
       // 回到默认模式时，重新初始化默认时间范围
@@ -443,6 +450,9 @@ const PowerMonitorPage: React.FC = () => {
       const endTime = now.format('YYYY-MM-DD HH:mm:ss');
       const startTime = now.clone().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
       loadDailyTrendData(false, startTime, endTime);
+      
+      // 计算默认7天的电能消耗
+      calculateDailyEnergyConsumption(startTime, endTime);
     }
   };
 
@@ -479,6 +489,9 @@ const PowerMonitorPage: React.FC = () => {
       const endTime = now.format('YYYY-MM-DD HH:mm:ss');
       const startTime = now.clone().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
       loadDailyTrendData(false, startTime, endTime);
+      
+      // 计算默认7天的电能消耗
+      calculateDailyEnergyConsumption(startTime, endTime);
     } else if (mode === 'hour') {
       // 切换回小时模式时，重新加载小时数据
       if (searchParams.startTime && searchParams.endTime) {
@@ -547,6 +560,59 @@ const PowerMonitorPage: React.FC = () => {
       console.error('计算电能消耗失败：', error);
       setEnergyConsumption(0);
       message.error(`计算电能消耗失败: ${error.message}`);
+    }
+  };
+
+  // 计算日模式电能消耗
+  const calculateDailyEnergyConsumption = async (startTime: string, endTime: string) => {
+    try {
+      console.log('开始计算日模式电能消耗:', startTime, '到', endTime);
+
+      // 确保时间格式为 yyyy-MM-dd HH:mm:ss
+      const formattedStartTime = moment(startTime).format('YYYY-MM-DD HH:mm:ss');
+      const formattedEndTime = moment(endTime).format('YYYY-MM-DD HH:mm:ss');
+
+      // 获取日模式电能消耗数据
+      const response = await getDailyEnergyConsumptionQueryUsingGET({
+        workshop: TARGET_WORKSHOP,
+        startTime: formattedStartTime,
+        endTime: formattedEndTime
+      });
+
+      console.log('获取日模式电能消耗数据响应:', response);
+
+      if (response?.code === 0 && response.data && response.data.length > 0) {
+        // 计算所有天数的电能消耗总和
+        const totalConsumption = response.data.reduce((total, item) => {
+          const dailyConsumption = Number(item.energyConsumption) || 0;
+          return total + dailyConsumption;
+        }, 0);
+
+        console.log('日模式电能消耗计算结果:', {
+          totalDays: response.data.length,
+          dailyData: response.data.map(item => ({
+            day: item.day,
+            consumption: item.energyConsumption
+          })),
+          totalConsumption
+        });
+
+        setEnergyConsumption(totalConsumption);
+
+        // 静默设置电能消耗，不显示提示信息
+      } else {
+        setEnergyConsumption(0);
+        console.log('日模式API响应详情:', {
+          code: response?.code,
+          message: response?.message,
+          dataLength: response?.data?.length
+        });
+        message.warning('指定时间范围内没有找到日电能数据，请检查时间范围或数据源');
+      }
+    } catch (error: any) {
+      console.error('计算日模式电能消耗失败：', error);
+      setEnergyConsumption(0);
+      message.error(`计算日模式电能消耗失败: ${error.message}`);
     }
   };
 

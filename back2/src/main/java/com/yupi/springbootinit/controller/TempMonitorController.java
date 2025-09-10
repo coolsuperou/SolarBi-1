@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
@@ -86,6 +87,17 @@ public class TempMonitorController {
             @ApiParam("车间名称") @RequestParam(required = false) String workshop,
             @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
             @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
+        // 后端时间范围校验：如果两者都传，必须 end > start 且范围合理
+        if (startTime != null && endTime != null) {
+            if (!endTime.after(startTime)) {
+                return ResultUtils.error(ErrorCode.PARAMS_ERROR, "结束时间必须晚于开始时间");
+            }
+            long diffMs = endTime.getTime() - startTime.getTime();
+            long diffDays = diffMs / (1000 * 60 * 60 * 24);
+            if (diffDays > 31) {
+                return ResultUtils.error(ErrorCode.PARAMS_ERROR, "时间范围过大，请选择不超过31天");
+            }
+        }
         TempMonitorStatistics statistics = tempMonitorService.getStatistics(workshop, startTime, endTime);
         return ResultUtils.success(statistics);
     }
@@ -132,6 +144,17 @@ public class TempMonitorController {
             @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
             @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
         try {
+            // 小时模式后端校验：若两者都传，最大 7 天
+            if (startTime != null && endTime != null) {
+                if (!endTime.after(startTime)) {
+                    return ResultUtils.error(ErrorCode.PARAMS_ERROR, "结束时间必须晚于开始时间");
+                }
+                long diffMs = endTime.getTime() - startTime.getTime();
+                long diffDays = diffMs / (1000 * 60 * 60 * 24);
+                if (diffDays > 7) {
+                    return ResultUtils.error(ErrorCode.PARAMS_ERROR, "小时模式时间范围过大，请选择不超过7天");
+                }
+            }
             // 强制限定车间为 114_空调水机主机
             String fixedWorkshop = "114_空调水机主机";
             
@@ -154,6 +177,17 @@ public class TempMonitorController {
             @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
             @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
         try {
+            // 小时模式查询后端校验：若两者都传，最大 31 天（历史查询可以放宽）
+            if (startTime != null && endTime != null) {
+                if (!endTime.after(startTime)) {
+                    return ResultUtils.error(ErrorCode.PARAMS_ERROR, "结束时间必须晚于开始时间");
+                }
+                long diffMs = endTime.getTime() - startTime.getTime();
+                long diffDays = diffMs / (1000 * 60 * 60 * 24);
+                if (diffDays > 31) {
+                    return ResultUtils.error(ErrorCode.PARAMS_ERROR, "时间范围过大，请选择不超过31天");
+                }
+            }
             // 强制限定车间为 114_空调水机主机
             String fixedWorkshop = "114_空调水机主机";
             
@@ -176,6 +210,17 @@ public class TempMonitorController {
             @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
             @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
         try {
+            // 日模式查询后端校验：若两者都传，最大 90 天
+            if (startTime != null && endTime != null) {
+                if (!endTime.after(startTime)) {
+                    return ResultUtils.error(ErrorCode.PARAMS_ERROR, "结束时间必须晚于开始时间");
+                }
+                long diffMs = endTime.getTime() - startTime.getTime();
+                long diffDays = diffMs / (1000 * 60 * 60 * 24);
+                if (diffDays > 90) {
+                    return ResultUtils.error(ErrorCode.PARAMS_ERROR, "日模式时间范围过大，请选择不超过90天");
+                }
+            }
             // 强制限定车间为 114_空调水机主机
             String fixedWorkshop = "114_空调水机主机";
             

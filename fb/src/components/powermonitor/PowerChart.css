@@ -16,12 +16,14 @@
   font-size: 0.9rem;
   color: #a0b3d1;
   margin: 0;
+  text-align: center;
 }
 
 .custom-tooltip .tooltip-time-range {
   font-size: 1rem;
   font-weight: bold;
   margin: 0.25rem 0;
+  text-align: center;
 }
 
 .custom-tooltip .tooltip-value {
@@ -29,4 +31,5 @@
   color: #00d4ff;
   font-weight: bold;
   margin: 0;
+  text-align: center;
 }

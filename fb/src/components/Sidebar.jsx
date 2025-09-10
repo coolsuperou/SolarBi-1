@@ -7,6 +7,10 @@ import './Sidebar.css';
 function Sidebar({ isCollapsed, toggleSidebar }) {
   return (
     <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+      <div className="sidebar-toggle" onClick={toggleSidebar}>
+        {isCollapsed ? <List size={24} /> : <ArrowLeftRight size={20} />}
+      </div>
+
       <div className="sidebar-header">
         {isCollapsed ? null : (
           <div className="sidebar-brand">
@@ -29,10 +33,6 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
           </Nav.Link>
         </LinkContainer>
       </Nav>
-
-      <div className="sidebar-toggle" onClick={toggleSidebar}>
-        {isCollapsed ? <List size={24} /> : <ArrowLeftRight size={20} />}
-      </div>
     </div>
   );
 }

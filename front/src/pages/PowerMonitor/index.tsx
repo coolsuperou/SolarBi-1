@@ -87,7 +87,7 @@ const PowerMonitorPage: React.FC = () => {
       // 小时模式默认加载最近24小时
       endTime = now.format('YYYY-MM-DD HH:mm:ss');
       startTime = now.clone().subtract(24, 'hours').format('YYYY-MM-DD HH:mm:ss');
-      
+
       setTrendData([]);
       setChartOptions({});
       loadTrendData(false, startTime, endTime);
@@ -254,6 +254,52 @@ const PowerMonitorPage: React.FC = () => {
 
   // 处理搜索
   const handleSearch = (values: any) => {
+    // 时间范围前置校验：仅在用户选择了时间范围时验证
+    try {
+      if (values?.startTime && values?.endTime) {
+        const start = moment(values.startTime);
+        const end = moment(values.endTime);
+
+        if (!start.isValid() || !end.isValid()) {
+          message.error('时间格式不正确，请重新选择');
+          return;
+        }
+
+        if (!end.isAfter(start)) {
+          message.warning('结束时间必须晚于开始时间');
+          return;
+        }
+
+        const now = moment();
+        if (end.isAfter(now.add(1, 'minutes'))) {
+          message.warning('结束时间不能晚于当前时间');
+          return;
+        }
+
+        const diffMs = end.diff(start);
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+        const diffHours = diffMs / (1000 * 60 * 60);
+
+        if (currentMode === 'hour') {
+          // 小时模式：限制最大 7 天，避免数据量过大
+          if (diffDays > 7) {
+            message.warning('小时模式时间范围过大，请选择不超过 7 天');
+            return;
+          }
+        } else {
+          // 日模式：限制最大 31 天
+          if (diffDays > 31) {
+            message.warning('日模式时间范围过大，请选择不超过 31 天');
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      // 容错：出现异常时阻止查询并提示
+      message.error('时间范围校验失败，请重试');
+      return;
+    }
+
     const queryParams: API.TempMonitorQueryRequest = {
       ...values,
       current: 1,
@@ -281,7 +327,7 @@ const PowerMonitorPage: React.FC = () => {
 
     setSearchParams(queryParams);
     setSelectedWorkshop(values.workshop || '');
-    
+
     // 判断是否为默认时间范围：如果没有指定时间，则为默认模式
     const isDefaultMode = !queryParams.startTime || !queryParams.endTime;
     setIsDefaultTimeRange(isDefaultMode);
@@ -470,7 +516,7 @@ const PowerMonitorPage: React.FC = () => {
       };
 
       console.log('请求每日电能消耗数据参数:', requestParams);
-      
+
       // 日模式只使用查询模式API
       console.log('🟡 调用日模式查询API - /electric-energy-daily-consumption-query');
       const response = await getDailyEnergyConsumptionQueryUsingGET(requestParams);
@@ -519,7 +565,7 @@ const PowerMonitorPage: React.FC = () => {
           if (sortedData.length > 0) {
             const firstPoint = sortedData[0];
             const lastPoint = sortedData[sortedData.length - 1];
-            
+
             // 在第一个数据点前添加一个延伸点（时间往前1天，值保持一样）
             const extendedStartPoint = {
               ...firstPoint,
@@ -527,7 +573,7 @@ const PowerMonitorPage: React.FC = () => {
               time: moment(firstPoint.x - (24 * 60 * 60 * 1000)).format('MM-DD'),
               isExtendedPoint: true // 标记为延伸点
             };
-            
+
             // 将延伸点添加到数据序列中（仅保留开始侧延伸点）
             sortedData.unshift(extendedStartPoint);
           }
@@ -592,7 +638,7 @@ const PowerMonitorPage: React.FC = () => {
         // 构建 ECharts 配置
         const echartsSeries = series.map((s: any, index: number) => {
           const techColors = [
-            '#00d4ff', '#00ff88', '#ff6b35', '#ff3d71', 
+            '#00d4ff', '#00ff88', '#ff6b35', '#ff3d71',
             '#a855f7', '#06ffa5', '#ff1744', '#00e5ff'
           ];
           const seriesColor = techColors[index % techColors.length];
@@ -874,7 +920,7 @@ const PowerMonitorPage: React.FC = () => {
       console.log('当前searchParams:', searchParams);
       console.log('传入的startTime:', startTime);
       console.log('传入的endTime:', endTime);
-      
+
       // 根据是否为默认状态调用不同的API
       let response;
       if (isDefaultTimeRange) {
@@ -933,7 +979,7 @@ const PowerMonitorPage: React.FC = () => {
           if (sortedData.length > 0) {
             const firstPoint = sortedData[0];
             const lastPoint = sortedData[sortedData.length - 1];
-            
+
             // 在第一个数据点前添加一个延伸点（时间往前1小时，值保持一样）
             const extendedStartPoint = {
               ...firstPoint,
@@ -941,7 +987,7 @@ const PowerMonitorPage: React.FC = () => {
               time: moment(firstPoint.x - (60 * 60 * 1000)).format('MM-DD HH:00'),
               isExtendedPoint: true // 标记为延伸点
             };
-            
+
             // 在最后一个数据点后添加一个延伸点（时间往后1小时，值保持一样）
             const extendedEndPoint = {
               ...lastPoint,
@@ -949,7 +995,7 @@ const PowerMonitorPage: React.FC = () => {
               time: moment(lastPoint.x + (60 * 60 * 1000)).format('MM-DD HH:00'),
               isExtendedPoint: true // 标记为延伸点
             };
-            
+
             // 将延伸点添加到数据序列中
             sortedData.unshift(extendedStartPoint);
             sortedData.push(extendedEndPoint);
@@ -1017,7 +1063,7 @@ const PowerMonitorPage: React.FC = () => {
         // 构建 ECharts 配置
         const echartsSeries = series.map((s: any, index: number) => {
           const techColors = [
-            '#00d4ff', '#00ff88', '#ff6b35', '#ff3d71', 
+            '#00d4ff', '#00ff88', '#ff6b35', '#ff3d71',
             '#a855f7', '#06ffa5', '#ff1744', '#00e5ff'
           ];
           const seriesColor = techColors[index % techColors.length];
@@ -1344,7 +1390,7 @@ const PowerMonitorPage: React.FC = () => {
   //     setTimeout(() => {
   //       actionRef.current?.reload();
   //     }, 100); // 稍微延迟以确保tempSearchParams更新生效
-      
+
   //     // 强制同步图表数据，确保与表格数据一致
   //     setTimeout(() => {
   //       if (!isDefaultTimeRange) {
@@ -1430,14 +1476,14 @@ const PowerMonitorPage: React.FC = () => {
       console.log('停止图表实时更新 - 图表隐藏或非默认模式');
       return;
     }
-    
+
     console.log('启动图表实时更新，间隔30秒（仅默认模式）');
     const chartUpdateInterval = setInterval(() => {
       console.log('图表实时更新检查:', moment().format('HH:mm:ss'), '- 默认模式');
       // 只在默认模式下进行实时更新
       loadTrendData(true);
-    }, 30000); // 30秒更新一次，避免过于频繁
-    
+    }, 300000); // 30秒更新一次，避免过于频繁
+
     return () => {
       console.log('停止图表实时更新');
       clearInterval(chartUpdateInterval);

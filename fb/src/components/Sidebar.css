@@ -18,11 +18,11 @@
 }
 
 .sidebar-header {
-  padding: 1.25rem;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 60px; /* Match header height */
+  height: 0; /* Remove header space since logo is in main header */
 }
 
 .sidebar-brand {
@@ -40,17 +40,20 @@
 }
 
 .sidebar-nav {
-  margin-top: 1rem;
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-link {
   display: flex;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 1.5rem 1.5rem;
   color: rgba(255, 255, 255, 0.7) !important;
   transition: all 0.2s ease-in-out;
   white-space: nowrap;
   overflow: hidden;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
 }
 
 .sidebar.collapsed .sidebar-link {
@@ -70,13 +73,13 @@
 }
 
 .sidebar-toggle {
-  margin-top: auto;
   padding: 1.25rem;
   color: rgba(255, 255, 255, 0.7);
   text-align: center;
   cursor: pointer;
-  border-top: 1px solid rgba(0, 212, 255, 0.3);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.3);
   transition: all 0.2s ease-in-out;
+  order: -1; /* Move to top */
 }
 
 .sidebar-toggle:hover {

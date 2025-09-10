@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import UserSearchForm from '../components/usermanagement/UserSearchForm';
 import UserDataTable from '../components/usermanagement/UserDataTable';
 import './UserManagementPage.css';
+import userApi from '../api/user';
 
 const mockUsers = [
   { id: '1964860733899488082', userAccount: 'sw', userName: '苏卫', userAvatar: null, userRole: '管理员', createTime: '2025-09-08 09:53:33', updateTime: '2025-09-08 10:26:17' },
@@ -15,10 +16,32 @@ const mockUsers = [
 function UserManagementPage() {
   const [users, setUsers] = useState(mockUsers);
 
-  const handleSearch = (params) => {
-    console.log('Searching for users with params:', params);
-    // In a real app, you would filter the users based on the search params
-    // For now, we just log it
+  const fetchUsers = async (query = {}) => {
+    try {
+      const res = await userApi.listPage({ ...query, current: 1, pageSize: 10 });
+      const page = res?.data || res;
+      const list = page?.records || [];
+      setUsers(list.map(u => ({
+        id: u.id,
+        userAccount: u.userAccount,
+        userName: u.userName,
+        userAvatar: u.userAvatar,
+        userRole: u.userRole === 'admin' ? '管理员' : '用户',
+        createTime: u.createTime,
+        updateTime: u.updateTime,
+      })));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    // initial load
+    // fetchUsers(); // Uncomment when backend is accessible
+  }, []);
+
+  const handleSearch = async (params) => {
+    await fetchUsers(params);
   };
 
   return (

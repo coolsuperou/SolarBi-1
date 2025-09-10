@@ -27,27 +27,27 @@ public interface TempMonitorMapper extends BaseMapper<TempMonitor> {
      * 查询最新数据（显示所有数据）
      */
     @Select("SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop " +
-            "FROM RSWS_TempMonitor ORDER BY UpdateTime DESC")
+            "FROM RSWS_TempMonitor_Copy ORDER BY UpdateTime DESC")
     List<TempMonitor> selectLatestData();
 
     /**
      * 根据车间查询数据
      */
     @Select("SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop " +
-            "FROM RSWS_TempMonitor WHERE Workshop = #{workshop} ORDER BY UpdateTime DESC")
+            "FROM RSWS_TempMonitor_Copy WHERE Workshop = #{workshop} ORDER BY UpdateTime DESC")
     List<TempMonitor> selectByWorkshop(String workshop);
 
     /**
      * 查询所有车间
      */
-    @Select("SELECT DISTINCT Workshop FROM RSWS_TempMonitor WHERE Workshop IS NOT NULL AND Workshop != ''")
+    @Select("SELECT DISTINCT Workshop FROM RSWS_TempMonitor_Copy WHERE Workshop IS NOT NULL AND Workshop != ''")
     List<String> selectAllWorkshops();
 
     /**
      * 根据设备ID查询数据
      */
     @Select("SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop " +
-            "FROM RSWS_TempMonitor WHERE DeviceID = #{deviceId} ORDER BY UpdateTime DESC")
+            "FROM RSWS_TempMonitor_Copy WHERE DeviceID = #{deviceId} ORDER BY UpdateTime DESC")
     List<TempMonitor> selectByDeviceId(String deviceId);
 
     /**

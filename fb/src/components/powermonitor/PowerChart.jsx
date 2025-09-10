@@ -7,8 +7,8 @@ const CustomTooltip = ({ active, payload, label }) => {
     return (
       <div className="custom-tooltip">
         <p className="tooltip-date">{`2025-09-09`}</p>
-        <p className="tooltip-time-range">{`${label}:00-${parseInt(label, 10) + 1}:00 用电量`}</p>
-        <p className="tooltip-value">{`● 114_空调水机主机: ${payload[0].value} kWh`}</p>
+        <p className="tooltip-time-range">{`${label}:00-${(parseInt(label, 10) + 1).toString().padStart(2, '0')}:00 用电量`}</p>
+        <p className="tooltip-value">{`• 114 空调水机主机: ${payload[0].value} kWh`}</p>
       </div>
     );
   }
@@ -58,7 +58,7 @@ function PowerChart({ data, yAxisLabel }) {
             strokeWidth={3}
             fillOpacity={1} 
             fill="url(#chartGradient)" 
-            name="114_空调水机主机"
+            name="114 空调水机主机"
             dot={{ stroke: '#00d4ff', strokeWidth: 1, r: 4, fill: '#0a1929' }}
             activeDot={{ r: 6, fill: '#fff', stroke: '#00d4ff', strokeWidth: 2 }}
           />

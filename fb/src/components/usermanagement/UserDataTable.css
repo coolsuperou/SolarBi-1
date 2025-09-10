@@ -1,0 +1,11 @@
+/* UserDataTable.css */
+.user-table .btn-link {
+    padding: 0.25rem 0.5rem;
+    text-decoration: none;
+    color: #00d4ff;
+}
+
+.user-table .btn-link:hover {
+    text-decoration: underline;
+    color: #fff;
+}

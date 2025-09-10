@@ -1,0 +1,95 @@
+/* Styles for Power Monitor Page Sections */
+.section-container {
+  margin-top: 1.5rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.section-title {
+  color: #00d4ff;
+  font-size: 1.25rem;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.7);
+  margin: 0;
+}
+
+.chart-status {
+  color: #00ff88;
+  font-size: 0.9rem;
+  text-shadow: 0 0 5px rgba(0, 255, 136, 0.7);
+}
+
+/* Original Page Styles */
+.power-monitor-page {
+  /* Inherits background from MainLayout */
+}
+
+.page-title {
+  display: none; /* Hide the old title, using section titles now */
+}
+
+.card-bg {
+  background-color: rgba(10, 25, 41, 0.85);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 10px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 25px rgba(0, 212, 255, 0.1);
+}
+
+.chart-container, .table-container {
+  margin-top: 1rem;
+}
+
+.chart-title, .table-title {
+  color: #e0e0e0;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+}
+
+/* Adding styles for DataTable component */
+.data-table {
+    border-color: rgba(0, 212, 255, 0.3);
+}
+
+.data-table thead th {
+    background-color: #0f1a2e;
+    color: #00d4ff;
+    border-color: rgba(0, 212, 255, 0.4);
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.7);
+}
+
+.data-table tbody tr:hover {
+    background-color: rgba(0, 212, 255, 0.1) !important;
+}
+
+.data-table.table-striped>tbody>tr:nth-of-type(odd) {
+    --bs-table-accent-bg: rgba(0, 212, 255, 0.05);
+}
+
+/* Adding styles for SearchForm component */
+.search-form-container .form-label {
+    color: #a0b3d1;
+}
+
+.search-form-container .form-control,
+.search-form-container .form-select {
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 212, 255, 0.5);
+    color: #fff;
+}
+
+.search-form-container .form-control:focus,
+.search-form-container .form-select:focus {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-color: #00d4ff;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    color: #fff;
+}

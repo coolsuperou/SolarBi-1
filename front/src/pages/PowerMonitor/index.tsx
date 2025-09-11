@@ -9,6 +9,7 @@ import {
   getHourlyEnergyConsumptionQueryUsingGET,
   getDailyEnergyConsumptionQueryUsingGET
 } from '@/services/SolarBi-front/tempMonitorController';
+import { postRefreshCacheUsingPOST } from '@/services/SolarBi-front/tempMonitorController';
 import { DatabaseOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { PageContainer } from '@ant-design/pro-components';
@@ -66,7 +67,8 @@ const PowerMonitorPage: React.FC = () => {
   const [chartOptions, setChartOptions] = useState<any>({});
   const [dailyChartOptions, setDailyChartOptions] = useState<any>({});
   const [dailyTrendData, setDailyTrendData] = useState<any[]>([]);
-  const [pollingInterval, setPollingInterval] = useState(5); // 默认5秒
+  // 移除自动轮询
+  // const [pollingInterval, setPollingInterval] = useState(5);
   const [chartRef, setChartRef] = useState<any>(null);
   const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
   const [lastRequestTime, setLastRequestTime] = useState<string>('');
@@ -113,6 +115,42 @@ const PowerMonitorPage: React.FC = () => {
     setTempSearchParams({});
     actionRef.current?.reload();
     loadStatistics();
+  };
+
+  const handleRefresh = async () => {
+    try {
+      const res = await postRefreshCacheUsingPOST({ workshop: TARGET_WORKSHOP });
+      if (res?.code === 0) {
+        message.success('已刷新缓存，正在加载数据…');
+        // 重新拉取数据（仅从缓存读取）
+        if (currentMode === 'hour') {
+          if (isDefaultTimeRange) {
+            loadTrendData(false);
+          } else {
+            loadTrendData(false, searchParams.startTime as any, searchParams.endTime as any);
+          }
+        } else {
+          if (isDefaultTimeRange) {
+            loadDailyTrendData(false);
+          } else {
+            loadDailyTrendData(false, searchParams.startTime as any, searchParams.endTime as any);
+          }
+        }
+        // 刷新统计与表格
+        if (isDefaultTimeRange) {
+          loadStatistics();
+          setTempSearchParams({});
+        } else {
+          loadStatistics(selectedWorkshop, searchParams.startTime as any, searchParams.endTime as any);
+          setTempSearchParams(searchParams);
+        }
+        setTimeout(() => actionRef.current?.reload(), 100);
+      } else {
+        message.error(res?.message || '刷新缓存失败');
+      }
+    } catch (e: any) {
+      message.error(e?.message || '刷新缓存失败');
+    }
   };
 
   // 监听窗口大小变化
@@ -248,7 +286,7 @@ const PowerMonitorPage: React.FC = () => {
     });
       }
     } catch (error: any) {
-      console.error('获取统计数据失败：', error);
+      console.warn('获取统计数据失败：', error);
     }
   };
 
@@ -437,9 +475,8 @@ const PowerMonitorPage: React.FC = () => {
         message.warning('指定时间范围内没有找到电能数据，请检查时间范围或数据源');
       }
     } catch (error: any) {
-      console.error('计算电能消耗失败：', error);
+      console.warn('计算电能消耗失败：', error);
       setEnergyConsumption(0);
-      message.error(`计算电能消耗失败: ${error.message}`);
     }
   };
 
@@ -490,9 +527,8 @@ const PowerMonitorPage: React.FC = () => {
         message.warning('指定时间范围内没有找到日电能数据，请检查时间范围或数据源');
       }
     } catch (error: any) {
-      console.error('计算日模式电能消耗失败：', error);
+      console.warn('计算日模式电能消耗失败：', error);
       setEnergyConsumption(0);
-      message.error(`计算日模式电能消耗失败: ${error.message}`);
     }
   };
 
@@ -888,11 +924,10 @@ const PowerMonitorPage: React.FC = () => {
           console.log(`成功加载 ${totalDataPoints} 个每日电能消耗数据点`);
         }
       } else {
-        message.error(response?.message || '获取每日电能消耗数据失败');
+        console.warn('获取每日电能消耗数据失败: ', response?.message);
       }
     } catch (error: any) {
-      console.error('获取每日电能消耗数据失败：', error);
-      message.error('获取每日电能消耗数据失败：' + error.message);
+      console.warn('获取每日电能消耗数据失败：', error);
     }
   };
 
@@ -988,17 +1023,8 @@ const PowerMonitorPage: React.FC = () => {
               isExtendedPoint: true // 标记为延伸点
             };
 
-            // 在最后一个数据点后添加一个延伸点（时间往后1小时，值保持一样）
-            const extendedEndPoint = {
-              ...lastPoint,
-              x: lastPoint.x + (60 * 60 * 1000), // 往后1小时
-              time: moment(lastPoint.x + (60 * 60 * 1000)).format('MM-DD HH:00'),
-              isExtendedPoint: true // 标记为延伸点
-            };
-
-            // 将延伸点添加到数据序列中
+            // 仅添加起始侧延伸点；末尾不再添加延伸点
             sortedData.unshift(extendedStartPoint);
-            sortedData.push(extendedEndPoint);
           }
 
           return {
@@ -1319,11 +1345,10 @@ const PowerMonitorPage: React.FC = () => {
           console.log(`成功加载 ${totalDataPoints} 个每小时电能消耗数据点`);
         }
       } else {
-        message.error(response?.message || '获取每小时电能消耗数据失败');
+        console.warn('获取每小时电能消耗数据失败: ', response?.message);
       }
     } catch (error: any) {
-      console.error('获取每小时电能消耗数据失败：', error);
-      message.error('获取每小时电能消耗数据失败：' + error.message);
+      console.warn('获取每小时电能消耗数据失败：', error);
     }
   };
 
@@ -1470,25 +1495,7 @@ const PowerMonitorPage: React.FC = () => {
 
 
 
-  // 图表实时更新 - 仅在默认模式下启用
-  useEffect(() => {
-    if (!showChart || !isDefaultTimeRange) {
-      console.log('停止图表实时更新 - 图表隐藏或非默认模式');
-      return;
-    }
-
-    console.log('启动图表实时更新，间隔30秒（仅默认模式）');
-    const chartUpdateInterval = setInterval(() => {
-      console.log('图表实时更新检查:', moment().format('HH:mm:ss'), '- 默认模式');
-      // 只在默认模式下进行实时更新
-      loadTrendData(true);
-    }, 300000); // 30秒更新一次，避免过于频繁
-
-    return () => {
-      console.log('停止图表实时更新');
-      clearInterval(chartUpdateInterval);
-    };
-  }, [showChart, isDefaultTimeRange]); // 移除searchParams依赖，只在默认/查询模式切换时重新执行
+  // 移除图表自动实时更新
 
 
 
@@ -1529,14 +1536,14 @@ const PowerMonitorPage: React.FC = () => {
         }
       }
 
-      message.error(response?.message || '获取数据失败');
+      console.warn('获取数据失败: ', response?.message);
       return {
         data: [],
         success: false,
         total: 0,
       };
     } catch (error: any) {
-      message.error('获取数据失败：' + error.message);
+      console.warn('获取数据失败：', error);
       return {
         data: [],
         success: false,
@@ -2055,6 +2062,7 @@ const PowerMonitorPage: React.FC = () => {
         endTimeRef={endTimeRef}
         currentMode={currentMode}
         onModeChange={handleModeChange}
+        onRefresh={handleRefresh}
       />
 
       {/* 电能趋势图表 */}

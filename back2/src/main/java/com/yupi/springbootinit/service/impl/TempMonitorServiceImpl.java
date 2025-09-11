@@ -65,6 +65,10 @@ public class TempMonitorServiceImpl implements TempMonitorService {
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
+    @Cacheable(
+            cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_QUERY_PAGE,
+            key = "(#request.deviceId == null ? 'ALL' : #request.deviceId) + ':' + (#request.name == null ? 'ALL' : #request.name) + ':' + (#request.workshop == null ? 'ALL' : #request.workshop) + ':' + (#request.startTime == null ? 'null' : #request.startTime.time) + ':' + (#request.endTime == null ? 'null' : #request.endTime.time) + ':' + (#request.sortField == null ? 'null' : #request.sortField) + ':' + (#request.sortOrder == null ? 'null' : #request.sortOrder) + ':' + #request.current + ':' + #request.pageSize"
+    )
     public Page<TempMonitor> queryByCondition(TempMonitorQueryRequest request) {
         long current = request.getCurrent();
         long size = request.getPageSize();
@@ -109,6 +113,10 @@ public class TempMonitorServiceImpl implements TempMonitorService {
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
+    @Cacheable(
+            cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_TREND,
+            key = "(#workshop == null ? '114_空调水机主机' : #workshop) + ':' + (#deviceId == null ? 'ALL' : #deviceId) + ':' + (#startTime == null ? 'null' : #startTime.time) + ':' + (#endTime == null ? 'null' : #endTime.time) + ':' + (#limit == null ? 'ALL' : #limit)"
+    )
     public List<TempMonitor> getElectricEnergyTrend(String workshop, String deviceId, Date startTime, Date endTime, Integer limit) {
         // 服务层也强制限定车间
         String fixedWorkshop = "114_空调水机主机";

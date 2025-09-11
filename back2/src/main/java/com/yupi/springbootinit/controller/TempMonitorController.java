@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.util.Assert;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.Date;
 import java.util.List;
@@ -232,6 +233,51 @@ public class TempMonitorController {
         } catch (Exception e) {
             log.error("获取每日电能消耗数据（查询模式）失败", e);
             return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取每日电能消耗数据（查询模式）失败");
+        }
+    }
+
+    /**
+     * 刷新缓存并预加载上个时间段数据
+     * 使用说明：
+     * 1) 先对所有与 TempMonitor 相关的缓存空间执行清空（@CacheEvict allEntries=true），
+     * 2) 再调用带有 @Cacheable 的服务方法进行“预热”，保证刷新后前端立即命中缓存。
+     *
+     * 缓存策略：全局不过期（Duration.ZERO），只在手动刷新时更新。
+     */
+    @ApiOperation("刷新缓存并预加载上个时间段数据")
+    @PostMapping("/refresh-cache")
+    @CacheEvict(cacheNames = {
+            com.yupi.springbootinit.config.CacheConfig.CACHE_LATEST_DATA,
+            com.yupi.springbootinit.config.CacheConfig.CACHE_BY_WORKSHOP,
+            com.yupi.springbootinit.config.CacheConfig.CACHE_WORKSHOPS,
+            com.yupi.springbootinit.config.CacheConfig.CACHE_BY_DEVICE,
+            com.yupi.springbootinit.config.CacheConfig.CACHE_STATISTICS,
+            com.yupi.springbootinit.config.CacheConfig.CACHE_TREND,
+            com.yupi.springbootinit.config.CacheConfig.CACHE_HOURLY_CONS,
+            com.yupi.springbootinit.config.CacheConfig.CACHE_HOURLY_CONS_QUERY,
+            com.yupi.springbootinit.config.CacheConfig.CACHE_DAILY_CONS_QUERY,
+            com.yupi.springbootinit.config.CacheConfig.CACHE_QUERY_PAGE
+    }, allEntries = true, beforeInvocation = true)
+    public BaseResponse<Boolean> refreshCache(
+            @ApiParam("车间名称，可为空，默认114_空调水机主机") @RequestParam(required = false) String workshop) {
+        try {
+            String fixedWorkshop = (workshop == null || workshop.isEmpty()) ? "114_空调水机主机" : workshop;
+
+            // 触发服务层加载，利用@Cacheable预热缓存
+            tempMonitorService.getLatestData();
+            tempMonitorService.getDataByWorkshop(fixedWorkshop);
+            tempMonitorService.getAllWorkshops();
+            tempMonitorService.getStatistics(fixedWorkshop, null, null);
+            tempMonitorService.getElectricEnergyTrend(fixedWorkshop, null, null, null, 120);
+            // 小时与日的查询模式按照最近范围预热（由业务SQL决定范围）
+            tempMonitorService.getHourlyEnergyConsumption(fixedWorkshop, null, null, null);
+            tempMonitorService.getHourlyEnergyConsumptionQuery(fixedWorkshop, null, null, null);
+            tempMonitorService.getDailyEnergyConsumptionQuery(fixedWorkshop, null, null, null);
+
+            return ResultUtils.success(Boolean.TRUE);
+        } catch (Exception e) {
+            log.error("刷新缓存失败", e);
+            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "刷新缓存失败");
         }
     }
 }

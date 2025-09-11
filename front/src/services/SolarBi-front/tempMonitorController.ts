@@ -189,3 +189,20 @@ export async function getDailyEnergyConsumptionQueryUsingGET(
   });
 }
 
+/** 刷新缓存并预加载上个时间段数据 POST /api/temp-monitor/refresh-cache */
+export async function postRefreshCacheUsingPOST(
+  params?: {
+    /** 车间名称 */
+    workshop?: string;
+  },
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/temp-monitor/refresh-cache', {
+    method: 'POST',
+    params: {
+      ...(params || {}),
+    },
+    ...(options || {}),
+  });
+}
+

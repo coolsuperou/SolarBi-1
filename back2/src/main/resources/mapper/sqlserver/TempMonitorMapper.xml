@@ -428,4 +428,24 @@
           AND EndEnergy &gt;= StartEnergy
         ORDER BY DayStart, DeviceID
     </select>
+    <!-- 批量按 Id 游标加载一年窗口内的数据 -->
+    <select id="selectBatchByIdRange" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
+        SELECT TOP (#{limit})
+            Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop
+        FROM RSWS_TempMonitor_Copy
+        <where>
+            AND Workshop = #{workshop}
+            <if test="startTime != null">
+                AND UpdateTime &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND UpdateTime &lt;= #{endTime}
+            </if>
+            <if test="lastId != null">
+                AND Id &gt; #{lastId}
+            </if>
+        </where>
+        ORDER BY Id ASC
+    </select>
+
 </mapper>

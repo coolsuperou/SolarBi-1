@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.cache.annotation.EnableCaching;
 
 /**
  * 主类（项目启动入口）
@@ -19,7 +18,6 @@ import org.springframework.cache.annotation.EnableCaching;
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 @MapperScan("com.yupi.springbootinit.mapper") // 确保Mapper能被正确扫描
 @EnableScheduling
-@EnableCaching
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 public class MainApplication {
 

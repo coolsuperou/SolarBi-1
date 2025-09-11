@@ -115,4 +115,14 @@ public interface TempMonitorMapper extends BaseMapper<TempMonitor> {
                                                                  @Param("deviceId") String deviceId,
                                                                  @Param("startTime") Date startTime,
                                                                  @Param("endTime") Date endTime);
+
+    /**
+     * 批量按 Id 游标加载一年窗口内的数据（用于构建 Redis 全量缓存）
+     * 使用 keyset pagination：Id > lastId，按 Id 升序取 TOP(limit)
+     */
+    List<TempMonitor> selectBatchByIdRange(@Param("workshop") String workshop,
+                                           @Param("startTime") Date startTime,
+                                           @Param("endTime") Date endTime,
+                                           @Param("lastId") Long lastId,
+                                           @Param("limit") Integer limit);
 }

@@ -19,6 +19,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.util.Assert;
 import org.springframework.cache.annotation.CacheEvict;
+import com.yupi.springbootinit.service.cache.TempMonitorCacheLoader;
 
 import java.util.Date;
 import java.util.List;
@@ -36,6 +37,9 @@ public class TempMonitorController {
 
     @Autowired
     private TempMonitorService tempMonitorService;
+
+    @Autowired
+    private TempMonitorCacheLoader tempMonitorCacheLoader;
 
     @ApiOperation("获取最新温湿电能数据")
     @GetMapping("/latest")
@@ -82,36 +86,7 @@ public class TempMonitorController {
         return ResultUtils.success(page);
     }
 
-    @ApiOperation("获取温湿电能数据统计信息")
-    @GetMapping("/statistics")
-    public BaseResponse<TempMonitorStatistics> getStatistics(
-            @ApiParam("车间名称") @RequestParam(required = false) String workshop,
-            @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
-            @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
-        // 后端时间范围校验：如果两者都传，必须 end > start 且范围合理
-        if (startTime != null && endTime != null) {
-            if (!endTime.after(startTime)) {
-                return ResultUtils.error(ErrorCode.PARAMS_ERROR, "结束时间必须晚于开始时间");
-            }
-            long diffMs = endTime.getTime() - startTime.getTime();
-            long diffDays = diffMs / (1000 * 60 * 60 * 24);
-            if (diffDays > 31) {
-                return ResultUtils.error(ErrorCode.PARAMS_ERROR, "时间范围过大，请选择不超过31天");
-            }
-        }
-        TempMonitorStatistics statistics = tempMonitorService.getStatistics(workshop, startTime, endTime);
-        return ResultUtils.success(statistics);
-    }
-
-    @ApiOperation("获取设备数量统计")
-    @GetMapping("/device-count")
-    public BaseResponse<Integer> getDeviceCount(
-            @ApiParam("车间名称") @RequestParam(required = false) String workshop,
-            @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
-            @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
-        Integer count = tempMonitorService.getDeviceCount(workshop, startTime, endTime);
-        return ResultUtils.success(count);
-    }
+    
 
     @ApiOperation("获取电能趋势数据（固定114_空调水机主机）")
     @GetMapping("/electric-energy-trend")
@@ -246,33 +221,12 @@ public class TempMonitorController {
      */
     @ApiOperation("刷新缓存并预加载上个时间段数据")
     @PostMapping("/refresh-cache")
-    @CacheEvict(cacheNames = {
-            com.yupi.springbootinit.config.CacheConfig.CACHE_LATEST_DATA,
-            com.yupi.springbootinit.config.CacheConfig.CACHE_BY_WORKSHOP,
-            com.yupi.springbootinit.config.CacheConfig.CACHE_WORKSHOPS,
-            com.yupi.springbootinit.config.CacheConfig.CACHE_BY_DEVICE,
-            com.yupi.springbootinit.config.CacheConfig.CACHE_STATISTICS,
-            com.yupi.springbootinit.config.CacheConfig.CACHE_TREND,
-            com.yupi.springbootinit.config.CacheConfig.CACHE_HOURLY_CONS,
-            com.yupi.springbootinit.config.CacheConfig.CACHE_HOURLY_CONS_QUERY,
-            com.yupi.springbootinit.config.CacheConfig.CACHE_DAILY_CONS_QUERY,
-            com.yupi.springbootinit.config.CacheConfig.CACHE_QUERY_PAGE
-    }, allEntries = true, beforeInvocation = true)
     public BaseResponse<Boolean> refreshCache(
             @ApiParam("车间名称，可为空，默认114_空调水机主机") @RequestParam(required = false) String workshop) {
         try {
             String fixedWorkshop = (workshop == null || workshop.isEmpty()) ? "114_空调水机主机" : workshop;
-
-            // 触发服务层加载，利用@Cacheable预热缓存
-            tempMonitorService.getLatestData();
-            tempMonitorService.getDataByWorkshop(fixedWorkshop);
-            tempMonitorService.getAllWorkshops();
-            tempMonitorService.getStatistics(fixedWorkshop, null, null);
-            tempMonitorService.getElectricEnergyTrend(fixedWorkshop, null, null, null, 120);
-            // 小时与日的查询模式按照最近范围预热（由业务SQL决定范围）
-            tempMonitorService.getHourlyEnergyConsumption(fixedWorkshop, null, null, null);
-            tempMonitorService.getHourlyEnergyConsumptionQuery(fixedWorkshop, null, null, null);
-            tempMonitorService.getDailyEnergyConsumptionQuery(fixedWorkshop, null, null, null);
+            // 重建一年窗口缓存并原子切换
+            tempMonitorCacheLoader.rebuildOneYearWindow(fixedWorkshop);
 
             return ResultUtils.success(Boolean.TRUE);
         } catch (Exception e) {

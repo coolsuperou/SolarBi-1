@@ -3,7 +3,6 @@ import {
   getDataByWorkshopUsingGET,
   getAllWorkshopsUsingGET,
   queryByConditionUsingPOST,
-  getStatisticsUsingGET,
   getElectricEnergyTrendUsingGET,
   getHourlyEnergyConsumptionUsingGET,
   getHourlyEnergyConsumptionQueryUsingGET,
@@ -251,40 +250,30 @@ const PowerMonitorPage: React.FC = () => {
     loadDefaults(currentMode); // 初始加载和模式切换时，加载对应模式的默认数据
   }, [currentMode]); // 当模式改变时，此hook会重新运行
 
-  // 加载统计数据
+  // 加载统计数据（精简：仅计算设备数与总电能，移除后端统计接口依赖）
   const loadStatistics = async (workshop?: string, startTime?: string, endTime?: string) => {
     try {
-      // 确保时间格式为 yyyy-MM-dd HH:mm:ss
-      const formattedStartTime = startTime ? moment(startTime).format('YYYY-MM-DD HH:mm:ss') : undefined;
-      const formattedEndTime = endTime ? moment(endTime).format('YYYY-MM-DD HH:mm:ss') : undefined;
-
-      // 获取基础统计数据（设备数、温度、湿度）
-      const response = await getStatisticsUsingGET({
-        workshop,
-        startTime: formattedStartTime,
-        endTime: formattedEndTime,
-      });
-
-      // 获取114_空调水机主机的电能数据
       const electricEnergyResponse = await getDataByWorkshopUsingGET({
         workshop: '114_空调水机主机'
       });
 
       let totalElectricEnergy = 0;
+      let deviceCount = 0;
       if (electricEnergyResponse?.code === 0 && electricEnergyResponse.data && electricEnergyResponse.data.length > 0) {
         // 获取最新一条记录的电能信息（数据通常按时间倒序排列）
         const latestRecord = electricEnergyResponse.data[0];
         totalElectricEnergy = Number(latestRecord.electricEnergy) || 0;
+        // 设备数：以 deviceId 去重统计当前列表
+        const setIds = new Set((electricEnergyResponse.data || []).map((d:any)=>d.deviceId));
+        deviceCount = setIds.size;
       }
 
-      if (response?.code === 0 && response.data) {
-    setStats({
-          totalDevices: response.data.totalDevices || 0,
-          avgTemperature: Number((response.data.avgTemperature || 0).toFixed(1)),
-          avgHumidity: Number((response.data.avgHumidity || 0).toFixed(1)),
-      totalElectricEnergy: Number(totalElectricEnergy.toFixed(2)),
-    });
-      }
+      setStats({
+        totalDevices: deviceCount,
+        avgTemperature: 0,
+        avgHumidity: 0,
+        totalElectricEnergy: Number(totalElectricEnergy.toFixed(2)),
+      });
     } catch (error: any) {
       console.warn('获取统计数据失败：', error);
     }

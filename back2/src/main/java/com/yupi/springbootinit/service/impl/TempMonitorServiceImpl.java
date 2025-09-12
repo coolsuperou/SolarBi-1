@@ -38,7 +38,7 @@ public class TempMonitorServiceImpl implements TempMonitorService {
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     @Cacheable(cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_LATEST_DATA)
     public List<TempMonitor> getLatestData() {
-        log.debug("从数据库获取最新TempMonitor数据");
+        log.debug("从数据库获取最新TempMonitor数据（仅114_空调水机主机）");
         return tempMonitorMapper.selectLatestData();
     }
 
@@ -46,13 +46,15 @@ public class TempMonitorServiceImpl implements TempMonitorService {
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     @Cacheable(cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_BY_WORKSHOP, key = "#workshop == null ? 'ALL' : #workshop")
     public List<TempMonitor> getDataByWorkshop(String workshop) {
-        return tempMonitorMapper.selectByWorkshop(workshop);
+        // 强制固定车间
+        return tempMonitorMapper.selectByWorkshop("114_空调水机主机");
     }
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     @Cacheable(cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_WORKSHOPS)
     public List<String> getAllWorkshops() {
+        // 只返回固定车间
         return tempMonitorMapper.selectAllWorkshops();
     }
 
@@ -81,7 +83,7 @@ public class TempMonitorServiceImpl implements TempMonitorService {
             page,
             request.getDeviceId(),
             request.getName(),
-            request.getWorkshop(),
+            "114_空调水机主机",
             request.getStartTime(),
             request.getEndTime(),
             request.getSortField(),
@@ -96,9 +98,9 @@ public class TempMonitorServiceImpl implements TempMonitorService {
             key = "(#workshop == null ? 'ALL' : #workshop) + ':' + (#startTime == null ? 'null' : #startTime.time) + ':' + (#endTime == null ? 'null' : #endTime.time)"
     )
     public TempMonitorStatistics getStatistics(String workshop, Date startTime, Date endTime) {
-        TempMonitorStatistics statistics = tempMonitorMapper.getStatistics(workshop, startTime, endTime);
+        TempMonitorStatistics statistics = tempMonitorMapper.getStatistics("114_空调水机主机", startTime, endTime);
         // 获取设备数量
-        Integer deviceCount = tempMonitorMapper.countDevices(workshop, startTime, endTime);
+        Integer deviceCount = tempMonitorMapper.countDevices("114_空调水机主机", startTime, endTime);
         statistics.setTotalDevices(deviceCount != null ? deviceCount : 0);
         
         return statistics;
@@ -107,7 +109,7 @@ public class TempMonitorServiceImpl implements TempMonitorService {
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     public Integer getDeviceCount(String workshop, Date startTime, Date endTime) {
-        Integer count = tempMonitorMapper.countDevices(workshop, startTime, endTime);
+        Integer count = tempMonitorMapper.countDevices("114_空调水机主机", startTime, endTime);
         return count != null ? count : 0;
     }
 

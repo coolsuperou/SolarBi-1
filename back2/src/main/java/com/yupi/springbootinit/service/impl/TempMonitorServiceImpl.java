@@ -9,7 +9,6 @@ import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
 import com.yupi.springbootinit.model.entity.TempMonitor;
 import com.yupi.springbootinit.service.TempMonitorService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,41 +35,44 @@ public class TempMonitorServiceImpl implements TempMonitorService {
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    @Cacheable(cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_LATEST_DATA)
     public List<TempMonitor> getLatestData() {
-        log.debug("从数据库获取最新TempMonitor数据（仅114_空调水机主机）");
-        return tempMonitorMapper.selectLatestData();
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        log.debug("从数据库获取最新TempMonitor数据，车间: {}", fixedWorkshop);
+        return tempMonitorMapper.selectByWorkshop(fixedWorkshop);
     }
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    @Cacheable(cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_BY_WORKSHOP, key = "#workshop == null ? 'ALL' : #workshop")
     public List<TempMonitor> getDataByWorkshop(String workshop) {
-        // 强制固定车间
-        return tempMonitorMapper.selectByWorkshop("114_空调水机主机");
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        return tempMonitorMapper.selectByWorkshop(fixedWorkshop);
     }
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    @Cacheable(cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_WORKSHOPS)
     public List<String> getAllWorkshops() {
-        // 只返回固定车间
-        return tempMonitorMapper.selectAllWorkshops();
+        // 只返回固定的workshop列表
+        return java.util.Arrays.asList("114_空调水机主机");
     }
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    @Cacheable(cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_BY_DEVICE, key = "#deviceId")
     public List<TempMonitor> getDataByDeviceId(String deviceId) {
-        return tempMonitorMapper.selectByDeviceId(deviceId);
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        log.debug("根据设备ID获取数据，车间: {}, 设备: {}", fixedWorkshop, deviceId);
+        
+        // 先获取指定车间的所有数据，然后按设备ID过滤
+        List<TempMonitor> allData = tempMonitorMapper.selectByWorkshop(fixedWorkshop);
+        return allData.stream()
+                .filter(item -> deviceId != null && deviceId.equals(item.getDeviceId()))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    @Cacheable(
-            cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_QUERY_PAGE,
-            key = "(#request.deviceId == null ? 'ALL' : #request.deviceId) + ':' + (#request.name == null ? 'ALL' : #request.name) + ':' + (#request.workshop == null ? 'ALL' : #request.workshop) + ':' + (#request.startTime == null ? 'null' : #request.startTime.time) + ':' + (#request.endTime == null ? 'null' : #request.endTime.time) + ':' + (#request.sortField == null ? 'null' : #request.sortField) + ':' + (#request.sortOrder == null ? 'null' : #request.sortOrder) + ':' + #request.current + ':' + #request.pageSize"
-    )
     public Page<TempMonitor> queryByCondition(TempMonitorQueryRequest request) {
         long current = request.getCurrent();
         long size = request.getPageSize();
@@ -78,12 +80,15 @@ public class TempMonitorServiceImpl implements TempMonitorService {
         // 创建分页对象
         Page<TempMonitor> page = new Page<>(current, size);
         
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        
         // 调用Mapper进行查询
         return tempMonitorMapper.selectPageByCondition(
             page,
             request.getDeviceId(),
             request.getName(),
-            "114_空调水机主机",
+            fixedWorkshop,
             request.getStartTime(),
             request.getEndTime(),
             request.getSortField(),
@@ -93,14 +98,26 @@ public class TempMonitorServiceImpl implements TempMonitorService {
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    @Cacheable(
-            cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_STATISTICS,
-            key = "(#workshop == null ? 'ALL' : #workshop) + ':' + (#startTime == null ? 'null' : #startTime.time) + ':' + (#endTime == null ? 'null' : #endTime.time)"
-    )
     public TempMonitorStatistics getStatistics(String workshop, Date startTime, Date endTime) {
-        TempMonitorStatistics statistics = tempMonitorMapper.getStatistics("114_空调水机主机", startTime, endTime);
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        TempMonitorStatistics statistics = tempMonitorMapper.getStatistics(fixedWorkshop, startTime, endTime);
+        
+        // 如果统计结果为空，创建一个默认的统计对象
+        if (statistics == null) {
+            statistics = new TempMonitorStatistics();
+            statistics.setAvgTemperature(0.0);
+            statistics.setMinTemperature(0.0);
+            statistics.setMaxTemperature(0.0);
+            statistics.setAvgHumidity(0.0);
+            statistics.setMinHumidity(0.0);
+            statistics.setMaxHumidity(0.0);
+            statistics.setTotalElectricEnergy(0.0);
+            statistics.setAvgElectricEnergy(0.0);
+        }
+        
         // 获取设备数量
-        Integer deviceCount = tempMonitorMapper.countDevices("114_空调水机主机", startTime, endTime);
+        Integer deviceCount = tempMonitorMapper.countDevices(fixedWorkshop, startTime, endTime);
         statistics.setTotalDevices(deviceCount != null ? deviceCount : 0);
         
         return statistics;
@@ -109,16 +126,14 @@ public class TempMonitorServiceImpl implements TempMonitorService {
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     public Integer getDeviceCount(String workshop, Date startTime, Date endTime) {
-        Integer count = tempMonitorMapper.countDevices("114_空调水机主机", startTime, endTime);
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        Integer count = tempMonitorMapper.countDevices(fixedWorkshop, startTime, endTime);
         return count != null ? count : 0;
     }
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    @Cacheable(
-            cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_TREND,
-            key = "(#workshop == null ? '114_空调水机主机' : #workshop) + ':' + (#deviceId == null ? 'ALL' : #deviceId) + ':' + (#startTime == null ? 'null' : #startTime.time) + ':' + (#endTime == null ? 'null' : #endTime.time) + ':' + (#limit == null ? 'ALL' : #limit)"
-    )
     public List<TempMonitor> getElectricEnergyTrend(String workshop, String deviceId, Date startTime, Date endTime, Integer limit) {
         // 服务层也强制限定车间
         String fixedWorkshop = "114_空调水机主机";
@@ -128,10 +143,6 @@ public class TempMonitorServiceImpl implements TempMonitorService {
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    @Cacheable(
-            cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_HOURLY_CONS,
-            key = "(#workshop == null ? '114_空调水机主机' : #workshop) + ':' + (#deviceId == null ? 'ALL' : #deviceId) + ':' + (#startTime == null ? 'null' : #startTime.time) + ':' + (#endTime == null ? 'null' : #endTime.time)"
-    )
     public List<HourlyEnergyConsumption> getHourlyEnergyConsumption(String workshop, String deviceId, Date startTime, Date endTime) {
         // 服务层也强制限定车间
         String fixedWorkshop = "114_空调水机主机";
@@ -160,10 +171,6 @@ public class TempMonitorServiceImpl implements TempMonitorService {
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    @Cacheable(
-            cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_HOURLY_CONS_QUERY,
-            key = "(#workshop == null ? '114_空调水机主机' : #workshop) + ':' + (#deviceId == null ? 'ALL' : #deviceId) + ':' + (#startTime == null ? 'null' : #startTime.time) + ':' + (#endTime == null ? 'null' : #endTime.time)"
-    )
     public List<HourlyEnergyConsumption> getHourlyEnergyConsumptionQuery(String workshop, String deviceId, Date startTime, Date endTime) {
         // 服务层也强制限定车间
         String fixedWorkshop = "114_空调水机主机";
@@ -192,10 +199,6 @@ public class TempMonitorServiceImpl implements TempMonitorService {
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    @Cacheable(
-            cacheNames = com.yupi.springbootinit.config.CacheConfig.CACHE_DAILY_CONS_QUERY,
-            key = "(#workshop == null ? '114_空调水机主机' : #workshop) + ':' + (#deviceId == null ? 'ALL' : #deviceId) + ':' + (#startTime == null ? 'null' : #startTime.time) + ':' + (#endTime == null ? 'null' : #endTime.time)"
-    )
     public List<DailyEnergyConsumption> getDailyEnergyConsumptionQuery(String workshop, String deviceId, Date startTime, Date endTime) {
         // 服务层也强制限定车间
         String fixedWorkshop = "114_空调水机主机";

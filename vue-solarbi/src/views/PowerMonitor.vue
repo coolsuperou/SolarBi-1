@@ -49,47 +49,105 @@
      <!-- 搜索表单 -->
      <div class="search-section mb-4">
        <div class="tech-card p-3">
-         <form @submit.prevent="handleSearch" class="row g-3 align-items-end">
-           <div class="col-md-4">
-             <label class="form-label text-glow-primary fw-semibold">
-               <i class="bi bi-calendar me-1"></i>开始{{ currentMode === 'hour' ? '时间' : '日期' }}
-             </label>
-             <input
-               :type="currentMode === 'hour' ? 'datetime-local' : 'date'"
-               :step="currentMode === 'hour' ? '3600' : undefined"
-               v-model="searchForm.startTime"
-               class="form-control form-control-glow"
-             />
-           </div>
-           <div class="col-md-4">
-             <label class="form-label text-glow-primary fw-semibold">
-               <i class="bi bi-calendar me-1"></i>结束{{ currentMode === 'hour' ? '时间' : '日期' }}
-             </label>
-             <input
-               :type="currentMode === 'hour' ? 'datetime-local' : 'date'"
-               :step="currentMode === 'hour' ? '3600' : undefined"
-               v-model="searchForm.endTime"
-               class="form-control form-control-glow"
-             />
-           </div>
-           <div class="col-md-4">
-             <div class="d-flex gap-2">
-               <button type="submit" class="btn btn-glow flex-fill" :disabled="searchLoading">
-                 <i class="bi bi-search me-1" :class="{ 'spinning': searchLoading }"></i>
-                 搜索
-               </button>
-               <button type="button" class="btn btn-outline-secondary" @click="resetSearch">
-                 <i class="bi bi-arrow-clockwise me-1"></i>
-                 重置
-               </button>
+         <div class="search-header d-flex justify-content-between align-items-center mb-3">
+           <h6 class="search-title text-glow-primary mb-0">
+             <i class="bi bi-eye me-2"></i>实时监控数据
+           </h6>
+           <button 
+             type="button" 
+             class="btn btn-collapse"
+             @click="chartCollapsed = !chartCollapsed"
+           >
+             <i class="bi" :class="chartCollapsed ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
+             {{ chartCollapsed ? '展开' : '折叠' }}
+           </button>
+         </div>
+         
+         <div class="search-form">
+           <form @submit.prevent="handleSearch" class="row g-3 align-items-end">
+             <div class="col-md-4">
+               <label class="form-label text-glow-primary fw-semibold">
+                 <i class="bi bi-calendar me-1"></i>开始{{ currentMode === 'hour' ? '时间' : '日期' }}
+               </label>
+               <div v-if="currentMode === 'hour'" class="row g-2">
+                 <div class="col-7">
+                   <input
+                     type="date"
+                     v-model="startDate"
+                     class="form-control form-control-glow"
+                     placeholder="选择日期"
+                   />
+                 </div>
+                 <div class="col-5">
+                   <select
+                     v-model="startHour"
+                     class="form-select form-control-glow"
+                   >
+                     <option value="" disabled>选择小时</option>
+                     <option v-for="hour in 24" :key="hour-1" :value="String(hour-1).padStart(2, '0') + ':00'">
+                       {{ hour-1 }}时
+                     </option>
+                   </select>
+                 </div>
+               </div>
+               <input
+                 v-else
+                 type="date"
+                 v-model="searchForm.startTime"
+                 class="form-control form-control-glow"
+               />
              </div>
-           </div>
-         </form>
+             <div class="col-md-4">
+               <label class="form-label text-glow-primary fw-semibold">
+                 <i class="bi bi-calendar me-1"></i>结束{{ currentMode === 'hour' ? '时间' : '日期' }}
+               </label>
+               <div v-if="currentMode === 'hour'" class="row g-2">
+                 <div class="col-7">
+                   <input
+                     type="date"
+                     v-model="endDate"
+                     class="form-control form-control-glow"
+                     placeholder="选择日期"
+                   />
+                 </div>
+                 <div class="col-5">
+                   <select
+                     v-model="endHour"
+                     class="form-select form-control-glow"
+                   >
+                     <option value="" disabled>选择小时</option>
+                     <option v-for="hour in 24" :key="hour-1" :value="String(hour-1).padStart(2, '0') + ':00'">
+                       {{ hour-1 }}时
+                     </option>
+                   </select>
+                 </div>
+               </div>
+               <input
+                 v-else
+                 type="date"
+                 v-model="searchForm.endTime"
+                 class="form-control form-control-glow"
+               />
+             </div>
+             <div class="col-md-4">
+               <div class="d-flex gap-2">
+                 <button type="submit" class="btn btn-search flex-fill" :disabled="searchLoading">
+                   <i class="bi bi-search me-1" :class="{ 'spinning': searchLoading }"></i>
+                   查询
+                 </button>
+                 <button type="button" class="btn btn-reset" @click="resetSearch">
+                   <i class="bi bi-arrow-clockwise me-1"></i>
+                   重置
+                 </button>
+               </div>
+             </div>
+           </form>
+         </div>
        </div>
      </div>
 
     <!-- 图表区域 -->
-    <div class="chart-section mb-4" v-if="showChart">
+    <div class="chart-section mb-4" v-if="showChart && !chartCollapsed">
       <PowerChart
         :title="currentMode === 'hour' ? '每小时电能消耗趋势' : '每日电能消耗趋势'"
         :chart-options="chartOptions"
@@ -136,7 +194,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import moment from 'moment'
 import StatisticsCard from '@/components/StatisticsCard.vue'
 import PowerChart from '@/components/PowerChart.vue'
@@ -155,8 +213,15 @@ const searchForm = reactive({
   endTime: ''
 })
 
+// 分离的日期和时间字段（用于小时模式）
+const startDate = ref('')
+const startHour = ref('')
+const endDate = ref('')
+const endHour = ref('')
+
 const currentMode = ref('hour')
 const showChart = ref(true)
+const chartCollapsed = ref(false)
 const searchLoading = ref(false)
 const chartLoading = ref(false)
 const tableLoading = ref(false)
@@ -468,15 +533,37 @@ const setDefaultTimeRange = () => {
   const now = moment()
   
   if (currentMode.value === 'hour') {
-    // 小时模式：精确到小时
-    searchForm.endTime = now.format('YYYY-MM-DDTHH:00')
-    searchForm.startTime = now.clone().subtract(24, 'hours').format('YYYY-MM-DDTHH:00')
+    // 小时模式：设置分离的日期和时间字段
+    const startMoment = now.clone().subtract(24, 'hours')
+    const endMoment = now.clone()
+    
+    startDate.value = startMoment.format('YYYY-MM-DD')
+    startHour.value = startMoment.format('HH:00')
+    endDate.value = endMoment.format('YYYY-MM-DD')
+    endHour.value = endMoment.format('HH:00')
+    
+    // 同时更新searchForm
+    searchForm.startTime = startMoment.format('YYYY-MM-DDTHH:00')
+    searchForm.endTime = endMoment.format('YYYY-MM-DDTHH:00')
   } else {
     // 日模式：只选择日期
     searchForm.endTime = now.format('YYYY-MM-DD')
     searchForm.startTime = now.clone().subtract(7, 'days').format('YYYY-MM-DD')
   }
 }
+
+// 监听分离的日期和时间字段变化，同步到searchForm
+watch([startDate, startHour], () => {
+  if (currentMode.value === 'hour' && startDate.value && startHour.value) {
+    searchForm.startTime = `${startDate.value}T${startHour.value}`
+  }
+})
+
+watch([endDate, endHour], () => {
+  if (currentMode.value === 'hour' && endDate.value && endHour.value) {
+    searchForm.endTime = `${endDate.value}T${endHour.value}`
+  }
+})
 
 // 组件挂载时初始化
 onMounted(() => {
@@ -510,11 +597,134 @@ onMounted(() => {
     }
   }
   
-  .search-section {
-    .form-label {
-      font-size: $font-size-sm;
-      margin-bottom: $spacing-xs;
-    }
+   .search-section {
+     .search-header {
+       border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+       padding-bottom: 0.75rem;
+       
+       .search-title {
+         font-size: 1rem;
+         font-weight: 600;
+         
+         i {
+           color: #00d4ff;
+         }
+       }
+     }
+     
+     .btn-collapse {
+       background: transparent;
+       border: 1px solid rgba(0, 212, 255, 0.3);
+       color: #00d4ff;
+       padding: 0.375rem 0.75rem;
+       border-radius: 0.375rem;
+       font-size: 0.875rem;
+       transition: all 0.3s ease;
+       
+       &:hover {
+         border-color: #00d4ff;
+         background-color: rgba(0, 212, 255, 0.1);
+         box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+       }
+       
+       i {
+         margin-right: 0.5rem;
+       }
+     }
+     
+     .search-form {
+       padding-top: 1rem;
+       animation: slideDown 0.3s ease-in-out;
+     }
+     
+     .form-label {
+       font-size: $font-size-sm;
+       margin-bottom: $spacing-xs;
+     }
+     
+     // 小时选择器样式
+     .form-select {
+       background-color: rgba(10, 25, 41, 0.8);
+       border: 1px solid rgba(0, 212, 255, 0.3);
+       color: #00d4ff;
+       
+       &:focus {
+         border-color: #00d4ff;
+         box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.25);
+         background-color: rgba(10, 25, 41, 0.9);
+       }
+       
+       option {
+         background-color: rgba(10, 25, 41, 0.95);
+         color: #00d4ff;
+         
+         &:hover {
+           background-color: rgba(0, 212, 255, 0.1);
+         }
+       }
+     }
+     
+     // 查询按钮样式
+     .btn-search {
+       background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+       border: none;
+       color: #ffffff;
+       font-weight: 600;
+       padding: 0.5rem 1.5rem;
+       border-radius: 0.375rem;
+       transition: all 0.3s ease;
+       
+       &:hover:not(:disabled) {
+         background: linear-gradient(135deg, #00b8e6 0%, #0088bb 100%);
+         box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+         transform: translateY(-1px);
+       }
+       
+       &:disabled {
+         opacity: 0.6;
+         cursor: not-allowed;
+       }
+     }
+     
+     // 重置按钮样式
+     .btn-reset {
+       background: transparent;
+       border: 1px solid rgba(108, 117, 125, 0.5);
+       color: #6c757d;
+       font-weight: 500;
+       padding: 0.5rem 1rem;
+       border-radius: 0.375rem;
+       transition: all 0.3s ease;
+       
+       &:hover {
+         border-color: #6c757d;
+         background-color: rgba(108, 117, 125, 0.1);
+         color: #495057;
+       }
+     }
+   }
+}
+
+// 折叠动画
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
   }
 }
 

@@ -36,26 +36,39 @@ public class TempMonitorServiceImpl implements TempMonitorService {
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     public List<TempMonitor> getLatestData() {
-        log.debug("从数据库获取最新TempMonitor数据");
-        return tempMonitorMapper.selectLatestData();
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        log.debug("从数据库获取最新TempMonitor数据，车间: {}", fixedWorkshop);
+        return tempMonitorMapper.selectByWorkshop(fixedWorkshop);
     }
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     public List<TempMonitor> getDataByWorkshop(String workshop) {
-        return tempMonitorMapper.selectByWorkshop(workshop);
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        return tempMonitorMapper.selectByWorkshop(fixedWorkshop);
     }
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     public List<String> getAllWorkshops() {
-        return tempMonitorMapper.selectAllWorkshops();
+        // 只返回固定的workshop列表
+        return java.util.Arrays.asList("114_空调水机主机");
     }
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     public List<TempMonitor> getDataByDeviceId(String deviceId) {
-        return tempMonitorMapper.selectByDeviceId(deviceId);
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        log.debug("根据设备ID获取数据，车间: {}, 设备: {}", fixedWorkshop, deviceId);
+        
+        // 先获取指定车间的所有数据，然后按设备ID过滤
+        List<TempMonitor> allData = tempMonitorMapper.selectByWorkshop(fixedWorkshop);
+        return allData.stream()
+                .filter(item -> deviceId != null && deviceId.equals(item.getDeviceId()))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Override
@@ -67,12 +80,15 @@ public class TempMonitorServiceImpl implements TempMonitorService {
         // 创建分页对象
         Page<TempMonitor> page = new Page<>(current, size);
         
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        
         // 调用Mapper进行查询
         return tempMonitorMapper.selectPageByCondition(
             page,
             request.getDeviceId(),
             request.getName(),
-            request.getWorkshop(),
+            fixedWorkshop,
             request.getStartTime(),
             request.getEndTime(),
             request.getSortField(),
@@ -83,7 +99,9 @@ public class TempMonitorServiceImpl implements TempMonitorService {
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     public TempMonitorStatistics getStatistics(String workshop, Date startTime, Date endTime) {
-        TempMonitorStatistics statistics = tempMonitorMapper.getStatistics(workshop, startTime, endTime);
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        TempMonitorStatistics statistics = tempMonitorMapper.getStatistics(fixedWorkshop, startTime, endTime);
         
         // 如果统计结果为空，创建一个默认的统计对象
         if (statistics == null) {
@@ -99,7 +117,7 @@ public class TempMonitorServiceImpl implements TempMonitorService {
         }
         
         // 获取设备数量
-        Integer deviceCount = tempMonitorMapper.countDevices(workshop, startTime, endTime);
+        Integer deviceCount = tempMonitorMapper.countDevices(fixedWorkshop, startTime, endTime);
         statistics.setTotalDevices(deviceCount != null ? deviceCount : 0);
         
         return statistics;
@@ -108,7 +126,9 @@ public class TempMonitorServiceImpl implements TempMonitorService {
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     public Integer getDeviceCount(String workshop, Date startTime, Date endTime) {
-        Integer count = tempMonitorMapper.countDevices(workshop, startTime, endTime);
+        // 服务层也强制限定车间
+        String fixedWorkshop = "114_空调水机主机";
+        Integer count = tempMonitorMapper.countDevices(fixedWorkshop, startTime, endTime);
         return count != null ? count : 0;
     }
 

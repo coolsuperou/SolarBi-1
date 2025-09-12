@@ -1,0 +1,227 @@
+@import 'variables';
+
+// 基础样式重置和全局样式
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(135deg, $bg-primary 0%, $bg-secondary 50%, $bg-tertiary 100%);
+  color: $text-primary;
+  min-height: 100vh;
+  position: relative;
+  
+  // 添加科技感背景效果
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 60% 40%, rgba(0, 255, 136, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -2;
+  }
+  
+  // 网格背景效果
+  &::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+// 科技感卡片样式
+.tech-card {
+  background: linear-gradient(135deg, $bg-card, $bg-table);
+  border: 2px solid $border-primary;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-card, $glow-primary;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $border-secondary;
+    box-shadow: $shadow-card, $glow-secondary;
+    transform: translateY(-2px);
+  }
+}
+
+// 发光按钮
+.btn-glow {
+  background: linear-gradient(135deg, $primary-color, $primary-dark);
+  border: 2px solid $primary-color;
+  color: $text-primary;
+  font-weight: 600;
+  text-shadow: $glow-primary;
+  box-shadow: $glow-primary;
+  border-radius: $border-radius-md;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: linear-gradient(135deg, lighten($primary-color, 10%), $primary-color);
+    box-shadow: $glow-strong;
+    transform: translateY(-1px);
+    color: $text-primary;
+  }
+  
+  &:focus {
+    box-shadow: $glow-strong;
+    color: $text-primary;
+  }
+}
+
+// 发光输入框
+.form-control-glow {
+  background: rgba(26, 35, 50, 0.8);
+  border: 2px solid $border-primary;
+  color: $text-primary;
+  border-radius: $border-radius-md;
+  transition: all 0.3s ease;
+  
+  &:focus {
+    background: rgba(26, 35, 50, 0.9);
+    border-color: $border-secondary;
+    box-shadow: $glow-primary;
+    color: $text-primary;
+  }
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+// 发光文字效果
+.text-glow-primary {
+  color: $text-glow;
+  text-shadow: $glow-primary;
+  font-weight: 700;
+}
+
+.text-glow-secondary {
+  color: $text-purple;
+  text-shadow: 0 0 8px rgba(168, 85, 247, 0.8);
+  font-weight: 700;
+}
+
+.text-glow-warning {
+  color: $text-yellow;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+  font-weight: 700;
+}
+
+// 导航栏样式
+.navbar-tech {
+  background: linear-gradient(135deg, $bg-card, $bg-table);
+  border-bottom: 2px solid $border-primary;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+// 表格样式
+.table-tech {
+  background: transparent;
+  color: $text-primary;
+  
+  th {
+    background: linear-gradient(135deg, #0f1a2e, #1a2742);
+    border-bottom: 2px solid $primary-color;
+    color: $text-glow;
+    font-weight: 700;
+    text-shadow: $glow-primary;
+  }
+  
+  td {
+    background: linear-gradient(135deg, $bg-card, $bg-table);
+    border-bottom: 1px solid $border-primary;
+    font-weight: 600;
+    
+    &:nth-child(odd) {
+      color: $text-primary;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+    }
+    
+    &:nth-child(even) {
+      color: $text-purple;
+      text-shadow: 0 0 8px rgba(168, 85, 247, 0.8);
+    }
+  }
+  
+  tr:hover td {
+    background: linear-gradient(135deg, rgba(10, 25, 41, 1), rgba(26, 35, 126, 0.9));
+  }
+}
+
+// 统计卡片
+.stats-card {
+  @extend .tech-card;
+  text-align: center;
+  padding: $spacing-lg;
+  
+  .stats-value {
+    font-size: $font-size-xxl;
+    font-weight: 700;
+    color: $text-glow;
+    text-shadow: $glow-primary;
+    margin-bottom: $spacing-sm;
+  }
+  
+  .stats-label {
+    font-size: $font-size-sm;
+    color: $text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .stats-icon {
+    font-size: 2.5rem;
+    color: $text-glow;
+    margin-bottom: $spacing-md;
+    filter: drop-shadow($glow-primary);
+  }
+}
+
+// 响应式调整
+@media (max-width: $breakpoint-md) {
+  .stats-card {
+    padding: $spacing-md;
+    
+    .stats-value {
+      font-size: $font-size-xl;
+    }
+    
+    .stats-icon {
+      font-size: 2rem;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .stats-card {
+    padding: $spacing-sm;
+    
+    .stats-value {
+      font-size: $font-size-lg;
+    }
+    
+    .stats-icon {
+      font-size: 1.5rem;
+    }
+  }
+}

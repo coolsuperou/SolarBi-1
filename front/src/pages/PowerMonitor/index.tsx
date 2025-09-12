@@ -1436,7 +1436,7 @@ const PowerMonitorPage: React.FC = () => {
       console.log('图表实时更新检查:', moment().format('HH:mm:ss'), '- 默认模式');
       // 只在默认模式下进行实时更新
       loadTrendData(true);
-    }, 600000); // 30秒更新一次，避免过于频繁
+    }, 600000); // 10分钟更新一次，避免过于频繁
 
     return () => {
       console.log('停止图表实时更新');

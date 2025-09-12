@@ -1,0 +1,63 @@
+// 主色彩定义 - 参考原项目的科技感配色
+$primary-color: #00d4ff;
+$primary-dark: #0099cc;
+$secondary-color: #a855f7;
+$accent-color: #00ff88;
+$warning-color: #ffd700;
+$danger-color: #ff3d71;
+$info-color: #40a9ff;
+
+// 背景色
+$bg-primary: #0a1929;
+$bg-secondary: #1a237e;
+$bg-tertiary: #000051;
+$bg-card: rgba(10, 25, 41, 0.9);
+$bg-table: rgba(26, 35, 126, 0.7);
+
+// 边框色
+$border-primary: rgba(0, 212, 255, 0.3);
+$border-secondary: rgba(0, 212, 255, 0.6);
+$border-glow: rgba(0, 212, 255, 0.8);
+
+// 文字色
+$text-primary: #ffffff;
+$text-secondary: #e6f7ff;
+$text-glow: #00d4ff;
+$text-purple: #a855f7;
+$text-yellow: #ffd700;
+
+// 阴影和发光效果
+$glow-primary: 0 0 8px rgba(0, 212, 255, 0.8);
+$glow-secondary: 0 0 16px rgba(0, 212, 255, 0.6);
+$glow-strong: 0 0 20px rgba(0, 212, 255, 0.8);
+$shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+// 间距
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 1.5rem;
+$spacing-xl: 2rem;
+$spacing-xxl: 3rem;
+
+// 圆角
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+$border-radius-xl: 16px;
+
+// 响应式断点
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+$breakpoint-xxl: 1400px;
+
+// 字体大小
+$font-size-xs: 0.75rem;
+$font-size-sm: 0.875rem;
+$font-size-base: 1rem;
+$font-size-lg: 1.125rem;
+$font-size-xl: 1.25rem;
+$font-size-xxl: 1.5rem;
+$font-size-title: 2rem;

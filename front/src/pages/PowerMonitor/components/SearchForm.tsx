@@ -31,7 +31,6 @@ interface SearchFormProps {
   endTimeRef: React.MutableRefObject<any>;
   currentMode?: string;
   onModeChange?: (mode: string) => void;
-  onRefresh?: () => Promise<void> | void;
 }
 
 const { Title } = Typography;
@@ -48,7 +47,6 @@ const SearchForm: React.FC<SearchFormProps> = ({
   endTimeRef,
   currentMode = 'hour',
   onModeChange
-  , onRefresh
 }) => {
   // 调试信息
   console.log('SearchForm 渲染, currentMode:', currentMode, 'searchParams:', searchParams);
@@ -376,18 +374,6 @@ const SearchForm: React.FC<SearchFormProps> = ({
             }}
           >
             <SearchOutlined style={{ filter: 'drop-shadow(0 0 6px rgba(0, 212, 255, 0.6))' }} /> 查询
-          </Button>
-          <Button
-            style={{ ...darkThemeStyles.button, height: '32px', padding: '0 16px' }}
-            onClick={async () => {
-              try {
-                await onRefresh?.();
-              } catch (e: any) {
-                message.error(e?.message || '刷新失败');
-              }
-            }}
-          >
-            <ReloadOutlined style={{ filter: 'drop-shadow(0 0 6px rgba(0, 212, 255, 0.6))' }} /> 刷新数据
           </Button>
           <Button
             style={{ ...darkThemeStyles.resetButton, height: '32px', padding: '0 16px' }}

@@ -15,6 +15,20 @@ export default [
     access: 'canUser',
   },
   {
+    path: '/injection_workshop',
+    name: '110注射环保设备',
+    icon: 'thunderbolt',
+    component: './InjectionWorkshop',
+    access: 'canUser',
+  },
+  {
+    path: '/granulation_workshop',
+    name: '102造粒环保设备',
+    icon: 'thunderbolt',
+    component: './GranulationWorkshop',
+    access: 'canUser',
+  },
+  {
     path: '/admin',
     icon: 'crown',
     name: '管理页',

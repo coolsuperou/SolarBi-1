@@ -1,0 +1,127 @@
+@use "@/styles/variables.scss" as *;
+
+// User Management page styles extracted from component
+.user-management {
+  .page-header {
+    .page-title {
+      font-size: $font-size-title;
+      font-weight: 700;
+      margin-bottom: $spacing-sm;
+    }
+    .page-description {
+      font-size: $font-size-base;
+      margin-bottom: 0;
+    }
+  }
+  .toolbar-section {
+    .form-label {
+      font-size: $font-size-sm;
+      margin-bottom: $spacing-xs;
+    }
+  }
+}
+
+.user-avatar-wrapper {
+  display: flex;
+  justify-content: center;
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid $border-primary;
+  }
+  .user-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $bg-card, $bg-table);
+    border: 2px solid $border-primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $text-glow;
+    font-size: 1.2rem;
+  }
+}
+
+.modal-content {
+  background: linear-gradient(135deg, $bg-card, $bg-table);
+  border: 2px solid $border-primary;
+  .modal-header {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 212, 255, 0.05));
+  }
+  .modal-footer {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(0, 212, 255, 0.02));
+  }
+}
+
+.btn-group-sm .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: $font-size-xs;
+  &.btn-outline-primary:hover {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: $primary-color;
+    color: $primary-color;
+  }
+  &.btn-outline-warning:hover {
+    background: rgba(255, 215, 0, 0.1);
+    border-color: $warning-color;
+    color: $warning-color;
+  }
+  &.btn-outline-danger:hover {
+    background: rgba(255, 61, 113, 0.1);
+    border-color: $danger-color;
+    color: $danger-color;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@media (max-width: $breakpoint-md) {
+  .user-management {
+    .toolbar-section {
+      .row { --bs-gutter-x: 0.5rem; }
+    }
+  }
+  .modal-dialog { margin: 1rem; }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .user-management {
+    .toolbar-section {
+      .d-flex { flex-direction: column; gap: 0.5rem !important; }
+    }
+  }
+  .btn-group {
+    flex-direction: column;
+    .btn { border-radius: $border-radius-sm !important; margin-bottom: 2px; }
+  }
+}
+
+// Strong override for account column readability
+.account-cell {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.6;
+  letter-spacing: 0.2px;
+  text-shadow: none;
+  filter: none;
+  opacity: 1;
+}
+
+:deep(.account-cell) {
+  color: #ffffff !important;
+  text-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+

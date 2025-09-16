@@ -13,7 +13,7 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@import "@/styles/variables.scss";`
+        additionalData: `@use "@/styles/variables.scss" as *;\n`
       }
     }
   },
@@ -22,7 +22,8 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8101',
+        // 使用环境变量或回退到本地
+        target: process.env.VITE_API_BASE_URL || 'http://localhost:8101',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }

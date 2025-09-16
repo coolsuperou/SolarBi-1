@@ -194,18 +194,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, watch } from 'vue'
+import { ref, reactive, onMounted, computed, watch, nextTick } from 'vue'
 import moment from 'moment'
 import StatisticsCard from '@/components/StatisticsCard.vue'
 import PowerChart from '@/components/PowerChart.vue'
 import DataTable from '@/components/DataTable.vue'
 import type { EChartsOption } from 'echarts'
+import { 
+  powerApi, 
+  type TempMonitor,
+  type HourlyEnergyConsumption, 
+  type DailyEnergyConsumption,
+  type TempMonitorQueryRequest
+} from '@/api/power'
 
 // 响应式数据
 const statistics = reactive({
   workshop: '114_空调水机主机',
-  electricConsumption: 6230.50,
-  totalElectricConsumption: 0.00
+  electricConsumption: 0,
+  totalElectricConsumption: 0
 })
 
 const searchForm = reactive({
@@ -227,7 +234,7 @@ const chartLoading = ref(false)
 const tableLoading = ref(false)
 
 const chartOptions = ref<EChartsOption>({})
-const tableData = ref<any[]>([])
+const tableData = ref<TempMonitor[]>([])
 
 const pagination = reactive({
   current: 1,
@@ -247,6 +254,42 @@ const tableColumns = computed(() => [
 // 格式化日期时间
 const formatDateTime = (value: string) => {
   return moment(value).format('YYYY-MM-DD HH:mm:ss')
+}
+
+// 固定车间名（与后端一致）
+const FIXED_WORKSHOP = '114_空调水机主机'
+
+// 统一转换为后端需要的时间格式 (yyyy-MM-dd HH:mm:ss)
+const getRequestTimes = () => {
+  // 如果表单时间为空，使用默认时间范围
+  if (!searchForm.startTime || !searchForm.endTime) {
+    const now = moment()
+    const defaultStart = now.clone().subtract(24, 'hours')
+    const defaultEnd = now.clone()
+    
+    if (currentMode.value === 'hour') {
+      return {
+        start: defaultStart.format('YYYY-MM-DD HH:mm:ss'),
+        end: defaultEnd.format('YYYY-MM-DD HH:mm:ss')
+      }
+    }
+    return {
+      start: defaultStart.startOf('day').format('YYYY-MM-DD HH:mm:ss'),
+      end: defaultEnd.endOf('day').format('YYYY-MM-DD HH:mm:ss')
+    }
+  }
+  
+  // 正常逻辑
+  if (currentMode.value === 'hour') {
+    return {
+      start: moment(searchForm.startTime).format('YYYY-MM-DD HH:mm:ss'),
+      end: moment(searchForm.endTime).format('YYYY-MM-DD HH:mm:ss')
+    }
+  }
+  return {
+    start: moment(searchForm.startTime).startOf('day').format('YYYY-MM-DD HH:mm:ss'),
+    end: moment(searchForm.endTime).endOf('day').format('YYYY-MM-DD HH:mm:ss')
+  }
 }
 
 // 搜索处理
@@ -272,7 +315,6 @@ const resetSearch = () => {
 // 模式切换
 const handleModeChange = (mode: string) => {
   currentMode.value = mode
-  // 根据模式设置合适的默认时间格式
   setDefaultTimeRange()
   loadChartData()
 }
@@ -286,30 +328,39 @@ const handlePageChange = (page: number) => {
 // 加载统计数据
 const loadStatistics = async () => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    // 根据搜索的时间范围和模式计算统计数据
-    let baseConsumption = 6230.50
-    
-    if (searchForm.startTime && searchForm.endTime) {
-      const startTime = moment(searchForm.startTime)
-      const endTime = moment(searchForm.endTime)
-      
-      if (currentMode.value === 'hour') {
-        // 小时模式：根据小时数计算
-        const hours = endTime.diff(startTime, 'hours')
-        baseConsumption = hours * (Math.random() * 50 + 200) // 每小时200-250kWh
-      } else {
-        // 日模式：根据天数计算
-        const days = endTime.diff(startTime, 'days')
-        baseConsumption = days * (Math.random() * 1000 + 5000) // 每天5000-6000kWh
-      }
+    const { start, end } = getRequestTimes()
+    if (currentMode.value === 'hour') {
+      const resp = await powerApi.getHourlyEnergyConsumption({
+        workshop: FIXED_WORKSHOP,
+        startTime: start,
+        endTime: end
+      })
+      const list = resp.data || []
+      const total = list.reduce((sum, item) => sum + Number(item.energyConsumption || 0), 0)
+      const first = list[0]
+      const last = list[list.length - 1]
+      const totalByRange = first && last ? Number(last.endEnergy || 0) - Number(first.startEnergy || 0) : 0
+
+      statistics.workshop = FIXED_WORKSHOP
+      statistics.electricConsumption = Number(total.toFixed(2))
+      statistics.totalElectricConsumption = Number((totalByRange >= 0 ? totalByRange : 0).toFixed(2))
+      return
     }
-    
-    statistics.workshop = '114_空调水机主机'
-    statistics.electricConsumption = Number(baseConsumption.toFixed(2))
-    statistics.totalElectricConsumption = 0.00
+
+    const resp = await powerApi.getDailyEnergyConsumptionQuery({
+      workshop: FIXED_WORKSHOP,
+      startTime: start,
+      endTime: end
+    })
+    const list = resp.data || []
+    const total = list.reduce((sum, item) => sum + Number(item.energyConsumption || 0), 0)
+    const first = list[0]
+    const last = list[list.length - 1]
+    const totalByRange = first && last ? Number(last.endEnergy || 0) - Number(first.startEnergy || 0) : 0
+
+    statistics.workshop = FIXED_WORKSHOP
+    statistics.electricConsumption = Number(total.toFixed(2))
+    statistics.totalElectricConsumption = Number((totalByRange >= 0 ? totalByRange : 0).toFixed(2))
   } catch (error) {
     console.error('加载统计数据失败:', error)
   }
@@ -319,12 +370,27 @@ const loadStatistics = async () => {
 const loadChartData = async () => {
   chartLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 800))
-    
-    // 生成模拟数据
-    const data = generateChartData()
-    
+    const { start, end } = getRequestTimes()
+    let seriesData: [number, number][] = []
+
+    if (currentMode.value === 'hour') {
+      const resp = await powerApi.getHourlyEnergyConsumption({
+        workshop: FIXED_WORKSHOP,
+        startTime: start,
+        endTime: end
+      })
+      const list = resp.data || []
+      seriesData = list.map(item => [moment(item.hour).valueOf(), Number(item.energyConsumption || 0)])
+    } else {
+      const resp = await powerApi.getDailyEnergyConsumptionQuery({
+        workshop: FIXED_WORKSHOP,
+        startTime: start,
+        endTime: end
+      })
+      const list = resp.data || []
+      seriesData = list.map(item => [moment(item.day).valueOf(), Number(item.energyConsumption || 0)])
+    }
+
     chartOptions.value = {
       backgroundColor: 'transparent',
       tooltip: {
@@ -410,7 +476,7 @@ const loadChartData = async () => {
         name: '114_空调水机主机',
         type: 'line',
         smooth: true,
-        data: data,
+        data: seriesData,
         lineStyle: {
           width: 3,
           color: '#00d4ff'
@@ -439,93 +505,24 @@ const loadChartData = async () => {
   }
 }
 
-// 加载表格数据
+// 加载表格数据（使用后端分页结构）
 const loadTableData = async () => {
   tableLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 600))
+    // 像 @front/ 一样使用简单的车间查询，避免复杂的分页查询
+    const resp = await powerApi.getDataByWorkshop(FIXED_WORKSHOP)
+    const allData = resp.data || []
     
-    // 生成模拟数据
-    const data = generateTableData()
-    tableData.value = data
-    pagination.total = 150 // 模拟总数
+    // 前端实现分页
+    const startIndex = (pagination.current - 1) * pagination.pageSize
+    const endIndex = startIndex + pagination.pageSize
+    tableData.value = allData.slice(startIndex, endIndex)
+    pagination.total = allData.length
   } catch (error) {
     console.error('加载表格数据失败:', error)
   } finally {
     tableLoading.value = false
   }
-}
-
-// 生成图表模拟数据
-const generateChartData = () => {
-  const data: [number, number][] = []
-  
-  // 如果有搜索时间范围，使用搜索时间范围
-  if (searchForm.startTime && searchForm.endTime) {
-    const startTime = moment(searchForm.startTime)
-    const endTime = moment(searchForm.endTime)
-    
-    if (currentMode.value === 'hour') {
-      // 小时模式：按小时生成数据
-      const current = startTime.clone()
-      while (current.isSameOrBefore(endTime)) {
-        const value = Math.random() * 50 + 20 // 20-70 之间的随机值
-        data.push([current.valueOf(), Number(value.toFixed(2))])
-        current.add(1, 'hour')
-      }
-    } else {
-      // 日模式：按天生成数据
-      const current = startTime.clone()
-      while (current.isSameOrBefore(endTime)) {
-        const value = Math.random() * 200 + 100 // 100-300 之间的随机值（日用电量更大）
-        data.push([current.valueOf(), Number(value.toFixed(2))])
-        current.add(1, 'day')
-      }
-    }
-  } else {
-    // 默认时间范围
-    const now = moment()
-    const count = currentMode.value === 'hour' ? 24 : 7
-    
-    for (let i = count; i >= 0; i--) {
-      const time = currentMode.value === 'hour' 
-        ? now.clone().subtract(i, 'hours')
-        : now.clone().subtract(i, 'days')
-      
-      const value = currentMode.value === 'hour' 
-        ? Math.random() * 50 + 20 // 小时模式：20-70
-        : Math.random() * 200 + 100 // 日模式：100-300
-      data.push([time.valueOf(), Number(value.toFixed(2))])
-    }
-  }
-  
-  return data
-}
-
-// 生成表格模拟数据
-const generateTableData = () => {
-  const data = []
-  const now = moment()
-  const deviceNames = [
-    '空调主机A', '空调主机B', '冷却水泵', '冷冻水泵', 
-    '风机盘管', '新风机组', '循环水泵', '制冷压缩机',
-    '热交换器', '电控柜', '变频器', '传感器组'
-  ]
-  
-  for (let i = 0; i < pagination.pageSize; i++) {
-    const time = now.clone().subtract(i * 5, 'minutes')
-    data.push({
-      id: `${pagination.current}_${i}`,
-      deviceId: `DEV_${String(i + 1).padStart(3, '0')}`,
-      workshop: '114_空调水机主机',
-      name: deviceNames[i % deviceNames.length],
-      electricEnergy: (Math.random() * 1000 + 500).toFixed(2),
-      updateTime: time.format('YYYY-MM-DD HH:mm:ss')
-    })
-  }
-  
-  return data
 }
 
 // 设置默认时间范围
@@ -566,9 +563,12 @@ watch([endDate, endHour], () => {
 })
 
 // 组件挂载时初始化
-onMounted(() => {
+onMounted(async () => {
   // 设置默认时间范围
   setDefaultTimeRange()
+  
+  // 等待下一个tick，确保响应式数据更新完成
+  await nextTick()
   
   // 加载初始数据
   handleSearch()
@@ -576,190 +576,4 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.power-monitor {
-  .page-header {
-    .page-title {
-      font-size: $font-size-title;
-      font-weight: 700;
-      margin-bottom: $spacing-sm;
-    }
-    
-    .page-description {
-      font-size: $font-size-base;
-      margin-bottom: 0;
-    }
-  }
-  
-  .statistics-section {
-    .row {
-      --bs-gutter-x: 1rem;
-      --bs-gutter-y: 1rem;
-    }
-  }
-  
-   .search-section {
-     .search-header {
-       border-bottom: 1px solid rgba(0, 212, 255, 0.2);
-       padding-bottom: 0.75rem;
-       
-       .search-title {
-         font-size: 1rem;
-         font-weight: 600;
-         
-         i {
-           color: #00d4ff;
-         }
-       }
-     }
-     
-     .btn-collapse {
-       background: transparent;
-       border: 1px solid rgba(0, 212, 255, 0.3);
-       color: #00d4ff;
-       padding: 0.375rem 0.75rem;
-       border-radius: 0.375rem;
-       font-size: 0.875rem;
-       transition: all 0.3s ease;
-       
-       &:hover {
-         border-color: #00d4ff;
-         background-color: rgba(0, 212, 255, 0.1);
-         box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
-       }
-       
-       i {
-         margin-right: 0.5rem;
-       }
-     }
-     
-     .search-form {
-       padding-top: 1rem;
-       animation: slideDown 0.3s ease-in-out;
-     }
-     
-     .form-label {
-       font-size: $font-size-sm;
-       margin-bottom: $spacing-xs;
-     }
-     
-     // 小时选择器样式
-     .form-select {
-       background-color: rgba(10, 25, 41, 0.8);
-       border: 1px solid rgba(0, 212, 255, 0.3);
-       color: #00d4ff;
-       
-       &:focus {
-         border-color: #00d4ff;
-         box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.25);
-         background-color: rgba(10, 25, 41, 0.9);
-       }
-       
-       option {
-         background-color: rgba(10, 25, 41, 0.95);
-         color: #00d4ff;
-         
-         &:hover {
-           background-color: rgba(0, 212, 255, 0.1);
-         }
-       }
-     }
-     
-     // 查询按钮样式
-     .btn-search {
-       background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-       border: none;
-       color: #ffffff;
-       font-weight: 600;
-       padding: 0.5rem 1.5rem;
-       border-radius: 0.375rem;
-       transition: all 0.3s ease;
-       
-       &:hover:not(:disabled) {
-         background: linear-gradient(135deg, #00b8e6 0%, #0088bb 100%);
-         box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
-         transform: translateY(-1px);
-       }
-       
-       &:disabled {
-         opacity: 0.6;
-         cursor: not-allowed;
-       }
-     }
-     
-     // 重置按钮样式
-     .btn-reset {
-       background: transparent;
-       border: 1px solid rgba(108, 117, 125, 0.5);
-       color: #6c757d;
-       font-weight: 500;
-       padding: 0.5rem 1rem;
-       border-radius: 0.375rem;
-       transition: all 0.3s ease;
-       
-       &:hover {
-         border-color: #6c757d;
-         background-color: rgba(108, 117, 125, 0.1);
-         color: #495057;
-       }
-     }
-   }
-}
-
-// 折叠动画
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-}
-
-// 响应式调整
-@media (max-width: $breakpoint-md) {
-  .power-monitor {
-    .page-header {
-      .page-title {
-        font-size: 1.5rem;
-      }
-    }
-    
-    .search-section {
-      .row {
-        --bs-gutter-x: 0.5rem;
-      }
-    }
-  }
-}
-
-@media (max-width: $breakpoint-sm) {
-  .power-monitor {
-    .statistics-section {
-      .row {
-        --bs-gutter-x: 0.5rem;
-        --bs-gutter-y: 0.5rem;
-      }
-    }
-    
-    .search-section {
-      .d-flex {
-        flex-direction: column;
-        gap: 0.5rem !important;
-      }
-    }
-  }
-}
 </style>

@@ -7,70 +7,51 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   const token = ref<string | null>(localStorage.getItem('token'))
 
-  // 计算属性
-  const isAuthenticated = computed(() => !!token.value && !!user.value)
+  // 计算属性（后端使用会话 Cookie，判定以 user 是否存在为准）
+  const isAuthenticated = computed(() => !!user.value)
   const isAdmin = computed(() => user.value?.userRole === 'admin')
 
-  // 登录（使用模拟数据）
+  // 登录（真实接口）
   const login = async (credentials: { userAccount: string; userPassword: string }) => {
     try {
-      // 模拟API调用延迟
-      await new Promise(resolve => setTimeout(resolve, 800))
-      
-      const { userAccount, userPassword } = credentials
-      
-      // 模拟用户数据
-      const mockUsers = [
-        {
-          id: 1,
-          userAccount: 'admin',
-          userName: '管理员',
-          userRole: 'admin' as const,
-          userAvatar: '',
-          email: 'admin@example.com',
-          phone: '13800138000',
-          userStatus: 0
-        },
-        {
-          id: 2,
-          userAccount: 'user',
-          userName: '普通用户',
-          userRole: 'user' as const,
-          userAvatar: '',
-          email: 'user@example.com',
-          phone: '13800138001',
-          userStatus: 0
-        }
-      ]
-      
-      // 验证用户账号和密码
-      const mockUser = mockUsers.find(u => u.userAccount === userAccount)
-      
-      if (!mockUser) {
-        throw new Error('用户不存在')
+      const resp = await authApi.login(credentials)
+      const payload = resp.data
+
+      // 若返回 token 则保存；否则依赖后端会话 Cookie
+      if (payload?.token) {
+        token.value = payload.token
+        localStorage.setItem('token', payload.token)
       }
-      
-      if (userPassword !== '123456') {
-        throw new Error('密码错误')
+
+      if (payload?.user) {
+        user.value = payload.user
+      } else {
+        const me = await authApi.getCurrentUser()
+        user.value = me.data as unknown as User
       }
-      
-      // 模拟登录成功
-      token.value = `mock-token-${Date.now()}`
-      user.value = mockUser
-      
-      // 存储到本地存储
-      localStorage.setItem('token', token.value)
-      localStorage.setItem('user', JSON.stringify(user.value))
-      
+
+      if (user.value) {
+        localStorage.setItem('user', JSON.stringify(user.value))
+      }
+
       return { success: true }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error)
-      return { success: false, error: error instanceof Error ? error.message : '登录失败' }
+      user.value = null
+      token.value = null
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      return { success: false, error: error?.message || '登录失败' }
     }
   }
 
-  // 登出
-  const logout = () => {
+  // 登出（真实接口）
+  const logout = async () => {
+    try {
+      await authApi.logout()
+    } catch (e) {
+      // 忽略接口错误
+    }
     user.value = null
     token.value = null
     localStorage.removeItem('token')
@@ -82,30 +63,38 @@ export const useAuthStore = defineStore('auth', () => {
     const storedToken = localStorage.getItem('token')
     const storedUser = localStorage.getItem('user')
     
-    if (storedToken && storedUser) {
+    if (storedToken) {
+      token.value = storedToken
+    }
+    
+    if (storedUser) {
       try {
-        token.value = storedToken
         user.value = JSON.parse(storedUser)
-        
-        // 验证token是否有效（可选）
-        // await authApi.getCurrentUser()
-      } catch (error) {
-        console.error('Init auth error:', error)
-        logout()
+      } catch (e) {
+        user.value = null
       }
+    }
+
+    try {
+      const me = await authApi.getCurrentUser()
+      if (me?.data) {
+        user.value = me.data as unknown as User
+        localStorage.setItem('user', JSON.stringify(user.value))
+      }
+    } catch (e) {
+      await logout()
     }
   }
 
-  // 获取当前用户信息（使用本地存储的数据）
+  // 获取当前用户信息（真实接口）
   const getCurrentUser = async () => {
     try {
-      const storedUser = localStorage.getItem('user')
-      if (storedUser) {
-        user.value = JSON.parse(storedUser)
-      }
+      const resp = await authApi.getCurrentUser()
+      user.value = resp.data as unknown as User
+      localStorage.setItem('user', JSON.stringify(user.value))
     } catch (error) {
       console.error('Get current user error:', error)
-      logout()
+      await logout()
     }
   }
 

@@ -26,3 +26,6 @@ export const authApi = {
     return http.post('/api/user/logout')
   }
 }
+
+
+

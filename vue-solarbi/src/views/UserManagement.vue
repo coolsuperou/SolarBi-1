@@ -93,11 +93,12 @@
           </div>
         </template>
         
-        <template #userName="{ value, item }">
-          <div>
-            <div class="fw-bold text-glow-primary">{{ value || item.userAccount }}</div>
-            <small class="text-secondary">{{ item.userAccount }}</small>
-          </div>
+        <template #userName="{ value }">
+          <div class="fw-bold text-glow-primary">{{ value }}</div>
+        </template>
+
+        <template #userAccount="{ value }">
+          <div class="text-secondary">{{ value }}</div>
         </template>
         
         <template #userRole="{ value }">
@@ -140,13 +141,6 @@
               title="编辑"
             >
               <i class="bi bi-pencil"></i>
-            </button>
-            <button 
-              class="btn btn-outline-warning"
-              @click="toggleUserStatus(item)"
-              :title="item.userStatus === 0 ? '禁用' : '启用'"
-            >
-              <i :class="`bi bi-${item.userStatus === 0 ? 'lock' : 'unlock'}`"></i>
             </button>
             <button 
               class="btn btn-outline-danger"
@@ -208,30 +202,6 @@
                   <option value="admin">管理员</option>
                 </select>
               </div>
-              <div class="col-md-6">
-                <label class="form-label text-glow-primary fw-semibold">性别</label>
-                <select v-model="userForm.gender" class="form-select form-control-glow">
-                  <option :value="null">未设置</option>
-                  <option :value="1">男</option>
-                  <option :value="0">女</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label text-glow-primary fw-semibold">联系电话</label>
-                <input
-                  type="tel"
-                  v-model="userForm.phone"
-                  class="form-control form-control-glow"
-                />
-              </div>
-              <div class="col-12">
-                <label class="form-label text-glow-primary fw-semibold">邮箱地址</label>
-                <input
-                  type="email"
-                  v-model="userForm.email"
-                  class="form-control form-control-glow"
-                />
-              </div>
             </form>
           </div>
           <div class="modal-footer border-top border-primary">
@@ -258,6 +228,7 @@ import moment from 'moment'
 import { debounce } from 'lodash-es'
 import DataTable from '@/components/DataTable.vue'
 import type { User } from '@/types/user'
+import { userApi } from '@/api/user'
 
 // 响应式数据
 const loading = ref(false)
@@ -277,10 +248,7 @@ const userForm = reactive({
   userAccount: '',
   userName: '',
   userPassword: '',
-  userRole: 'user' as 'user' | 'admin',
-  gender: null as number | null,
-  phone: '',
-  email: ''
+  userRole: 'user' as 'user' | 'admin'
 })
 
 const tableData = ref<User[]>([])
@@ -290,17 +258,14 @@ const pagination = reactive({
   total: 0
 })
 
-// 表格列配置
+// 表格列配置（移除：状态、性别、电话、邮箱）
 const tableColumns = computed(() => [
   { key: 'userAvatar', title: '头像', width: '80px' },
   { key: 'userName', title: '用户信息', width: '200px' },
-  { key: 'userRole', title: '角色', width: '100px' },
-  { key: 'userStatus', title: '状态', width: '100px' },
-  { key: 'gender', title: '性别', width: '80px' },
-  { key: 'phone', title: '电话', width: '120px' },
-  { key: 'email', title: '邮箱', width: '180px' },
-  { key: 'createTime', title: '创建时间', width: '160px', format: 'datetime' },
-  { key: 'actions', title: '操作', width: '150px' }
+  { key: 'userAccount', title: '账号', width: '160px' },
+  { key: 'userRole', title: '角色', width: '120px' },
+  { key: 'createTime', title: '创建时间', width: '180px', format: 'datetime' },
+  { key: 'actions', title: '操作', width: '160px' }
 ])
 
 // 防抖搜索
@@ -333,17 +298,19 @@ const handlePageChange = (page: number) => {
   loadUsers()
 }
 
-// 加载用户列表
+// 加载用户列表（真实接口）
 const loadUsers = async () => {
   loading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 800))
-    
-    // 生成模拟数据
-    const users = generateUserData()
-    tableData.value = users
-    pagination.total = 45 // 模拟总数
+    const resp = await userApi.getUserList({
+      current: pagination.current,
+      pageSize: pagination.pageSize,
+      keyword: searchForm.keyword || undefined,
+      userRole: searchForm.userRole || undefined
+    })
+    const payload: any = resp.data || {}
+    tableData.value = payload.records || []
+    pagination.total = Number(payload.total || 0)
   } catch (error) {
     console.error('加载用户列表失败:', error)
   } finally {
@@ -366,10 +333,7 @@ const openEditModal = (user: User) => {
     userAccount: user.userAccount,
     userName: user.userName || '',
     userPassword: '',
-    userRole: user.userRole,
-    gender: user.gender,
-    phone: user.phone || '',
-    email: user.email || ''
+    userRole: user.userRole
   })
   userModal?.show()
 }
@@ -381,23 +345,28 @@ const resetUserForm = () => {
     userAccount: '',
     userName: '',
     userPassword: '',
-    userRole: 'user',
-    gender: null,
-    phone: '',
-    email: ''
+    userRole: 'user'
   })
 }
 
-// 保存用户
+// 保存用户（真实接口）
 const saveUser = async () => {
   saveLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    console.log('保存用户:', userForm)
-    
-    // 关闭模态框并刷新列表
+    if (modalMode.value === 'create') {
+      await userApi.createUser({
+        userAccount: userForm.userAccount,
+        userPassword: userForm.userPassword,
+        userName: userForm.userName || undefined,
+        userRole: userForm.userRole
+      })
+    } else {
+      await userApi.updateUser({
+        id: userForm.id,
+        userName: userForm.userName || undefined,
+        userRole: userForm.userRole
+      })
+    }
     userModal?.hide()
     await loadUsers()
   } catch (error) {
@@ -407,34 +376,16 @@ const saveUser = async () => {
   }
 }
 
-// 切换用户状态
-const toggleUserStatus = async (user: User) => {
-  try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    console.log('切换用户状态:', user.id, user.userStatus === 0 ? 1 : 0)
-    
-    // 刷新列表
-    await loadUsers()
-  } catch (error) {
-    console.error('切换用户状态失败:', error)
-  }
-}
+// 已移除状态切换按钮
 
-// 删除用户
+// 删除用户（真实接口）
 const deleteUser = async (user: User) => {
   if (!confirm(`确定要删除用户 "${user.userName || user.userAccount}" 吗？`)) {
     return
   }
   
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    console.log('删除用户:', user.id)
-    
-    // 刷新列表
+    await userApi.deleteUser(Number(user.id))
     await loadUsers()
   } catch (error) {
     console.error('删除用户失败:', error)
@@ -451,31 +402,7 @@ const exportUsers = async () => {
   }
 }
 
-// 生成用户模拟数据
-const generateUserData = (): User[] => {
-  const users: User[] = []
-  const now = moment()
-  
-  for (let i = 0; i < pagination.pageSize; i++) {
-    const id = (pagination.current - 1) * pagination.pageSize + i + 1
-    const time = now.clone().subtract(i * 2, 'days')
-    
-    users.push({
-      id,
-      userAccount: `user${String(id).padStart(3, '0')}`,
-      userName: `用户${id}`,
-      userRole: Math.random() > 0.8 ? 'admin' : 'user',
-      gender: Math.floor(Math.random() * 3) - 1, // -1, 0, 1 (null, 女, 男)
-      phone: `138${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
-      email: `user${id}@example.com`,
-      userStatus: Math.random() > 0.9 ? 1 : 0,
-      createTime: time.format('YYYY-MM-DD HH:mm:ss'),
-      updateTime: time.format('YYYY-MM-DD HH:mm:ss')
-    })
-  }
-  
-  return users
-}
+// （移除模拟数据生成）
 
 // 组件挂载时初始化
 onMounted(() => {

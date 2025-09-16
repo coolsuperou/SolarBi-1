@@ -31,14 +31,21 @@ export interface UserUpdateRequest {
 }
 
 export const userApi = {
-  // 获取用户列表
+  // 获取用户列表（使用 /api/user/list/page，返回实体包含 userAccount）
   getUserList(params: UserQueryRequest): Promise<ApiResponse<{
     records: User[]
     total: number
     current: number
     pageSize: number
   }>> {
-    return http.get('/api/user/list', { params })
+    const payload: any = {
+      current: params.current,
+      pageSize: params.pageSize,
+      // 关键字按后端可用字段映射到 userName 做模糊
+      userName: (params as any).keyword || undefined,
+      userRole: params.userRole || undefined
+    }
+    return http.post('/api/user/list/page', payload)
   },
 
   // 创建用户

@@ -1,4 +1,10 @@
-@import 'variables';
+@use "sass:color";
+@use "@/styles/pages/user-management.scss" as *;
+@use "@/styles/pages/login.scss" as *;
+@use "@/styles/pages/PowerMonitor.scss" as *;
+@use "@/styles/components/data-table.scss" as *;
+@use "@/styles/components/power-chart.scss" as *;
+@use "@/styles/app/app.scss" as *;
 
 // 基础样式重置和全局样式
 html {
@@ -75,7 +81,7 @@ body {
   transition: all 0.3s ease;
   
   &:hover {
-    background: linear-gradient(135deg, lighten($primary-color, 10%), $primary-color);
+    background: linear-gradient(135deg, color.adjust($primary-color, $lightness: 10%), $primary-color);
     box-shadow: $glow-strong;
     transform: translateY(-1px);
     color: $text-primary;

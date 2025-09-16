@@ -1,11 +1,19 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { useAuthStore } from '@/stores/auth'
+import { BACKEND_HOST_LOCAL, BACKEND_HOST_PROD } from '@/constants/backend'
+
+// 选择后端基地址：优先环境变量，其次根据环境切换
+const BASE_URL =
+  (import.meta as any).env?.VITE_API_BASE_URL ||
+  (typeof process !== 'undefined' && (process as any).env?.VITE_API_BASE_URL) ||
+  (import.meta.env.MODE === 'production' ? BACKEND_HOST_PROD : BACKEND_HOST_LOCAL)
 
 // 创建axios实例
 const instance: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '',
+  baseURL: BASE_URL,
   timeout: 10000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -33,13 +41,22 @@ instance.interceptors.response.use(
   (response: AxiosResponse) => {
     const { data } = response
     
+    // 调试日志 - 只记录非成功响应
+    if (data.code !== 0) {
+      console.log('API Response:', {
+        url: response.config?.url,
+        status: response.status,
+        data: data
+      })
+    }
+    
     // 统一处理响应
     if (data.code === 0) {
       return data
     } else {
       // 处理业务错误
       const errorMessage = data.message || '请求失败'
-      console.error('API Error:', errorMessage)
+      console.error('API Error:', errorMessage, 'Full response:', data)
       return Promise.reject(new Error(errorMessage))
     }
   },

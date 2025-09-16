@@ -181,19 +181,9 @@ watch(() => props.chartOptions, () => {
 }, { deep: true })
 
 // 监听加载状态
-watch(() => props.loading, (loading) => {
-  if (chartInstance) {
-    if (loading) {
-      chartInstance.showLoading({
-        text: '加载中...',
-        color: '#00d4ff',
-        textColor: '#ffffff',
-        maskColor: 'rgba(10, 25, 41, 0.8)'
-      })
-    } else {
-      chartInstance.hideLoading()
-    }
-  }
+// 使用自定义覆盖层显示加载状态，避免与 ECharts 内置 loading 重叠
+watch(() => props.loading, () => {
+  // intentionally no-op
 })
 
 onMounted(async () => {
@@ -216,80 +206,7 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.chart-container {
-  padding: $spacing-lg;
-  position: relative;
-}
-
-.chart-header {
-  .chart-title {
-    font-size: $font-size-lg;
-    font-weight: 700;
-  }
-  
-  .chart-controls {
-    .btn-outline-primary {
-      color: $text-glow;
-      border-color: $border-primary;
-      
-      &:hover {
-        background: rgba(0, 212, 255, 0.1);
-        border-color: $border-secondary;
-        color: $text-glow;
-      }
-    }
-  }
-}
-
-.chart-content {
-  width: 100%;
-  min-height: 300px;
-}
-
-.chart-loading {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  z-index: 10;
-}
-
-// 响应式调整
-@media (max-width: $breakpoint-md) {
-  .chart-container {
-    padding: $spacing-md;
-  }
-  
-  .chart-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: $spacing-md;
-    
-    .chart-controls {
-      align-self: center;
-    }
-  }
-  
-  .chart-content {
-    height: 300px !important;
-  }
-}
-
-@media (max-width: $breakpoint-sm) {
-  .chart-content {
-    height: 250px !important;
-  }
-  
-  .chart-header {
-    .chart-title {
-      font-size: $font-size-base;
-    }
-    
-    .btn-group .btn {
-      font-size: $font-size-xs;
-      padding: 0.25rem 0.5rem;
-    }
-  }
-}
 </style>
+
+
+

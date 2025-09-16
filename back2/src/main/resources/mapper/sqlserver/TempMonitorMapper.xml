@@ -448,4 +448,35 @@
         ORDER BY Id ASC
     </select>
 
+    <!-- 分页查询温湿电能数据（支持多条件查询）- 固定使用114_空调水机主机车间 -->
+    <select id="selectPageByCondition" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
+        SELECT 
+            Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop
+        FROM RSWS_TempMonitor_Copy
+        <where>
+            <!-- 固定使用114_空调水机主机车间 -->
+            AND Workshop = '114_空调水机主机'
+            <if test="deviceId != null and deviceId != ''">
+                AND DeviceID = #{deviceId}
+            </if>
+            <if test="name != null and name != ''">
+                AND Name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="startTime != null">
+                AND UpdateTime &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND UpdateTime &lt;= #{endTime}
+            </if>
+        </where>
+        <choose>
+            <when test="sortField != null and sortField != '' and sortOrder != null and sortOrder != ''">
+                ORDER BY ${sortField} ${sortOrder}
+            </when>
+            <otherwise>
+                ORDER BY UpdateTime DESC
+            </otherwise>
+        </choose>
+    </select>
+
 </mapper>

@@ -2,6 +2,8 @@ import Footer from '@/components/Footer';
 import { getLoginUserUsingGet } from '@/services/SolarBi-front/userController';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { history } from '@umijs/max';
+import { Button } from 'antd';
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import defaultSettings from '../config/defaultSettings';
 import { AvatarDropdown } from './components/RightContent/AvatarDropdown';
 import { requestConfig } from './requestConfig';
@@ -53,6 +55,52 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
     // },
     footerRender: false,
     menuHeaderRender: undefined,
+    // 自定义侧边栏折叠按钮
+    collapsedButtonRender: (collapsed, defaultDom) => {
+      return (
+        <Button
+          type="text"
+          icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          onClick={() => {
+            // 触发默认的折叠逻辑
+            if (defaultDom && typeof defaultDom === 'object' && 'props' in defaultDom) {
+              const domElement = defaultDom as any;
+              if (domElement.props && typeof domElement.props.onClick === 'function') {
+                domElement.props.onClick();
+              }
+            }
+          }}
+          style={{
+            fontSize: '16px',
+            width: 36,
+            height: 36,
+            color: '#00d4ff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid rgba(0, 212, 255, 0.3)',
+            borderRadius: '6px',
+            backgroundColor: 'rgba(0, 212, 255, 0.05)',
+            transition: 'all 0.3s ease',
+            margin: '8px 8px 8px 12px',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(0, 212, 255, 0.15)';
+            e.currentTarget.style.borderColor = 'rgba(0, 212, 255, 0.6)';
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.boxShadow = '0 0 15px rgba(0, 212, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(0, 212, 255, 0.05)';
+            e.currentTarget.style.borderColor = 'rgba(0, 212, 255, 0.3)';
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+          title={collapsed ? '展开侧边栏' : '折叠侧边栏'}
+        />
+      );
+    },
+    siderMenuType: 'sub', // 设置侧边栏菜单类型
     // 自定义logo和标题
     logo: () => (
       <div style={{ 

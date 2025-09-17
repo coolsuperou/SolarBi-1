@@ -461,21 +461,8 @@
             <if test="startTime != null">
                 AND UpdateTime &gt;= #{startTime}
             </if>
-            <!-- 结束时间逻辑：对齐图表逻辑。若为当前小时则取当前最新时间；否则取结束时间之后的第一条记录时间作为上限 -->
             <if test="endTime != null">
-                AND UpdateTime &lt;= (
-                    CASE 
-                        WHEN DATEADD(HOUR, DATEDIFF(HOUR, 0, #{endTime}), 0) = DATEADD(HOUR, DATEDIFF(HOUR, 0, GETDATE()), 0)
-                            THEN GETDATE()
-                        ELSE (
-                            SELECT TOP 1 UpdateTime 
-                            FROM RSWS_TempMonitor_Copy tEnd
-                            WHERE tEnd.Workshop = '102造粒环保设备'
-                              AND tEnd.UpdateTime &gt;= #{endTime}
-                            ORDER BY tEnd.UpdateTime ASC
-                        )
-                    END
-                )
+                AND UpdateTime &lt;= #{endTime}
             </if>
             <if test="endTime == null">
                 AND UpdateTime &lt;= GETDATE()

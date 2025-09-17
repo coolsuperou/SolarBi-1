@@ -9,7 +9,7 @@ export default [
   },
   {
     path: '/power_monitor',
-    name: '电能数据监控',
+    name: '114_空调水机主机',
     icon: 'thunderbolt',
     component: './PowerMonitor',
     access: 'canUser',
@@ -17,14 +17,14 @@ export default [
   {
     path: '/injection_workshop',
     name: '110注射环保设备',
-    icon: 'thunderbolt',
+    icon: 'experiment',
     component: './InjectionWorkshop',
     access: 'canUser',
   },
   {
     path: '/granulation_workshop',
     name: '102造粒环保设备',
-    icon: 'thunderbolt',
+    icon: 'build',
     component: './GranulationWorkshop',
     access: 'canUser',
   },

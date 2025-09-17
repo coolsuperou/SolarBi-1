@@ -1,20 +1,18 @@
 import {
-  getLatestDataUsingGET,
-  getDataByWorkshopUsingGET,
   getAllWorkshopsUsingGET,
-  queryByConditionUsingPOST,
-  getStatisticsUsingGET,
+  getDailyEnergyConsumptionQueryUsingGET,
+  getDataByWorkshopUsingGET,
   getElectricEnergyTrendUsingGET,
-  getHourlyEnergyConsumptionUsingGET,
   getHourlyEnergyConsumptionQueryUsingGET,
-  getDailyEnergyConsumptionQueryUsingGET
+  getHourlyEnergyConsumptionUsingGET,
+  getStatisticsUsingGET,
+  queryByConditionUsingPOST
 } from '@/services/SolarBi-front/airConditioningController';
-import { DatabaseOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { PageContainer } from '@ant-design/pro-components';
+import type {ActionType, ProColumns} from '@ant-design/pro-components';
+import {PageContainer} from '@ant-design/pro-components';
 import '@umijs/max';
-import { message, Space, Badge } from 'antd';
-import React, { useRef, useState, useEffect } from 'react';
+import {message} from 'antd';
+import React, {useEffect, useRef, useState} from 'react';
 import moment from 'moment';
 import StatisticsCards from './components/StatisticsCards';
 import SearchForm from './components/SearchForm';
@@ -22,8 +20,8 @@ import PowerChart from './components/PowerChart';
 import DailyPowerChart from './components/DailyPowerChart';
 import DataTable from './components/DataTable';
 import darkThemeStyles from '@/styles/darkTheme';
-import { pageStylesCSS, pageBackgroundStyles } from '@/styles/pageStyles';
-import { getColumns } from './config/columns';
+import {pageBackgroundStyles, pageStylesCSS} from '@/styles/pageStyles';
+import {getColumns} from './config/columns';
 
   // 固定目标车间
 const TARGET_WORKSHOP = '114_空调水机主机';
@@ -1282,150 +1280,7 @@ const PowerMonitorPage: React.FC = () => {
     }
   };
 
-  // 智能定时同步已禁用 - 避免自动缩小
-  // useEffect(() => {
-  //   let dataCheckTimeoutId: NodeJS.Timeout;
-  //   let dataCheckIntervalId: NodeJS.Timeout;
 
-  //   // 计算下一个x1:54的时间（01:54, 11:54, 21:54, 31:54, 41:54, 51:54）
-  //   const getNextSyncTime = () => {
-  //     const now = new Date();
-  //     const currentMinute = now.getMinutes();
-  //     const currentSecond = now.getSeconds();
-
-  //     // 定义同步时间点：每10分钟的x1:54
-  //     const syncMinutes = [1, 11, 21, 31, 41, 51];
-  //     const syncSecond = 54;
-
-  //     let nextSyncMinute = null;
-
-  //     // 找到下一个同步分钟
-  //     for (const minute of syncMinutes) {
-  //       if (currentMinute < minute || (currentMinute === minute && currentSecond < syncSecond)) {
-  //         nextSyncMinute = minute;
-  //         break;
-  //       }
-  //     }
-
-  //     const nextSync = new Date(now);
-
-  //     if (nextSyncMinute !== null) {
-  //       // 在当前小时内找到了下一个同步点
-  //       nextSync.setMinutes(nextSyncMinute, syncSecond, 0);
-  //     } else {
-  //       // 需要到下一个小时的第一个同步点
-  //       nextSync.setHours(nextSync.getHours() + 1);
-  //       nextSync.setMinutes(syncMinutes[0], syncSecond, 0);
-  //     }
-
-  //     return nextSync.getTime() - now.getTime(); // 返回毫秒差
-  //   };
-
-  //   // 数据更新函数
-  //   const updateData = () => {
-  //     console.log('数据同步更新时间:', moment().format('YYYY-MM-DD HH:mm:ss'));
-
-  //     if (!isDefaultTimeRange) {
-  //       // 用户手动搜索的情况：使用搜索参数进行实时更新
-  //       console.log('定时更新：用户手动搜索模式，使用固定时间范围');
-  //       loadTrendData(true, searchParams.startTime, searchParams.endTime);
-  //       loadStatistics(selectedWorkshop, searchParams.startTime, searchParams.endTime);
-  //       // 表格也使用搜索参数
-  //       setTempSearchParams(searchParams);
-  //     } else {
-  //       // 默认24小时05分模式：不传递时间范围，让图表自然扩展
-  //       console.log('定时更新：默认24小时05分模式，允许图表自然扩展');
-  //       loadTrendData(true);
-  //       loadStatistics(selectedWorkshop);
-  //       // 表格也不使用时间范围限制
-  //       setTempSearchParams({});
-  //     }
-
-  //     // 刷新表格数据
-  //     setTimeout(() => {
-  //       actionRef.current?.reload();
-  //     }, 100); // 稍微延迟以确保tempSearchParams更新生效
-
-  //     // 强制同步图表数据，确保与表格数据一致
-  //     setTimeout(() => {
-  //       if (!isDefaultTimeRange) {
-  //         loadTrendData(false, searchParams.startTime, searchParams.endTime); // 非实时模式，强制重建图表
-  //       } else {
-  //         loadTrendData(false); // 非实时模式，强制重建图表
-  //       }
-  //     }, 200); // 在表格更新后再更新图表
-  //   };
-
-  //   // 设置首次同步到下一个47分
-  //   const initialDelay = getNextSyncTime();
-  //   const nextSyncTime = moment().add(initialDelay, 'milliseconds').format('YYYY-MM-DD HH:mm:ss');
-  //   console.log('下一次数据同步时间:', nextSyncTime);
-  //   setNextUpdateTime(nextSyncTime);
-
-  //   dataCheckTimeoutId = setTimeout(() => {
-  //     // 首次同步
-  //     updateData();
-
-  //     // 计算并显示下次同步时间
-  //     const calculateNextSyncDisplay = () => {
-  //       const now = new Date();
-  //       const currentMinute = now.getMinutes();
-  //       const currentSecond = now.getSeconds();
-  //       const syncMinutes = [1, 11, 21, 31, 41, 51];
-  //       const syncSecond = 54;
-
-  //       let nextSyncMinute = null;
-  //       for (const minute of syncMinutes) {
-  //         if (currentMinute < minute || (currentMinute === minute && currentSecond < syncSecond)) {
-  //           nextSyncMinute = minute;
-  //           break;
-  //         }
-  //       }
-
-  //       const nextSync = new Date(now);
-  //       if (nextSyncMinute !== null) {
-  //         nextSync.setMinutes(nextSyncMinute, syncSecond, 0);
-  //       } else {
-  //         nextSync.setHours(nextSync.getHours() + 1);
-  //         nextSync.setMinutes(syncMinutes[0], syncSecond, 0);
-  //       }
-
-  //       return moment(nextSync).format('YYYY-MM-DD HH:mm:ss');
-  //     };
-
-  //     setNextUpdateTime(calculateNextSyncDisplay());
-
-  //     // 然后每10分钟检查一次是否到了同步时间点（每600000毫秒 = 10分钟）
-  //     dataCheckIntervalId = setInterval(() => {
-  //       const now = new Date();
-  //       const currentMinute = now.getMinutes();
-  //       const currentSecond = now.getSeconds();
-  //       const syncMinutes = [1, 11, 21, 31, 41, 51];
-  //       const syncSecond = 54;
-
-  //       // 检查是否是同步时间点（允许1秒的误差范围）
-  //       if (syncMinutes.includes(currentMinute) && Math.abs(currentSecond - syncSecond) <= 1) {
-  //         updateData();
-  //         // 更新下次同步时间显示
-  //         setNextUpdateTime(calculateNextSyncDisplay());
-  //       }
-  //     }, 60000); // 每1分钟检查一次，确保不会错过同步点
-  //   }, initialDelay);
-
-  //   return () => {
-  //     if (dataCheckTimeoutId) {
-  //       clearTimeout(dataCheckTimeoutId);
-  //     }
-  //     if (dataCheckIntervalId) {
-  //       clearInterval(dataCheckIntervalId);
-  //     }
-  //   };
-  // }, [selectedWorkshop, searchParams]);
-
-
-
-
-  // 图表实时更新 - 仅在默认模式下启用
   useEffect(() => {
     if (!showChart || !isDefaultTimeRange) {
       console.log('停止图表实时更新 - 图表隐藏或非默认模式');

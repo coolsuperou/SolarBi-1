@@ -1,20 +1,18 @@
 import {
-  getLatestDataUsingGET,
-  getDataByWorkshopUsingGET,
   getAllWorkshopsUsingGET,
-  queryByConditionUsingPOST,
-  getStatisticsUsingGET,
+  getDailyEnergyConsumptionQueryUsingGET,
+  getDataByWorkshopUsingGET,
   getElectricEnergyTrendUsingGET,
-  getHourlyEnergyConsumptionUsingGET,
   getHourlyEnergyConsumptionQueryUsingGET,
-  getDailyEnergyConsumptionQueryUsingGET
+  getHourlyEnergyConsumptionUsingGET,
+  getStatisticsUsingGET,
+  queryByConditionUsingPOST
 } from '@/services/SolarBi-front/granulationWorkshopController';
-import { DatabaseOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { PageContainer } from '@ant-design/pro-components';
+import type {ActionType, ProColumns} from '@ant-design/pro-components';
+import {PageContainer} from '@ant-design/pro-components';
 import '@umijs/max';
-import { message, Space, Badge } from 'antd';
-import React, { useRef, useState, useEffect } from 'react';
+import {message} from 'antd';
+import React, {useEffect, useRef, useState} from 'react';
 import moment from 'moment';
 import StatisticsCards from './components/StatisticsCards';
 import SearchForm from './components/SearchForm';
@@ -22,8 +20,8 @@ import PowerChart from './components/PowerChart';
 import DailyPowerChart from './components/DailyPowerChart';
 import DataTable from './components/DataTable';
 import darkThemeStyles from '@/styles/darkTheme';
-import { pageStylesCSS, pageBackgroundStyles } from '@/styles/pageStyles';
-import { getColumns } from './config/columns';
+import {pageBackgroundStyles, pageStylesCSS} from '@/styles/pageStyles';
+import {getColumns} from './config/columns';
 
   // 固定目标车间
 const TARGET_WORKSHOP = '102造粒环保设备';

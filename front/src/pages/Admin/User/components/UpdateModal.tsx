@@ -3,7 +3,7 @@ import { ProForm, ProFormText, ProFormSelect } from '@ant-design/pro-components'
 import '@umijs/max';
 import { message, Modal } from 'antd';
 import React from 'react';
-import darkThemeStyles from '@/pages/PowerMonitor/styles/darkThemeStyles';
+import darkThemeStyles from '@/styles/darkTheme';
 
 interface Props {
   oldData?: API.User;

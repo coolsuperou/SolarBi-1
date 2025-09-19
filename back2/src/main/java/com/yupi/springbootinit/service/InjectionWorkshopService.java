@@ -32,10 +32,7 @@ public interface InjectionWorkshopService {
      */
     List<String> getAllWorkshops();
 
-    /**
-     * 根据设备ID查询数据
-     */
-    List<TempMonitor> getDataByDeviceId(String deviceId);
+
 
     /**
      * 分页查询温湿电能数据（支持多条件查询）

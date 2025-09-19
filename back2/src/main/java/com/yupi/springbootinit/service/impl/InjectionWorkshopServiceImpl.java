@@ -53,19 +53,6 @@ public class InjectionWorkshopServiceImpl implements InjectionWorkshopService {
         return java.util.Arrays.asList("110注射环保设备");
     }
 
-    @Override
-    @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    public List<TempMonitor> getDataByDeviceId(String deviceId) {
-        // 服务层也强制限定车间
-        String fixedWorkshop = "110注射环保设备";
-        log.debug("根据设备ID获取数据，车间: {}, 设备: {}", fixedWorkshop, deviceId);
-        
-        // 先获取指定车间的所有数据，然后按设备ID过滤
-        List<TempMonitor> allData = injectionWorkshopMapper.selectByWorkshop(fixedWorkshop);
-        return allData.stream()
-                .filter(item -> deviceId != null && deviceId.equals(item.getDeviceId()))
-                .collect(java.util.stream.Collectors.toList());
-    }
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)

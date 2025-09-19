@@ -21,14 +21,13 @@ public interface AirConditioningService {
 
     List<String> getAllWorkshops();
 
-    List<TempMonitor> getDataByDeviceId(String deviceId);
+
 
     Page<TempMonitor> queryByCondition(TempMonitorQueryRequest request);
 
     TempMonitorStatistics getStatistics(String workshop, Date startTime, Date endTime);
 
     Integer getDeviceCount(String workshop, Date startTime, Date endTime);
-
     List<TempMonitor> getElectricEnergyTrend(String workshop, String deviceId, Date startTime, Date endTime, Integer limit);
 
     List<HourlyEnergyConsumption> getHourlyEnergyConsumption(String workshop, String deviceId, Date startTime, Date endTime);

@@ -44,16 +44,7 @@ public class AirConditioningServiceImpl implements AirConditioningService {
         return java.util.Arrays.asList("114_空调水机主机");
     }
 
-    @Override
-    @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    public List<TempMonitor> getDataByDeviceId(String deviceId) {
-        String fixedWorkshop = "114_空调水机主机";
-        log.debug("根据设备ID获取数据，车间: {}, 设备: {}", fixedWorkshop, deviceId);
-        List<TempMonitor> allData = airConditioningMapper.selectByWorkshop(fixedWorkshop);
-        return allData.stream()
-                .filter(item -> deviceId != null && deviceId.equals(item.getDeviceId()))
-                .collect(java.util.stream.Collectors.toList());
-    }
+
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)

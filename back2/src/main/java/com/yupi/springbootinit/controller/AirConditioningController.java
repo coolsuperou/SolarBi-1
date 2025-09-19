@@ -57,13 +57,7 @@ public class AirConditioningController {
         return ResultUtils.success(workshops);
     }
 
-    @ApiOperation("根据设备ID查询温湿电能数据（114_空调水机主机）")
-    @GetMapping("/device/{deviceId}")
-    public BaseResponse<List<TempMonitor>> getDataByDeviceId(
-            @ApiParam("设备ID") @PathVariable String deviceId) {
-        List<TempMonitor> dataList = airConditioningService.getDataByDeviceId(deviceId);
-        return ResultUtils.success(dataList);
-    }
+
 
     @ApiOperation("分页查询温湿电能数据（114_空调水机主机，支持多条件查询）")
     @PostMapping("/query")

@@ -29,6 +29,27 @@ export default [
     access: 'canUser',
   },
   {
+    path: '/office_building',
+    name: '1#办公楼',
+    icon: 'home',
+    component: './OfficeBuilding',
+    access: 'canUser',
+  },
+  {
+    path: '/feeding_workshop',
+    name: '101配料',
+    icon: 'container',
+    component: './FeedingWorkshop',
+    access: 'canUser',
+  },
+  {
+    path: '/granule102',
+    name: '102造粒',
+    icon: 'build',
+    component: './Granule102',
+    access: 'canUser',
+  },
+  {
     path: '/admin',
     icon: 'crown',
     name: '管理页',

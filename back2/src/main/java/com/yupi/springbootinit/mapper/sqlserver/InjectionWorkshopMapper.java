@@ -43,13 +43,6 @@ public interface InjectionWorkshopMapper extends BaseMapper<TempMonitor> {
     List<String> selectAllWorkshops();
 
     /**
-     * 根据设备ID查询数据
-     */
-    @Select("SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop " +
-            "FROM RSWS_TempMonitor_Copy WHERE DeviceID = #{deviceId} AND Workshop = '110注射环保设备' ORDER BY UpdateTime DESC")
-    List<TempMonitor> selectByDeviceId(String deviceId);
-
-    /**
      * 分页查询温湿电能数据（支持多条件查询）
      * 使用XML配置文件实现复杂查询
      */

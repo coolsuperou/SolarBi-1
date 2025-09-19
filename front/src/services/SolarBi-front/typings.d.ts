@@ -10,7 +10,7 @@ declare namespace API {
     message?: string;
   };
 
-  type BaseResponseBoolean_ = {
+  type BaseResponseBoolean = {
     code?: number;
     data?: boolean;
     message?: string;
@@ -425,19 +425,19 @@ declare namespace API {
     workshop?: string;
   };
 
-  type BaseResponseListTempMonitor_ = {
+  type BaseResponseListTempMonitor = {
     code?: number;
     data?: TempMonitor[];
     message?: string;
   };
 
-  type BaseResponsePageTempMonitor_ = {
+  type BaseResponsePageTempMonitor = {
     code?: number;
     data?: PageTempMonitor_;
     message?: string;
   };
 
-  type BaseResponseTempMonitorStatistics_ = {
+  type BaseResponseTempMonitorStatistics = {
     code?: number;
     data?: TempMonitorStatistics;
     message?: string;
@@ -480,7 +480,7 @@ declare namespace API {
     totalDevices?: number;
   };
 
-  type BaseResponseListString_ = {
+  type BaseResponseListString = {
     code?: number;
     data?: string[];
     message?: string;
@@ -503,7 +503,7 @@ declare namespace API {
     endTime?: string;
   };
 
-  type BaseResponseListHourlyEnergyConsumption_ = {
+  type BaseResponseListHourlyEnergyConsumption = {
     code?: number;
     data?: HourlyEnergyConsumption[];
     message?: string;
@@ -521,7 +521,7 @@ declare namespace API {
     endTime?: string;
   };
 
-  type BaseResponseListDailyEnergyConsumption_ = {
+  type BaseResponseListDailyEnergyConsumption = {
     code?: number;
     data?: DailyEnergyConsumption[];
     message?: string;

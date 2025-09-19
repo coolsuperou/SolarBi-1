@@ -23,8 +23,8 @@ import darkThemeStyles from '@/styles/darkTheme';
 import {pageBackgroundStyles, pageStylesCSS} from '@/styles/pageStyles';
 import {getColumns} from './config/columns';
 
-  // 固定目标车间
-const TARGET_WORKSHOP = '102造粒环保设备';
+// 固定目标车间
+const TARGET_WORKSHOP = '102造粒';
 
 // 在组件内部定义响应式检测函数的占位，实际在组件内使用state
 
@@ -32,11 +32,11 @@ const TARGET_WORKSHOP = '102造粒环保设备';
 // 移除未使用的 Select 和 Typography
 
 /**
- * 102造粒环保设备电能数据监控页面
+ * 102造粒电能数据监控页面
  *
  * @constructor
  */
-const GranulationWorkshopPage: React.FC = () => {
+const Granule102Page: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const startTimeRef = useRef<any>();
   const endTimeRef = useRef<any>();
@@ -76,6 +76,10 @@ const GranulationWorkshopPage: React.FC = () => {
   const [axisUpdateTimer, setAxisUpdateTimer] = useState<NodeJS.Timeout | null>(null);
   // 移除手动控制，固定为自动刷新模式
 
+  // 图表加载状态
+  const [chartLoading, setChartLoading] = useState<boolean>(false);
+  const [dailyChartLoading, setDailyChartLoading] = useState<boolean>(false);
+
   // 重构: 将所有重置和默认加载逻辑统一
   const loadDefaults = (mode: string) => {
     const now = moment();
@@ -109,9 +113,10 @@ const GranulationWorkshopPage: React.FC = () => {
     setSelectedWorkshop('');
     setEnergyConsumption(0);
     setIsDefaultTimeRange(true);
-    setTempSearchParams({});
+    // 修改：让表格也使用默认时间范围，而不是全量查询
+    setTempSearchParams({ startTime, endTime });
     actionRef.current?.reload();
-    loadStatistics();
+    loadStatistics(undefined, startTime, endTime);
   };
 
   // 监听窗口大小变化
@@ -227,15 +232,19 @@ const GranulationWorkshopPage: React.FC = () => {
         endTime: formattedEndTime,
       });
 
-      // 获取102造粒环保设备的电能数据
-      const electricEnergyResponse = await getDataByWorkshopUsingGET({
-        workshop: '102造粒环保设备'
+      // 获取102造粒的电能数据
+      const electricEnergyResponse = await queryByConditionUsingPOST({
+        workshop: '102造粒',
+        startTime: formattedStartTime,
+        endTime: formattedEndTime,
+        current: 1,
+        pageSize: 1  // 只需要最新一条记录
       });
 
       let totalElectricEnergy = 0;
-      if (electricEnergyResponse?.code === 0 && electricEnergyResponse.data && electricEnergyResponse.data.length > 0) {
+      if (electricEnergyResponse?.code === 0 && electricEnergyResponse.data && electricEnergyResponse.data.records && electricEnergyResponse.data.records.length > 0) {
         // 获取最新一条记录的电能信息（数据通常按时间倒序排列）
-        const latestRecord = electricEnergyResponse.data[0];
+        const latestRecord = electricEnergyResponse.data.records[0];
         totalElectricEnergy = Number(latestRecord.electricEnergy) || 0;
       }
 
@@ -285,7 +294,8 @@ const GranulationWorkshopPage: React.FC = () => {
     // 判断是否为默认时间范围：如果没有指定时间，则为默认模式
     const isDefaultMode = !queryParams.startTime || !queryParams.endTime;
     setIsDefaultTimeRange(isDefaultMode);
-    setTempSearchParams(isDefaultMode ? {} : queryParams); // 默认模式下表格不使用时间范围限制
+    // 修改：无论默认模式还是手动搜索，表格都使用相应的时间范围
+    setTempSearchParams(queryParams);
     actionRef.current?.reload();
 
     // 根据模式和是否有时间范围来计算电能消耗
@@ -452,6 +462,8 @@ const GranulationWorkshopPage: React.FC = () => {
 
   // 加载每日电能消耗数据 - 显示日用电量差值（结束日期以后最近记录 - 开始日期以后最近记录）
   const loadDailyTrendData = async (isRealtime = false, startTime?: string, endTime?: string) => {
+    // 设置加载状态
+    setDailyChartLoading(true);
     try {
       const requestStartTime = moment().format('HH:mm:ss');
       setLastRequestTime(requestStartTime);
@@ -487,7 +499,7 @@ const GranulationWorkshopPage: React.FC = () => {
         const deviceGroups: { [key: string]: any[] } = {};
 
         response.data.forEach((item: API.DailyEnergyConsumption, index: number) => {
-          const deviceName = `102造粒环保设备 `;
+          const deviceName = `102造粒 `;
           if (!deviceGroups[deviceName]) {
             deviceGroups[deviceName] = [];
           }
@@ -847,11 +859,16 @@ const GranulationWorkshopPage: React.FC = () => {
     } catch (error: any) {
       console.error('获取每日电能消耗数据失败：', error);
       message.error('获取每日电能消耗数据失败：' + error.message);
+    } finally {
+      // 无论成功还是失败都要取消加载状态
+      setDailyChartLoading(false);
     }
   };
 
   // 加载每小时电能消耗数据 - 显示小时用电量差值（结束时间以后最近记录 - 开始时间以后最近记录）
   const loadTrendData = async (isRealtime = false, startTime?: string, endTime?: string) => {
+    // 设置加载状态
+    setChartLoading(true);
     try {
       const requestStartTime = moment().format('HH:mm:ss');
       setLastRequestTime(requestStartTime);
@@ -900,7 +917,7 @@ const GranulationWorkshopPage: React.FC = () => {
         const deviceGroups: { [key: string]: any[] } = {};
 
         response.data.forEach((item: API.HourlyEnergyConsumption, index: number) => {
-          const deviceName = `102造粒环保设备 `;
+          const deviceName = `102造粒 `;
           if (!deviceGroups[deviceName]) {
             deviceGroups[deviceName] = [];
           }
@@ -1278,6 +1295,9 @@ const GranulationWorkshopPage: React.FC = () => {
     } catch (error: any) {
       console.error('获取每小时电能消耗数据失败：', error);
       message.error('获取每小时电能消耗数据失败：' + error.message);
+    } finally {
+      // 无论成功还是失败都要取消加载状态
+      setChartLoading(false);
     }
   };
 
@@ -1367,7 +1387,7 @@ const GranulationWorkshopPage: React.FC = () => {
       <style dangerouslySetInnerHTML={{ __html: pageStylesCSS }} />
     <PageContainer
       header={{
-          title: (<span style={darkThemeStyles.title}>102造粒环保设备电能数据监控</span>),
+          title: (<span style={darkThemeStyles.title}>102造粒电能数据监控</span>),
         breadcrumb: {},
       }}
         style={{ background: 'transparent' }}
@@ -1400,6 +1420,7 @@ const GranulationWorkshopPage: React.FC = () => {
               isMobile={isMobile()}
               isSmallMobile={isSmallMobile()}
               darkThemeStyles={darkThemeStyles}
+              loading={chartLoading}
             />
           )}
           {currentMode === 'day' && (
@@ -1409,6 +1430,7 @@ const GranulationWorkshopPage: React.FC = () => {
               isMobile={isMobile()}
               isSmallMobile={isSmallMobile()}
               darkThemeStyles={darkThemeStyles}
+              loading={dailyChartLoading}
             />
           )}
         </>
@@ -1427,4 +1449,4 @@ const GranulationWorkshopPage: React.FC = () => {
   );
 };
 
-export default GranulationWorkshopPage;
+export default Granule102Page;

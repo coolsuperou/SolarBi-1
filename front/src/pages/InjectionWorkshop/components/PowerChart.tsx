@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, Badge, Space } from 'antd';
-import { BarChartOutlined } from '@ant-design/icons';
+import { Card, Badge, Space, Spin } from 'antd';
+import { BarChartOutlined, LoadingOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 
 type DarkThemeStyles = {
@@ -25,9 +25,10 @@ interface PowerChartProps {
   isMobile: boolean;
   isSmallMobile: boolean;
   darkThemeStyles: DarkThemeStyles;
+  loading?: boolean;
 }
 
-const PowerChart: React.FC<PowerChartProps> = ({ chartOptions, trendData, isMobile, isSmallMobile, darkThemeStyles }) => {
+const PowerChart: React.FC<PowerChartProps> = ({ chartOptions, trendData, isMobile, isSmallMobile, darkThemeStyles, loading = false }) => {
   return (
     <Card
       title={
@@ -50,7 +51,31 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartOptions, trendData, isMobi
         height: isMobile ? (isSmallMobile ? 280 : 330) : 450,
         ...darkThemeStyles.chartBackground
       }}>
-        {trendData.length > 0 && chartOptions.series ? (
+        {loading ? (
+          <div style={{
+            height: isMobile ? (isSmallMobile ? 250 : 300) : 400,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#00d4ff',
+            fontSize: isMobile ? (isSmallMobile ? '14px' : '15px') : '16px'
+          }}>
+            <Spin 
+              indicator={<LoadingOutlined style={{ fontSize: isMobile ? 32 : 40, color: '#00d4ff' }} spin />}
+              size="large"
+            />
+            <div style={{ 
+              marginTop: '20px', 
+              fontWeight: 'bold', 
+              fontSize: isMobile ? (isSmallMobile ? '14px' : '15px') : '16px',
+              color: '#00d4ff',
+              textShadow: '0 0 8px rgba(0, 212, 255, 0.6)'
+            }}>
+              正在加载电能数据...
+            </div>
+          </div>
+        ) : trendData.length > 0 && chartOptions.series ? (
           <ReactECharts
             option={chartOptions}
             style={{

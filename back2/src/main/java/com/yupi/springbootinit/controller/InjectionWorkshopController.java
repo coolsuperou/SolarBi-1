@@ -56,13 +56,6 @@ public class InjectionWorkshopController {
         return ResultUtils.success(workshops);
     }
 
-    @ApiOperation("根据设备ID查询温湿电能数据（110注射环保设备）")
-    @GetMapping("/device/{deviceId}")
-    public BaseResponse<List<TempMonitor>> getDataByDeviceId(
-            @ApiParam("设备ID") @PathVariable String deviceId) {
-        List<TempMonitor> dataList = injectionWorkshopService.getDataByDeviceId(deviceId);
-        return ResultUtils.success(dataList);
-    }
 
     @ApiOperation("分页查询温湿电能数据（110注射环保设备，支持多条件查询）")
     @PostMapping("/query")

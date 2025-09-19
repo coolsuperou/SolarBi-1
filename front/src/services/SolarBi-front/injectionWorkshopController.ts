@@ -32,19 +32,6 @@ export async function getAllWorkshopsUsingGET(options?: { [key: string]: any }) 
   });
 }
 
-/** 根据设备ID查询温湿电能数据 GET /api/injection-workshop/device/${param0} */
-export async function getDataByDeviceIdUsingGET(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getDataByDeviceIdUsingGETParams,
-  options?: { [key: string]: any },
-) {
-  const { deviceId: param0, ...queryParams } = params;
-  return request<API.BaseResponseListTempMonitor>(`/api/injection-workshop/device/${param0}`, {
-    method: 'GET',
-    params: { ...queryParams },
-    ...(options || {}),
-  });
-}
 
 /** 分页查询温湿电能数据（支持多条件查询） POST /api/injection-workshop/query */
 export async function queryByConditionUsingPOST(

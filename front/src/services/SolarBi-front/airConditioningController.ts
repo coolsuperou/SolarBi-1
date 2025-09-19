@@ -4,7 +4,7 @@ import { request } from '@umijs/max';
 
 /** 获取最新温湿电能数据（114_空调水机主机） GET /api/air-conditioning/latest */
 export async function getLatestDataUsingGET(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListTempMonitor_>('/api/air-conditioning/latest', {
+  return request<API.BaseResponseListTempMonitor>('/api/air-conditioning/latest', {
     method: 'GET',
     ...(options || {}),
   });
@@ -16,7 +16,7 @@ export async function getDataByWorkshopUsingGET(
   options?: { [key: string]: any },
 ) {
   const { workshop: param0, ...queryParams } = params;
-  return request<API.BaseResponseListTempMonitor_>(`/api/air-conditioning/workshop/${param0}`, {
+  return request<API.BaseResponseListTempMonitor>(`/api/air-conditioning/workshop/${param0}`, {
     method: 'GET',
     params: { ...queryParams },
     ...(options || {}),
@@ -25,31 +25,20 @@ export async function getDataByWorkshopUsingGET(
 
 /** 获取所有车间列表（114_空调水机主机） GET /api/air-conditioning/workshops */
 export async function getAllWorkshopsUsingGET(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListString_>('/api/air-conditioning/workshops', {
+  return request<API.BaseResponseListString>('/api/air-conditioning/workshops', {
     method: 'GET',
     ...(options || {}),
   });
 }
 
-/** 根据设备ID查询温湿电能数据（114_空调水机主机） GET /api/air-conditioning/device/${param0} */
-export async function getDataByDeviceIdUsingGET(
-  params: API.getDataByDeviceIdUsingGETParams,
-  options?: { [key: string]: any },
-) {
-  const { deviceId: param0, ...queryParams } = params;
-  return request<API.BaseResponseListTempMonitor_>(`/api/air-conditioning/device/${param0}`, {
-    method: 'GET',
-    params: { ...queryParams },
-    ...(options || {}),
-  });
-}
+
 
 /** 分页查询温湿电能数据（114_空调水机主机，支持多条件查询） POST /api/air-conditioning/query */
 export async function queryByConditionUsingPOST(
   body: API.TempMonitorQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageTempMonitor_>('/api/air-conditioning/query', {
+  return request<API.BaseResponsePageTempMonitor>('/api/air-conditioning/query', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -64,7 +53,7 @@ export async function getStatisticsUsingGET(
   params: API.getStatisticsUsingGETParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseTempMonitorStatistics_>('/api/air-conditioning/statistics', {
+  return request<API.BaseResponseTempMonitorStatistics>('/api/air-conditioning/statistics', {
     method: 'GET',
     params: {
       ...params,
@@ -78,7 +67,7 @@ export async function getElectricEnergyTrendUsingGET(
   params: API.getElectricEnergyTrendUsingGETParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseListTempMonitor_>('/api/air-conditioning/electric-energy-trend', {
+  return request<API.BaseResponseListTempMonitor>('/api/air-conditioning/electric-energy-trend', {
     method: 'GET',
     params: {
       ...params,
@@ -92,7 +81,7 @@ export async function getHourlyEnergyConsumptionUsingGET(
   params: API.getHourlyEnergyConsumptionUsingGETParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseListHourlyEnergyConsumption_>(
+  return request<API.BaseResponseListHourlyEnergyConsumption>(
     '/api/air-conditioning/electric-energy-hourly-consumption',
     {
       method: 'GET',
@@ -109,7 +98,7 @@ export async function getHourlyEnergyConsumptionQueryUsingGET(
   params: API.getHourlyEnergyConsumptionQueryUsingGETParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseListHourlyEnergyConsumption_>(
+  return request<API.BaseResponseListHourlyEnergyConsumption>(
     '/api/air-conditioning/electric-energy-hourly-consumption-query',
     {
       method: 'GET',
@@ -126,7 +115,7 @@ export async function getDailyEnergyConsumptionQueryUsingGET(
   params: API.getDailyEnergyConsumptionQueryUsingGETParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseListDailyEnergyConsumption_>(
+  return request<API.BaseResponseListDailyEnergyConsumption>(
     '/api/air-conditioning/electric-energy-daily-consumption-query',
     {
       method: 'GET',
@@ -143,7 +132,7 @@ export async function refreshCacheUsingPOST(
   params: API.refreshCacheUsingPOSTParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseBoolean_>('/api/air-conditioning/refresh-cache', {
+  return request<API.BaseResponseBoolean>('/api/air-conditioning/refresh-cache', {
     method: 'POST',
     params: {
       ...params,

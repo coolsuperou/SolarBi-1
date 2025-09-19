@@ -32,10 +32,6 @@ public interface GranulationWorkshopService {
      */
     List<String> getAllWorkshops();
 
-    /**
-     * 根据设备ID查询数据
-     */
-    List<TempMonitor> getDataByDeviceId(String deviceId);
 
     /**
      * 分页查询温湿电能数据（支持多条件查询）
@@ -70,6 +66,10 @@ public interface GranulationWorkshopService {
     /**
      * 获取每日电能消耗数据（查询模式-历史数据）
      */
+
     List<DailyEnergyConsumption> getDailyEnergyConsumptionQuery(String workshop, String deviceId, Date startTime, Date endTime);
+
+
+
 }
 

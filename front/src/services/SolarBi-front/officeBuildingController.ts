@@ -158,3 +158,23 @@ export async function refreshCacheUsingPOST(
     ...(options || {}),
   });
 }
+
+/** 获取电能消耗量（1#办公楼，后端计算差值） GET /api/office-building/electric-energy-consumption */
+export async function getEnergyConsumptionUsingGET(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: {
+    /** 开始时间 */
+    startTime?: string;
+    /** 结束时间 */
+    endTime?: string;
+  },
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseDouble>('/api/office-building/electric-energy-consumption', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}

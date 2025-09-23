@@ -27,14 +27,6 @@ public class OfficeBuildingServiceImpl implements OfficeBuildingService {
     @Autowired
     private OfficeBuildingMapper officeBuildingMapper;
 
-    @Override
-    @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    public List<TempMonitor> getLatestData() {
-        // 服务层也强制限定车间
-        String fixedWorkshop = "1#办公楼";
-        log.debug("从数据库获取最新TempMonitor数据，车间: {}", fixedWorkshop);
-        return officeBuildingMapper.selectLatestData();
-    }
 
 
     @Override
@@ -56,19 +48,18 @@ public class OfficeBuildingServiceImpl implements OfficeBuildingService {
         // 如果统计结果为空，创建一个默认的统计对象
         if (statistics == null) {
             statistics = new TempMonitorStatistics();
-            statistics.setAvgTemperature(0.0);
-            statistics.setMinTemperature(0.0);
-            statistics.setMaxTemperature(0.0);
-            statistics.setAvgHumidity(0.0);
-            statistics.setMinHumidity(0.0);
-            statistics.setMaxHumidity(0.0);
             statistics.setTotalElectricEnergy(0.0);
-            statistics.setAvgElectricEnergy(0.0);
         }
         
-        // 获取设备数量
-        Integer deviceCount = officeBuildingMapper.countDevices(fixedWorkshop, startTime, endTime);
-        statistics.setTotalDevices(deviceCount != null ? deviceCount : 0);
+        // 为保持API完整性，设置其他字段的默认值（统计卡片不需要，但保持兼容性）
+        if (statistics.getAvgTemperature() == null) statistics.setAvgTemperature(0.0);
+        if (statistics.getMinTemperature() == null) statistics.setMinTemperature(0.0);
+        if (statistics.getMaxTemperature() == null) statistics.setMaxTemperature(0.0);
+        if (statistics.getAvgHumidity() == null) statistics.setAvgHumidity(0.0);
+        if (statistics.getMinHumidity() == null) statistics.setMinHumidity(0.0);
+        if (statistics.getMaxHumidity() == null) statistics.setMaxHumidity(0.0);
+        if (statistics.getAvgElectricEnergy() == null) statistics.setAvgElectricEnergy(0.0);
+        if (statistics.getTotalDevices() == null) statistics.setTotalDevices(0);
         
         return statistics;
     }
@@ -91,33 +82,6 @@ public class OfficeBuildingServiceImpl implements OfficeBuildingService {
         return officeBuildingMapper.selectElectricEnergyTrend(fixedWorkshop, deviceId, startTime, endTime, limit);
     }
 
-    @Override
-    @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    public List<HourlyEnergyConsumption> getHourlyEnergyConsumption(String workshop, String deviceId, Date startTime, Date endTime) {
-        // 服务层也强制限定车间
-        String fixedWorkshop = "1#办公楼";
-        log.debug("从数据库获取每小时电能消耗数据（默认模式-实时更新），车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}", fixedWorkshop, deviceId, startTime, endTime);
-        
-        List<HourlyEnergyConsumption> result = officeBuildingMapper.selectHourlyEnergyConsumption(fixedWorkshop, deviceId, startTime, endTime);
-        
-        // 添加调试日志，输出实际查询结果
-        if (result != null && !result.isEmpty()) {
-            log.info("=== 每小时电能消耗数据调试信息（默认模式-1#办公楼） ===");
-            for (HourlyEnergyConsumption item : result) {
-                log.info("设备: {}, 小时: {}, 开始能耗: {}, 结束能耗: {}, 消耗量: {}, 开始时间: {}, 结束时间: {}", 
-                    item.getDeviceId(), 
-                    item.getHour(), 
-                    item.getStartEnergy(), 
-                    item.getEndEnergy(), 
-                    item.getEnergyConsumption(),
-                    item.getStartTime(),
-                    item.getEndTime());
-            }
-            log.info("=== 调试信息结束 ===");
-        }
-        
-        return result;
-    }
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
@@ -173,5 +137,13 @@ public class OfficeBuildingServiceImpl implements OfficeBuildingService {
         }
         
         return result;
+    }
+
+    @Override
+    @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
+    public Double getEnergyConsumption(Date startTime, Date endTime) {
+        log.debug("从数据库计算电能消耗差值，开始时间: {}, 结束时间: {}", startTime, endTime);
+        Double consumption = officeBuildingMapper.selectEnergyConsumption(startTime, endTime);
+        return consumption != null ? consumption : 0.0;
     }
 }

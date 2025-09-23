@@ -36,11 +36,6 @@ public interface InjectionWorkshopMapper extends BaseMapper<TempMonitor> {
             "FROM RSWS_TempMonitor_Copy WHERE Workshop = '110注射环保设备' ORDER BY UpdateTime DESC")
     List<TempMonitor> selectByWorkshop(String workshop);
 
-    /**
-     * 查询所有车间
-     */
-    @Select("SELECT DISTINCT Workshop FROM RSWS_TempMonitor_Copy WHERE Workshop = '110注射环保设备'")
-    List<String> selectAllWorkshops();
 
     /**
      * 分页查询温湿电能数据（支持多条件查询）

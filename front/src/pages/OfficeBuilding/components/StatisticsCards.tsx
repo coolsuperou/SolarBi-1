@@ -90,3 +90,6 @@ const StatisticsCards: React.FC<StatisticsCardsProps> = ({ energyConsumption, st
 };
 
 export default StatisticsCards;
+
+
+

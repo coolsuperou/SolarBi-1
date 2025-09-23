@@ -36,11 +36,6 @@ public interface GranulationWorkshopMapper extends BaseMapper<TempMonitor> {
             "FROM RSWS_TempMonitor_Copy WHERE Workshop = '102造粒环保设备' ORDER BY UpdateTime DESC")
     List<TempMonitor> selectByWorkshop(String workshop);
 
-    /**
-     * 查询所有车间
-     */
-    @Select("SELECT DISTINCT Workshop FROM RSWS_TempMonitor_Copy WHERE Workshop = '102造粒环保设备'")
-    List<String> selectAllWorkshops();
 
 
     /**

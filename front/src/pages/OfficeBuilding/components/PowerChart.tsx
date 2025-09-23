@@ -35,7 +35,7 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartOptions, trendData, isMobi
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Space>
             <BarChartOutlined style={{ color: '#00d4ff', filter: 'drop-shadow(0 0 10px rgba(0, 212, 255, 0.6))' }} />
-            <span style={darkThemeStyles.title}>1#办公楼 实时电能监控</span>
+            <span style={darkThemeStyles.title}>102造粒环保设备 实时电能监控</span>
           </Space>
           <Space>
             <Badge
@@ -109,3 +109,6 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartOptions, trendData, isMobi
 };
 
 export default PowerChart;
+
+
+

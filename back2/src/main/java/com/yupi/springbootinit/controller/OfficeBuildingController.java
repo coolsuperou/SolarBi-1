@@ -32,12 +32,7 @@ public class OfficeBuildingController {
     @Autowired
     private TempMonitorCacheLoader tempMonitorCacheLoader;
 
-    @ApiOperation("获取最新温湿电能数据（1#办公楼）")
-    @GetMapping("/latest")
-    public BaseResponse<List<TempMonitor>> getLatestData() {
-        List<TempMonitor> dataList = officeBuildingService.getLatestData();
-        return ResultUtils.success(dataList);
-    }
+
 
 
     @ApiOperation("获取所有车间列表（1#办公楼）")
@@ -83,34 +78,6 @@ public class OfficeBuildingController {
         }
     }
 
-    @ApiOperation("获取每小时电能消耗数据（1#办公楼，默认模式-实时更新）")
-    @GetMapping("/electric-energy-hourly-consumption")
-    public BaseResponse<List<HourlyEnergyConsumption>> getHourlyEnergyConsumption(
-            @ApiParam("车间") @RequestParam(required = false) String workshop,
-            @ApiParam("设备ID") @RequestParam(required = false) String deviceId,
-            @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
-            @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
-        try {
-            if (startTime != null && endTime != null) {
-                if (!endTime.after(startTime)) {
-                    return ResultUtils.error(ErrorCode.PARAMS_ERROR, "结束时间必须晚于开始时间");
-                }
-                long diffMs = endTime.getTime() - startTime.getTime();
-                long diffDays = diffMs / (1000 * 60 * 60 * 24);
-                if (diffDays > 7) {
-                    return ResultUtils.error(ErrorCode.PARAMS_ERROR, "小时模式时间范围过大，请选择不超过7天");
-                }
-            }
-            String fixedWorkshop = "1#办公楼";
-            log.info("🔴 Controller调用默认模式API: /electric-energy-hourly-consumption - 车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}",
-                    fixedWorkshop, deviceId, startTime, endTime);
-            List<HourlyEnergyConsumption> consumptionData = officeBuildingService.getHourlyEnergyConsumption(fixedWorkshop, deviceId, startTime, endTime);
-            return ResultUtils.success(consumptionData);
-        } catch (Exception e) {
-            log.error("获取每小时电能消耗数据失败", e);
-            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取每小时电能消耗数据失败");
-        }
-    }
 
     @ApiOperation("获取每小时电能消耗数据（1#办公楼，查询模式-历史数据）")
     @GetMapping("/electric-energy-hourly-consumption-query")
@@ -181,6 +148,20 @@ public class OfficeBuildingController {
         } catch (Exception e) {
             log.error("刷新缓存失败", e);
             return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "刷新缓存失败");
+        }
+    }
+
+    @ApiOperation("获取电能消耗量（1#办公楼，后端计算差值）")
+    @GetMapping("/electric-energy-consumption")
+    public BaseResponse<Double> getEnergyConsumption(
+            @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
+            @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
+        try {
+            Double consumption = officeBuildingService.getEnergyConsumption(startTime, endTime);
+            return ResultUtils.success(consumption);
+        } catch (Exception e) {
+            log.error("获取电能消耗量失败", e);
+            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取电能消耗量失败");
         }
     }
 }

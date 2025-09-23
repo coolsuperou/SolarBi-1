@@ -21,19 +21,6 @@ import java.util.List;
 @Mapper
 public interface OfficeBuildingMapper extends BaseMapper<TempMonitor> {
 
-    /**
-     * 查询最新数据（显示所有数据）
-     */
-    @Select("SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop " +
-            "FROM RSWS_TempMonitor_Copy WHERE Workshop = '1#办公楼' ORDER BY UpdateTime DESC")
-    List<TempMonitor> selectLatestData();
-
-
-    /**
-     * 查询所有车间
-     */
-    @Select("SELECT DISTINCT Workshop FROM RSWS_TempMonitor_Copy WHERE Workshop = '1#办公楼'")
-    List<String> selectAllWorkshops();
 
 
 
@@ -116,15 +103,7 @@ public interface OfficeBuildingMapper extends BaseMapper<TempMonitor> {
             @Param("limit") Integer limit
     );
 
-    /**
-     * 查询每小时电能消耗数据（默认模式，用于ServiceImpl）
-     */
-    List<HourlyEnergyConsumption> selectHourlyEnergyConsumption(
-            @Param("workshop") String workshop,
-            @Param("deviceId") String deviceId,
-            @Param("startTime") Date startTime,
-            @Param("endTime") Date endTime
-    );
+
 
     /**
      * 查询每小时电能消耗数据（查询模式，用于ServiceImpl）
@@ -143,6 +122,14 @@ public interface OfficeBuildingMapper extends BaseMapper<TempMonitor> {
             @Param("workshop") String workshop,
             @Param("deviceId") String deviceId,
             @Param("startTime") Date startTime,
+            @Param("endTime") Date endTime
+    );
+
+    /**
+     * 计算电能消耗差值
+     */
+    Double selectEnergyConsumption(
+            @Param("startTime") Date startTime, 
             @Param("endTime") Date endTime
     );
 }

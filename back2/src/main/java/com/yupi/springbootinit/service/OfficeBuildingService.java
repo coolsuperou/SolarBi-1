@@ -15,10 +15,6 @@ import java.util.List;
  */
 public interface OfficeBuildingService {
 
-    /**
-     * 获取最新的温湿电能数据
-     */
-    List<TempMonitor> getLatestData();
 
 
     /**
@@ -43,10 +39,6 @@ public interface OfficeBuildingService {
      */
     List<TempMonitor> getElectricEnergyTrend(String workshop, String deviceId, Date startTime, Date endTime, Integer limit);
 
-    /**
-     * 获取每小时电能消耗数据（默认模式-实时更新）
-     */
-    List<HourlyEnergyConsumption> getHourlyEnergyConsumption(String workshop, String deviceId, Date startTime, Date endTime);
 
     /**
      * 获取每小时电能消耗数据（查询模式-历史数据）
@@ -57,4 +49,9 @@ public interface OfficeBuildingService {
      * 获取每日电能消耗数据（查询模式-历史数据）
      */
     List<DailyEnergyConsumption> getDailyEnergyConsumptionQuery(String workshop, String deviceId, Date startTime, Date endTime);
+
+    /**
+     * 计算电能消耗差值
+     */
+    Double getEnergyConsumption(Date startTime, Date endTime);
 }

@@ -38,13 +38,6 @@ public interface Granule102Mapper extends BaseMapper<TempMonitor> {
     List<TempMonitor> selectByWorkshop(String workshop);
 
     /**
-     * 查询所有车间
-     */
-    @Select("SELECT DISTINCT Workshop FROM RSWS_TempMonitor_Copy WHERE Workshop = '102造粒'")
-    List<String> selectAllWorkshops();
-
-
-    /**
      * 分页查询温湿电能数据（支持多条件查询）
      * 使用XML配置文件实现复杂查询
      */

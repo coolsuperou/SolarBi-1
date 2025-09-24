@@ -24,7 +24,7 @@ import {pageBackgroundStyles, pageStylesCSS} from '@/styles/pageStyles';
 import {getColumns} from './config/columns';
 
   // 固定目标车间
-const TARGET_WORKSHOP = '102造粒环保设备';
+const TARGET_WORKSHOP = '102造粒';
 
 // 在组件内部定义响应式检测函数的占位，实际在组件内使用state
 
@@ -32,7 +32,7 @@ const TARGET_WORKSHOP = '102造粒环保设备';
 // 移除未使用的 Select 和 Typography
 
 /**
- * 102造粒环保设备电能数据监控页面
+ * 102造粒电能数据监控页面
  *
  * @constructor
  */
@@ -232,9 +232,9 @@ const GranulationWorkshopPage: React.FC = () => {
         endTime: formattedEndTime,
       });
 
-      // 获取102造粒环保设备的电能数据
+      // 获取102造粒的电能数据
       const electricEnergyResponse = await queryByConditionUsingPOST({
-        workshop: '102造粒环保设备',
+        workshop: '102造粒环',
         startTime: formattedStartTime,
         endTime: formattedEndTime,
         current: 1,
@@ -499,7 +499,7 @@ const GranulationWorkshopPage: React.FC = () => {
         const deviceGroups: { [key: string]: any[] } = {};
 
         response.data.forEach((item: API.DailyEnergyConsumption, index: number) => {
-          const deviceName = `102造粒环保设备 `;
+          const deviceName = `102造粒 `;
           if (!deviceGroups[deviceName]) {
             deviceGroups[deviceName] = [];
           }
@@ -917,7 +917,7 @@ const GranulationWorkshopPage: React.FC = () => {
         const deviceGroups: { [key: string]: any[] } = {};
 
         response.data.forEach((item: API.HourlyEnergyConsumption, index: number) => {
-          const deviceName = `102造粒环保设备 `;
+          const deviceName = `102造粒 `;
           if (!deviceGroups[deviceName]) {
             deviceGroups[deviceName] = [];
           }
@@ -1387,7 +1387,7 @@ const GranulationWorkshopPage: React.FC = () => {
       <style dangerouslySetInnerHTML={{ __html: pageStylesCSS }} />
     <PageContainer
       header={{
-          title: (<span style={darkThemeStyles.title}>102造粒环保设备电能数据监控</span>),
+          title: (<span style={darkThemeStyles.title}>102造粒电能数据监控</span>),
         breadcrumb: {},
       }}
         style={{ background: 'transparent' }}

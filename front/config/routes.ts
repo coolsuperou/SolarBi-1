@@ -35,6 +35,7 @@ export default [
     component: './OfficeBuilding',
     access: 'canUser',
   },
+
   {
     path: '/feeding_workshop',
     name: '101配料',
@@ -47,6 +48,13 @@ export default [
     name: '102造粒',
     icon: 'build',
     component: './Granule102',
+    access: 'canUser',
+  },
+  {
+    path: '/cold-press-103',
+    name: '103冷压车间',
+    icon: 'build',
+    component: './ColdPress103',
     access: 'canUser',
   },
   {

@@ -213,7 +213,7 @@
     <select id="selectDailyEnergyConsumption" resultType="com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption">
         WITH DailyBoundaries AS (
             -- 生成最近7天的每日边界
-            SELECT 
+            SELECT
                 DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 8, CAST(GETDATE() AS DATE)) as DayStart,
                 DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 7, CAST(GETDATE() AS DATE)) as DayEnd
             FROM (
@@ -222,26 +222,26 @@
             ) dummy
         ),
         DeviceDailyData AS (
-            SELECT 
+            SELECT
                 DayStart,
                 SUM(
-                    CASE 
-                        WHEN tm_start.ElectricEnergy IS NOT NULL 
-                        THEN tm_start.ElectricEnergy 
-                        ELSE 0 
+                    CASE
+                        WHEN tm_start.ElectricEnergy IS NOT NULL
+                        THEN tm_start.ElectricEnergy
+                        ELSE 0
                     END
                 ) as StartEnergy,
                 SUM(
-                    CASE 
-                        WHEN tm_end.ElectricEnergy IS NOT NULL 
-                        THEN tm_end.ElectricEnergy 
-                        ELSE 0 
+                    CASE
+                        WHEN tm_end.ElectricEnergy IS NOT NULL
+                        THEN tm_end.ElectricEnergy
+                        ELSE 0
                     END
                 ) as EndEnergy
             FROM DailyBoundaries db
             CROSS JOIN (
-                SELECT DISTINCT DeviceID, Name, Workshop 
-                FROM RSWS_TempMonitor_Copy 
+                SELECT DISTINCT DeviceID, Name, Workshop
+                FROM RSWS_TempMonitor_Copy
                 WHERE Workshop = '1#办公楼'
                     AND ElectricEnergy IS NOT NULL
                     <if test="deviceId != null and deviceId != ''">
@@ -249,14 +249,14 @@
                     </if>
             ) devices
             LEFT JOIN RSWS_TempMonitor_Copy tm_start ON (
-                tm_start.DeviceID = devices.DeviceID 
+                tm_start.DeviceID = devices.DeviceID
                 AND tm_start.Name = devices.Name
                 AND tm_start.Workshop = '1#办公楼'
                 AND tm_start.ElectricEnergy IS NOT NULL
                 AND tm_start.UpdateTime = (
-                    SELECT TOP 1 UpdateTime 
-                    FROM RSWS_TempMonitor_Copy inner_tm 
-                    WHERE inner_tm.DeviceID = devices.DeviceID 
+                    SELECT TOP 1 UpdateTime
+                    FROM RSWS_TempMonitor_Copy inner_tm
+                    WHERE inner_tm.DeviceID = devices.DeviceID
                         AND inner_tm.Name = devices.Name
                         AND inner_tm.Workshop = '1#办公楼'
                         AND inner_tm.UpdateTime &lt;= db.DayStart
@@ -265,14 +265,14 @@
                 )
             )
             LEFT JOIN RSWS_TempMonitor_Copy tm_end ON (
-                tm_end.DeviceID = devices.DeviceID 
+                tm_end.DeviceID = devices.DeviceID
                 AND tm_end.Name = devices.Name
                 AND tm_end.Workshop = '1#办公楼'
                 AND tm_end.ElectricEnergy IS NOT NULL
                 AND tm_end.UpdateTime = (
-                    SELECT TOP 1 UpdateTime 
-                    FROM RSWS_TempMonitor_Copy inner_tm 
-                    WHERE inner_tm.DeviceID = devices.DeviceID 
+                    SELECT TOP 1 UpdateTime
+                    FROM RSWS_TempMonitor_Copy inner_tm
+                    WHERE inner_tm.DeviceID = devices.DeviceID
                         AND inner_tm.Name = devices.Name
                         AND inner_tm.Workshop = '1#办公楼'
                         AND inner_tm.UpdateTime &lt; db.DayEnd
@@ -282,17 +282,17 @@
             )
             GROUP BY DayStart
         )
-        SELECT 
+        SELECT
             '1#办公楼' as deviceId,
             '1#办公楼' as name,
             '1#办公楼' as workshop,
             DayStart as day,
             StartEnergy as startEnergy,
             EndEnergy as endEnergy,
-            CASE 
-                WHEN StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL AND EndEnergy &gt;= StartEnergy 
-                THEN EndEnergy - StartEnergy 
-                ELSE NULL 
+            CASE
+                WHEN StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL AND EndEnergy &gt;= StartEnergy
+                THEN EndEnergy - StartEnergy
+                ELSE NULL
             END as energyConsumption
         FROM DeviceDailyData
         WHERE StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL
@@ -366,5 +366,33 @@
         ), 0) AS totalConsumption
         FROM DeviceEnergyData
         WHERE StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL
+    </select>
+    <!-- 分页查询温湿电能数据 -->
+    <select id="selectPageByCondition" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
+        SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop
+        FROM RSWS_TempMonitor_Copy
+        <where>
+            AND Workshop = '103冷压'
+            <if test="deviceId != null and deviceId != ''">
+                AND DeviceID LIKE CONCAT('%', #{deviceId}, '%')
+            </if>
+            <if test="name != null and name != ''">
+                AND Name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="startTime != null">
+                AND UpdateTime &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND UpdateTime &lt;= #{endTime}
+            </if>
+        </where>
+        <choose>
+            <when test="sortField != null and sortField != '' and sortOrder != null and sortOrder != ''">
+                ORDER BY ${sortField} ${sortOrder}
+            </when>
+            <otherwise>
+                ORDER BY UpdateTime DESC
+            </otherwise>
+        </choose>
     </select>
 </mapper>

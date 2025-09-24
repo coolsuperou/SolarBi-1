@@ -35,7 +35,7 @@ const DailyPowerChart: React.FC<DailyPowerChartProps> = ({ chartOptions, trendDa
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Space>
             <CalendarOutlined style={{ color: '#00d4ff', filter: 'drop-shadow(0 0 10px rgba(0, 212, 255, 0.6))' }} />
-            <span style={darkThemeStyles.title}>102造粒环保设备 日电能消耗监控</span>
+            <span style={darkThemeStyles.title}>1#办公楼 日电能消耗监控</span>
           </Space>
           <Space>
             <Badge
@@ -61,13 +61,13 @@ const DailyPowerChart: React.FC<DailyPowerChartProps> = ({ chartOptions, trendDa
             color: '#00d4ff',
             fontSize: isMobile ? (isSmallMobile ? '14px' : '15px') : '16px'
           }}>
-            <Spin 
+            <Spin
               indicator={<LoadingOutlined style={{ fontSize: isMobile ? 32 : 40, color: '#00d4ff' }} spin />}
               size="large"
             />
-            <div style={{ 
-              marginTop: '20px', 
-              fontWeight: 'bold', 
+            <div style={{
+              marginTop: '20px',
+              fontWeight: 'bold',
               fontSize: isMobile ? (isSmallMobile ? '14px' : '15px') : '16px',
               color: '#00d4ff',
               textShadow: '0 0 8px rgba(0, 212, 255, 0.6)'

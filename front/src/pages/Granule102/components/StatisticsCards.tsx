@@ -40,7 +40,7 @@ const StatisticsCards: React.FC<StatisticsCardsProps> = ({ energyConsumption, st
           <div style={{ width: '100%' }}>
             <Statistic
               title={<span style={{ color: '#fff', fontWeight: 'bold', textShadow: '0 0 8px rgba(255, 255, 255, 0.5)' }}>车间</span>}
-              value="102造粒环保设备"
+              value="102造粒"
               valueStyle={{
                 ...darkThemeStyles.statisticPurple,
                 fontSize: '16px',

@@ -4,22 +4,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.yupi.springbootinit.mapper.sqlserver.ColdPress103Mapper">
 
-    <!-- 查询设备数量统计 -->
-    <select id="countDevices" resultType="java.lang.Integer">
-        SELECT COUNT(DISTINCT DeviceID)
-        FROM RSWS_TempMonitor_Copy
-        <where>
-            AND Workshop = '103冷压'
-            <if test="startTime != null">
-                AND UpdateTime &gt;= #{startTime}
-            </if>
-            <if test="endTime != null">
-                AND UpdateTime &lt;= #{endTime}
-            </if>
-        </where>
-    </select>
 
-    <!-- 查询最新数据的累积值（按Name区分累加） -->
+
+    <!-- 总电能消耗卡片 -->
     <select id="getStatistics" resultType="com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics">
         WITH LatestDeviceData AS (
             SELECT 
@@ -42,59 +29,6 @@
         WHERE rn = 1
     </select>
 
-    <!-- 获取所有车间 -->
-    <select id="selectAllWorkshops" resultType="java.lang.String">
-        SELECT DISTINCT Workshop
-        FROM RSWS_TempMonitor_Copy
-        WHERE Workshop = '103冷压'
-    </select>
-
-
-    <!-- 查询模式-条件查询数据 -->
-    <select id="selectByCondition" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
-        SELECT *
-        FROM RSWS_TempMonitor_Copy
-        WHERE Workshop = '103冷压'
-        <if test="deviceId != null and deviceId != ''">
-            AND DeviceID = #{deviceId}
-        </if>
-        <if test="name != null and name != ''">
-            AND Name = #{name}
-        </if>
-        <if test="startTime != null">
-            AND UpdateTime &gt;= #{startTime}
-        </if>
-        <if test="endTime != null">
-            AND UpdateTime &lt;= #{endTime}
-        </if>
-        ORDER BY UpdateTime DESC
-        OFFSET #{offset} ROWS
-        FETCH NEXT #{pageSize} ROWS ONLY
-    </select>
-
-    <!-- 查询模式-条件查询数据总数 -->
-    <select id="countByCondition" resultType="java.lang.Long">
-        SELECT COUNT(*)
-        FROM RSWS_TempMonitor_Copy
-        WHERE Workshop = '103冷压'
-        <if test="deviceId != null and deviceId != ''">
-            AND DeviceID = #{deviceId}
-        </if>
-        <if test="name != null and name != ''">
-            AND Name = #{name}
-        </if>
-        <if test="startTime != null">
-            AND UpdateTime &gt;= #{startTime}
-        </if>
-        <if test="endTime != null">
-            AND UpdateTime &lt;= #{endTime}
-        </if>
-    </select>
-
-
-
-    <!-- 查询模式-历史数据查询每日电能消耗数据 -->
-    <!-- 在第434行之前添加以下内容 -->
 
     <!-- 日模式查询 -->
     <select id="selectDailyEnergyConsumptionQuery" resultType="com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption">
@@ -315,99 +249,7 @@
     ORDER BY HourStart
 </select>
 
-    <!-- 默认模式-每日电能消耗数据 -->
-    <select id="selectDailyEnergyConsumption" resultType="com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption">
-        WITH DailyBoundaries AS (
-            -- 生成最近7天的每日边界
-            SELECT 
-                DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 8, CAST(GETDATE() AS DATE)) as DayStart,
-                DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 7, CAST(GETDATE() AS DATE)) as DayEnd
-            FROM (
-                SELECT TOP 7 1 as DummyColumn
-                FROM sys.objects
-            ) dummy
-        ),
-        DeviceDailyData AS (
-            SELECT 
-                DayStart,
-                SUM(
-                    CASE 
-                        WHEN tm_start.ElectricEnergy IS NOT NULL 
-                        THEN tm_start.ElectricEnergy 
-                        ELSE 0 
-                    END
-                ) as StartEnergy,
-                SUM(
-                    CASE 
-                        WHEN tm_end.ElectricEnergy IS NOT NULL 
-                        THEN tm_end.ElectricEnergy 
-                        ELSE 0 
-                    END
-                ) as EndEnergy
-            FROM DailyBoundaries db
-            CROSS JOIN (
-                SELECT DISTINCT DeviceID, Name, Workshop 
-                FROM RSWS_TempMonitor_Copy 
-                WHERE Workshop = '103冷压'
-                    AND ElectricEnergy IS NOT NULL
-                    <if test="deviceId != null and deviceId != ''">
-                        AND DeviceID = #{deviceId}
-                    </if>
-            ) devices
-            LEFT JOIN RSWS_TempMonitor_Copy tm_start ON (
-                tm_start.DeviceID = devices.DeviceID 
-                AND tm_start.Name = devices.Name
-                AND tm_start.Workshop = '103冷压'
-                AND tm_start.ElectricEnergy IS NOT NULL
-                AND tm_start.UpdateTime = (
-                    SELECT TOP 1 UpdateTime 
-                    FROM RSWS_TempMonitor_Copy inner_tm 
-                    WHERE inner_tm.DeviceID = devices.DeviceID 
-                        AND inner_tm.Name = devices.Name
-                        AND inner_tm.Workshop = '103冷压'
-                        AND inner_tm.UpdateTime &lt;= db.DayStart
-                        AND inner_tm.ElectricEnergy IS NOT NULL
-                    ORDER BY inner_tm.UpdateTime DESC
-                )
-            )
-            LEFT JOIN RSWS_TempMonitor_Copy tm_end ON (
-                tm_end.DeviceID = devices.DeviceID 
-                AND tm_end.Name = devices.Name
-                AND tm_end.Workshop = '103冷压'
-                AND tm_end.ElectricEnergy IS NOT NULL
-                AND tm_end.UpdateTime = (
-                    SELECT TOP 1 UpdateTime 
-                    FROM RSWS_TempMonitor_Copy inner_tm 
-                    WHERE inner_tm.DeviceID = devices.DeviceID 
-                        AND inner_tm.Name = devices.Name
-                        AND inner_tm.Workshop = '103冷压'
-                        AND inner_tm.UpdateTime &lt; db.DayEnd
-                        AND inner_tm.ElectricEnergy IS NOT NULL
-                    ORDER BY inner_tm.UpdateTime DESC
-                )
-            )
-            GROUP BY DayStart
-        )
-        SELECT 
-            '103冷压' as deviceId,
-            '103冷压' as name,
-            '103冷压' as workshop,
-            DayStart as day,
-            StartEnergy as startEnergy,
-            EndEnergy as endEnergy,
-            CASE 
-                WHEN StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL AND EndEnergy &gt;= StartEnergy 
-                THEN EndEnergy - StartEnergy 
-                ELSE NULL 
-            END as energyConsumption
-        FROM DeviceDailyData
-        WHERE StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL
-        ORDER BY DayStart
-    </select>
-
-
     <!-- 电能消耗卡片 -->
-    <!-- 电能消耗卡片 - 根据模式自动选择计算方式 -->
     <select id="selectEnergyConsumption" resultType="java.lang.Double">
         <choose>
             <!-- 日模式：使用日查询的energyConsumption总和 -->

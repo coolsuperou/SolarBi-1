@@ -1,12 +1,14 @@
 import {
-  getAllWorkshopsUsingGET,
   getDailyEnergyConsumptionQueryUsingGET,
-  getElectricEnergyTrendUsingGET,
   getHourlyEnergyConsumptionQueryUsingGET,
   getStatisticsUsingGET,
-  getEnergyConsumptionUsingGET
+  getEnergyConsumptionUsingGET,
+  queryByConditionUsingPOST
 } from '@/services/SolarBi-front/officeBuildingController';
-
+// 第10行后：添加import
+import type {ActionType, ProColumns} from '@ant-design/pro-components';
+import DataTable from './components/DataTable';
+import {getColumns} from './config/columns';
 import {PageContainer} from '@ant-design/pro-components';
 import '@umijs/max';
 import {message} from 'antd';
@@ -35,11 +37,10 @@ const TARGET_WORKSHOP = '1#办公楼';
  * @constructor
  */
 const OfficeBuildingPage: React.FC = () => {
-
+  const actionRef = useRef<ActionType>();
   const startTimeRef = useRef<any>();
   const endTimeRef = useRef<any>();
   const [selectedWorkshop, setSelectedWorkshop] = useState<string>(TARGET_WORKSHOP);
-  const [workshops, setWorkshops] = useState<string[]>([]);
   const [stats, setStats] = useState({
     totalDevices: 0,
     avgTemperature: 0,
@@ -50,6 +51,7 @@ const OfficeBuildingPage: React.FC = () => {
   const [currentMode, setCurrentMode] = useState<string>('hour');
   const [searchParams, setSearchParams] = useState<API.TempMonitorQueryRequest>({});
   const [isDefaultTimeRange, setIsDefaultTimeRange] = useState<boolean>(true); // 跟踪是否为默认24小时05分范围
+  const [tempSearchParams, setTempSearchParams] = useState<API.TempMonitorQueryRequest>({}); // 临时搜索参数，用于表格刷新
 
   const [screenSize, setScreenSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
@@ -107,11 +109,19 @@ const OfficeBuildingPage: React.FC = () => {
     // 核心: 更新searchParams状态，让表单显示默认值
     setSearchParams({ startTime, endTime });
 
+    // 🔥 重置表格搜索参数为空，让表格使用默认时间范围
+    setTempSearchParams({});
+
     // 重置其他相关状态
     setSelectedWorkshop('');
     setEnergyConsumption(0);
     setIsDefaultTimeRange(true);
     loadStatistics(undefined, startTime, endTime);
+
+    // 🔥 刷新表格数据（稍微延迟确保状态更新完成）
+    setTimeout(() => {
+      actionRef.current?.reload();
+    }, 100);
   };
 
   // 监听窗口大小变化
@@ -193,19 +203,6 @@ const OfficeBuildingPage: React.FC = () => {
 
   // 重构: 使用一个useEffect处理模式切换和初始加载
   useEffect(() => {
-    const loadWorkshops = async () => {
-      try {
-        // 注意：这里调用的是注射环保设备的API
-        const response = await getAllWorkshopsUsingGET();
-        if (response?.code === 0 && response.data) {
-          setWorkshops(response.data);
-        }
-      } catch (error: any) {
-        message.error('获取车间列表失败：' + error.message);
-      }
-    };
-
-    loadWorkshops();
     loadDefaults(currentMode); // 初始加载和模式切换时，加载对应模式的默认数据
   }, [currentMode]); // 当模式改变时，此hook会重新运行
 
@@ -236,7 +233,7 @@ const OfficeBuildingPage: React.FC = () => {
     }
   };
 
-  // 加载电能消耗数据
+// 加载电能消耗数据
   const loadEnergyConsumption = async (startTime: string, endTime: string) => {
     try {
       const formattedStartTime = moment(startTime).format('YYYY-MM-DD HH:mm:ss');
@@ -244,7 +241,8 @@ const OfficeBuildingPage: React.FC = () => {
 
       const response = await getEnergyConsumptionUsingGET({
         startTime: formattedStartTime,
-        endTime: formattedEndTime
+        endTime: formattedEndTime,
+        mode: currentMode  // 传递当前模式
       });
 
       if (response?.code === 0 && response.data !== undefined) {
@@ -257,7 +255,6 @@ const OfficeBuildingPage: React.FC = () => {
       setEnergyConsumption(0);
     }
   };
-
   // 处理搜索
   const handleSearch = (values: any) => {
     const queryParams: API.TempMonitorQueryRequest = {
@@ -288,6 +285,9 @@ const OfficeBuildingPage: React.FC = () => {
     setSearchParams(queryParams);
     setSelectedWorkshop(values.workshop || '');
 
+    // 更新临时搜索参数用于表格
+    setTempSearchParams(queryParams);
+
     // 判断是否为默认时间范围：如果没有指定时间，则为默认模式
     const isDefaultMode = !queryParams.startTime || !queryParams.endTime;
     setIsDefaultTimeRange(isDefaultMode);
@@ -312,11 +312,17 @@ const OfficeBuildingPage: React.FC = () => {
     } else if (currentMode === 'day') {
       loadDailyTrendData(false, queryParams.startTime, queryParams.endTime);
     }
+
+    // 刷新表格
+    actionRef.current?.reload();
   };
 
   // 重构: 简化重置处理函数
   const handleReset = () => {
     loadDefaults(currentMode);
+    // 重置表格搜索参数
+    setTempSearchParams({});
+    actionRef.current?.reload();
   };
 
   // 重构: 简化模式切换处理函数
@@ -324,6 +330,81 @@ const OfficeBuildingPage: React.FC = () => {
     if (mode === currentMode) return;
     setCurrentMode(mode); // 触发useEffect
     message.success(`已切换到${mode === 'hour' ? '小时' : '日'}模式`);
+
+    // 🔥 模式切换时也刷新表格，使用新模式的默认时间范围
+    setTimeout(() => {
+      actionRef.current?.reload();
+    }, 100); // 稍微延迟确保currentMode状态已更新
+  };
+
+  // 数据表格请求处理函数 - 与BI图表保持一致的时间范围逻辑
+  const handleTableRequest = async (params: any) => {
+    try {
+      let requestParams = {
+        ...tempSearchParams,
+        current: params.current,
+        pageSize: params.pageSize,
+      };
+
+      // 🔥 关键修改：确保表格查询总是有明确的时间范围（与图表逻辑完全一致）
+      if (!requestParams.startTime || !requestParams.endTime) {
+        // 没有搜索时间范围，使用默认时间范围（与loadDefaults函数一致）
+        const now = moment();
+
+        if (currentMode === 'hour') {
+          // 小时模式：最近24小时，格式与图表一致
+          requestParams.endTime = now.format('YYYY-MM-DD HH:00:00');
+          requestParams.startTime = now.clone().subtract(24, 'hours').format('YYYY-MM-DD HH:00:00');
+        } else {
+          // 日模式：最近7天，格式与图表一致
+          requestParams.endTime = now.format('YYYY-MM-DD HH:mm:ss');
+          requestParams.startTime = now.clone().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
+        }
+
+        console.log('📊 表格查询使用默认时间范围（与图表一致）:', {
+          mode: currentMode,
+          startTime: requestParams.startTime,
+          endTime: requestParams.endTime
+        });
+      } else {
+        // 有搜索时间范围，确保时间格式正确（与handleSearch函数一致）
+        if (requestParams.startTime) {
+          requestParams.startTime = moment(requestParams.startTime).format('YYYY-MM-DD HH:mm:ss');
+        }
+        if (requestParams.endTime) {
+          requestParams.endTime = moment(requestParams.endTime).format('YYYY-MM-DD HH:mm:ss');
+        }
+
+        console.log('🔍 表格查询使用搜索时间范围:', {
+          startTime: requestParams.startTime,
+          endTime: requestParams.endTime,
+          deviceId: requestParams.deviceId,
+          name: requestParams.name
+        });
+      }
+
+      const response = await queryByConditionUsingPOST(requestParams);
+
+      if (response?.code === 0 && response.data) {
+        const totalRecords = response.data.total || 0;
+        const currentRecords = response.data.records?.length || 0;
+
+        console.log(`📋 表格查询结果: 当前页 ${currentRecords} 条，总计 ${totalRecords} 条`);
+
+        return {
+          data: response.data.records || [],
+          success: true,
+          total: totalRecords,
+        };
+      }
+
+      console.warn('表格查询失败:', response?.message);
+      return { data: [], success: false, total: 0 };
+    } catch (error: any) {
+      console.error('表格查询异常:', error);
+      message.error('获取数据失败：' + error.message);
+      return { data: [], success: false, total: 0 };
+    }
   };
 
 
@@ -1231,7 +1312,14 @@ const OfficeBuildingPage: React.FC = () => {
         </>
       )}
 
-
+      {/* 数据表格 */}
+      <DataTable
+        columns={getColumns(isMobile())}
+        actionRef={actionRef}
+        request={handleTableRequest}
+        isMobile={isMobile()}
+        darkThemeStyles={darkThemeStyles}
+      />
 
     </PageContainer>
     </div>

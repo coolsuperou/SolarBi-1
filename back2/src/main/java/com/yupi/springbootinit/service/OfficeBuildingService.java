@@ -1,7 +1,9 @@
 package com.yupi.springbootinit.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
+import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorQueryRequest;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
 import com.yupi.springbootinit.model.entity.TempMonitor;
 
@@ -18,9 +20,10 @@ public interface OfficeBuildingService {
 
 
     /**
-     * 获取所有车间列表
+     * 分页查询温湿电能数据（支持多条件查询）
      */
-    List<String> getAllWorkshops();
+    Page<TempMonitor> queryByCondition(TempMonitorQueryRequest request);
+
 
 
 
@@ -29,15 +32,6 @@ public interface OfficeBuildingService {
      */
     TempMonitorStatistics getStatistics(String workshop, Date startTime, Date endTime);
 
-    /**
-     * 获取设备数量统计
-     */
-    Integer getDeviceCount(String workshop, Date startTime, Date endTime);
-
-    /**
-     * 获取电能趋势数据
-     */
-    List<TempMonitor> getElectricEnergyTrend(String workshop, String deviceId, Date startTime, Date endTime, Integer limit);
 
 
     /**
@@ -53,5 +47,5 @@ public interface OfficeBuildingService {
     /**
      * 计算电能消耗差值
      */
-    Double getEnergyConsumption(Date startTime, Date endTime);
+    Double getEnergyConsumption(Date startTime, Date endTime, String mode);
 }

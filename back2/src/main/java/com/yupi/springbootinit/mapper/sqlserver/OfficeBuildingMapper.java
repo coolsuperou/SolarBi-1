@@ -1,6 +1,7 @@
 package com.yupi.springbootinit.mapper.sqlserver;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
@@ -23,9 +24,20 @@ public interface OfficeBuildingMapper extends BaseMapper<TempMonitor> {
 
 
 
+    /**
+     * 表格分页
+     */
+    Page<TempMonitor> selectPageByCondition(Page<TempMonitor> page,
+                                            @Param("deviceId") String deviceId,
+                                            @Param("name") String name,
+                                            @Param("workshop") String workshop,
+                                            @Param("startTime") Date startTime,
+                                            @Param("endTime") Date endTime,
+                                            @Param("sortField") String sortField,
+                                            @Param("sortOrder") String sortOrder);
 
     /**
-     * 获取统计信息
+     * 总电能消耗卡片
      */
     TempMonitorStatistics getStatistics(
             @Param("workshop") String workshop,
@@ -33,80 +45,9 @@ public interface OfficeBuildingMapper extends BaseMapper<TempMonitor> {
             @Param("endTime") Date endTime
     );
 
-    /**
-     * 获取设备数量
-     */
-    Integer getDeviceCount(
-            @Param("workshop") String workshop,
-            @Param("startTime") Date startTime,
-            @Param("endTime") Date endTime
-    );
 
     /**
-     * 获取电能趋势数据
-     */
-    List<TempMonitor> getElectricEnergyTrend(
-            @Param("workshop") String workshop,
-            @Param("deviceId") String deviceId,
-            @Param("startTime") Date startTime,
-            @Param("endTime") Date endTime,
-            @Param("limit") Integer limit
-    );
-
-    /**
-     * 获取每小时电能消耗数据（默认模式-实时更新）
-     */
-    List<HourlyEnergyConsumption> getHourlyEnergyConsumption(
-            @Param("workshop") String workshop,
-            @Param("deviceId") String deviceId,
-            @Param("startTime") Date startTime,
-            @Param("endTime") Date endTime
-    );
-
-    /**
-     * 获取每小时电能消耗数据（查询模式-历史数据）
-     */
-    List<HourlyEnergyConsumption> getHourlyEnergyConsumptionQuery(
-            @Param("workshop") String workshop,
-            @Param("deviceId") String deviceId,
-            @Param("startTime") Date startTime,
-            @Param("endTime") Date endTime
-    );
-
-    /**
-     * 获取每日电能消耗数据（查询模式-历史数据）
-     */
-    List<DailyEnergyConsumption> getDailyEnergyConsumptionQuery(
-            @Param("workshop") String workshop,
-            @Param("deviceId") String deviceId,
-            @Param("startTime") Date startTime,
-            @Param("endTime") Date endTime
-    );
-
-    /**
-     * 统计设备数量
-     */
-    Integer countDevices(
-            @Param("workshop") String workshop,
-            @Param("startTime") Date startTime,
-            @Param("endTime") Date endTime
-    );
-
-    /**
-     * 查询电能趋势数据（用于ServiceImpl）
-     */
-    List<TempMonitor> selectElectricEnergyTrend(
-            @Param("workshop") String workshop,
-            @Param("deviceId") String deviceId,
-            @Param("startTime") Date startTime,
-            @Param("endTime") Date endTime,
-            @Param("limit") Integer limit
-    );
-
-
-
-    /**
-     * 查询每小时电能消耗数据（查询模式，用于ServiceImpl）
+     * 小时模式查询
      */
     List<HourlyEnergyConsumption> selectHourlyEnergyConsumptionQuery(
             @Param("workshop") String workshop,
@@ -116,7 +57,7 @@ public interface OfficeBuildingMapper extends BaseMapper<TempMonitor> {
     );
 
     /**
-     * 查询每日电能消耗数据（用于ServiceImpl）
+     * 日模式查询
      */
     List<DailyEnergyConsumption> selectDailyEnergyConsumptionQuery(
             @Param("workshop") String workshop,
@@ -126,10 +67,11 @@ public interface OfficeBuildingMapper extends BaseMapper<TempMonitor> {
     );
 
     /**
-     * 计算电能消耗差值
+     * 电能消耗卡片
      */
     Double selectEnergyConsumption(
-            @Param("startTime") Date startTime, 
-            @Param("endTime") Date endTime
+            @Param("startTime") Date startTime,
+            @Param("endTime") Date endTime,
+            @Param("mode") String mode  // 新增模式参数
     );
 }

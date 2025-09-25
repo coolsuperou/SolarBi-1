@@ -2,26 +2,11 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** 获取最新温湿电能数据 GET /api/office-building/latest */
-export async function getLatestDataUsingGET(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListTempMonitor>('/api/office-building/latest', {
-    method: 'GET',
-    ...(options || {}),
-  });
-}
-
-
-/** 获取所有车间列表 GET /api/office-building/workshops */
-export async function getAllWorkshopsUsingGET(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListString>('/api/office-building/workshops', {
-    method: 'GET',
-    ...(options || {}),
-  });
-}
 
 
 
-/** 获取统计信息 GET /api/office-building/statistics */
+
+/** 总电能消耗卡片 GET /api/office-building/statistics */
 export async function getStatisticsUsingGET(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: {
@@ -145,7 +130,7 @@ export async function getDailyEnergyConsumptionQueryUsingGET(
 export async function refreshCacheUsingPOST(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: {
-    /** 车间名称，可为空，默认1#办公楼 */
+    /** 车间名称，可为空，默认103冷压 */
     workshop?: string;
   },
   options?: { [key: string]: any },
@@ -159,7 +144,32 @@ export async function refreshCacheUsingPOST(
   });
 }
 
-/** 获取电能消耗量（1#办公楼，后端计算差值） GET /api/office-building/electric-energy-consumption */
+
+
+
+
+
+
+
+
+
+/** 分页查询温湿电能数据（103冷压，支持多条件查询） POST /api/office-building/query */
+export async function queryByConditionUsingPOST(
+  body: API.TempMonitorQueryRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponsePageTempMonitor>('/api/office-building/query', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+
+/** 获取电能消耗量（103冷压，后端计算差值） GET /api/office-building/electric-energy-consumption */
 export async function getEnergyConsumptionUsingGET(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: {
@@ -167,6 +177,8 @@ export async function getEnergyConsumptionUsingGET(
     startTime?: string;
     /** 结束时间 */
     endTime?: string;
+    /** 模式：hour/day */
+    mode?: string;
   },
   options?: { [key: string]: any },
 ) {

@@ -1,7 +1,5 @@
 import {
-  getAllWorkshopsUsingGET,
   getDailyEnergyConsumptionQueryUsingGET,
-  getElectricEnergyTrendUsingGET,
   getHourlyEnergyConsumptionQueryUsingGET,
   getStatisticsUsingGET,
   getEnergyConsumptionUsingGET,
@@ -43,7 +41,6 @@ const ColdPress103Page: React.FC = () => {
   const startTimeRef = useRef<any>();
   const endTimeRef = useRef<any>();
   const [selectedWorkshop, setSelectedWorkshop] = useState<string>(TARGET_WORKSHOP);
-  const [workshops, setWorkshops] = useState<string[]>([]);
   const [stats, setStats] = useState({
     totalDevices: 0,
     avgTemperature: 0,
@@ -206,19 +203,6 @@ const ColdPress103Page: React.FC = () => {
 
   // 重构: 使用一个useEffect处理模式切换和初始加载
   useEffect(() => {
-    const loadWorkshops = async () => {
-      try {
-        // 注意：这里调用的是注射环保设备的API
-        const response = await getAllWorkshopsUsingGET();
-        if (response?.code === 0 && response.data) {
-          setWorkshops(response.data);
-        }
-      } catch (error: any) {
-        message.error('获取车间列表失败：' + error.message);
-      }
-    };
-
-    loadWorkshops();
     loadDefaults(currentMode); // 初始加载和模式切换时，加载对应模式的默认数据
   }, [currentMode]); // 当模式改变时，此hook会重新运行
 

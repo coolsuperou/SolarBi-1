@@ -1,13 +1,10 @@
 import {
-  getAllWorkshopsUsingGET,
   getDailyEnergyConsumptionQueryUsingGET,
-  getDataByWorkshopUsingGET,
-  getElectricEnergyTrendUsingGET,
   getHourlyEnergyConsumptionQueryUsingGET,
-  getHourlyEnergyConsumptionUsingGET,
   getStatisticsUsingGET,
+  getEnergyConsumptionUsingGET,
   queryByConditionUsingPOST
-} from '@/services/SolarBi-front/granule102Controller';
+} from '@/services/SolarBi-front/officeBuildingController';
 import type {ActionType, ProColumns} from '@ant-design/pro-components';
 import {PageContainer} from '@ant-design/pro-components';
 import '@umijs/max';

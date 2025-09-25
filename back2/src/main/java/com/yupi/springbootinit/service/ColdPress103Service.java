@@ -16,25 +16,14 @@ import java.util.List;
  */
 public interface ColdPress103Service {
 
-    /**
-     * 获取最新的温湿电能数据
-     */
-    List<TempMonitor> getLatestData();
 
-    /**
-     * 按车间查询数据
-     */
-    List<TempMonitor> getDataByWorkshop(String workshop);
+
 
     /**
      * 分页查询温湿电能数据（支持多条件查询）
      */
     Page<TempMonitor> queryByCondition(TempMonitorQueryRequest request);
 
-    /**
-     * 获取所有车间列表
-     */
-    List<String> getAllWorkshops();
 
 
 
@@ -43,15 +32,6 @@ public interface ColdPress103Service {
      */
     TempMonitorStatistics getStatistics(String workshop, Date startTime, Date endTime);
 
-    /**
-     * 获取设备数量统计
-     */
-    Integer getDeviceCount(String workshop, Date startTime, Date endTime);
-
-    /**
-     * 获取电能趋势数据
-     */
-    List<TempMonitor> getElectricEnergyTrend(String workshop, String deviceId, Date startTime, Date endTime, Integer limit);
 
 
     /**

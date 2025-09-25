@@ -1,10 +1,12 @@
 package com.yupi.springbootinit.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yupi.springbootinit.common.BaseResponse;
 import com.yupi.springbootinit.common.ErrorCode;
 import com.yupi.springbootinit.common.ResultUtils;
 import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
+import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorQueryRequest;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
 import com.yupi.springbootinit.model.entity.TempMonitor;
 import com.yupi.springbootinit.service.OfficeBuildingService;
@@ -33,18 +35,22 @@ public class OfficeBuildingController {
     private TempMonitorCacheLoader tempMonitorCacheLoader;
 
 
-
-
-    @ApiOperation("获取所有车间列表（1#办公楼）")
-    @GetMapping("/workshops")
-    public BaseResponse<List<String>> getAllWorkshops() {
-        List<String> workshops = officeBuildingService.getAllWorkshops();
-        return ResultUtils.success(workshops);
+    @ApiOperation("分页查询温湿电能数据（1#办公楼，支持多条件查询）")
+    @PostMapping("/query")
+    public BaseResponse<Page<TempMonitor>> queryByCondition(@RequestBody TempMonitorQueryRequest request) {
+        if (request.getCurrent() <= 0) {
+            request.setCurrent(1);
+        }
+        if (request.getPageSize() <= 0 || request.getPageSize() > 100) {
+            request.setPageSize(20);
+        }
+        Page<TempMonitor> page = officeBuildingService.queryByCondition(request);
+        return ResultUtils.success(page);
     }
 
 
 
-    @ApiOperation("获取统计信息（1#办公楼）")
+    @ApiOperation("总电能消耗（1#办公楼）")
     @GetMapping("/statistics")
     public BaseResponse<TempMonitorStatistics> getStatistics(
             @ApiParam("车间") @RequestParam(required = false) String workshop,
@@ -58,26 +64,6 @@ public class OfficeBuildingController {
             return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取统计数据失败");
         }
     }
-
-    @ApiOperation("获取电能趋势数据（1#办公楼）")
-    @GetMapping("/electric-energy-trend")
-    public BaseResponse<List<TempMonitor>> getElectricEnergyTrend(
-            @ApiParam("车间") @RequestParam(required = false) String workshop,
-            @ApiParam("设备ID") @RequestParam(required = false) String deviceId,
-            @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
-            @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime,
-            @ApiParam("限制数量") @RequestParam(required = false) Integer limit) {
-        try {
-            String fixedWorkshop = "1#办公楼";
-            Integer finalLimit = limit;
-            List<TempMonitor> trendData = officeBuildingService.getElectricEnergyTrend(fixedWorkshop, deviceId, startTime, endTime, finalLimit);
-            return ResultUtils.success(trendData);
-        } catch (Exception e) {
-            log.error("获取电能趋势数据失败", e);
-            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取电能趋势数据失败");
-        }
-    }
-
 
     @ApiOperation("获取每小时电能消耗数据（1#办公楼，查询模式-历史数据）")
     @GetMapping("/electric-energy-hourly-consumption-query")
@@ -108,7 +94,7 @@ public class OfficeBuildingController {
         }
     }
 
-    @ApiOperation("获取每日电能消耗数据（1#办公楼，查询模式-历史数据）")
+    @ApiOperation("日模式查询（1#办公楼）")
     @GetMapping("/electric-energy-daily-consumption-query")
     public BaseResponse<List<DailyEnergyConsumption>> getDailyEnergyConsumptionQuery(
             @ApiParam("车间") @RequestParam(required = false) String workshop,
@@ -137,6 +123,21 @@ public class OfficeBuildingController {
         }
     }
 
+    @ApiOperation("电能消耗卡片（1#办公楼，后端计算差值）")
+    @GetMapping("/electric-energy-consumption")
+    public BaseResponse<Double> getEnergyConsumption(
+            @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
+            @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime,
+            @ApiParam("模式：hour/day") @RequestParam(required = false, defaultValue = "hour") String mode) {
+        try {
+            Double consumption = officeBuildingService.getEnergyConsumption(startTime, endTime, mode);
+            return ResultUtils.success(consumption);
+        } catch (Exception e) {
+            log.error("获取电能消耗量失败", e);
+            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取电能消耗量失败");
+        }
+    }
+
     @ApiOperation("刷新缓存并预加载上个时间段数据（1#办公楼）")
     @PostMapping("/refresh-cache")
     public BaseResponse<Boolean> refreshCache(
@@ -148,20 +149,6 @@ public class OfficeBuildingController {
         } catch (Exception e) {
             log.error("刷新缓存失败", e);
             return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "刷新缓存失败");
-        }
-    }
-
-    @ApiOperation("获取电能消耗量（1#办公楼，后端计算差值）")
-    @GetMapping("/electric-energy-consumption")
-    public BaseResponse<Double> getEnergyConsumption(
-            @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
-            @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
-        try {
-            Double consumption = officeBuildingService.getEnergyConsumption(startTime, endTime);
-            return ResultUtils.success(consumption);
-        } catch (Exception e) {
-            log.error("获取电能消耗量失败", e);
-            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取电能消耗量失败");
         }
     }
 }

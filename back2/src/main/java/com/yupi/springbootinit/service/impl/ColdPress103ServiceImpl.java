@@ -29,20 +29,9 @@ public class ColdPress103ServiceImpl implements ColdPress103Service {
     @Autowired
     private ColdPress103Mapper coldPress103Mapper;
 
-    @Override
-    @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    public List<TempMonitor> getLatestData() {
-        String fixedWorkshop = "103冷压";
-        log.debug("从数据库获取最新TempMonitor数据，车间: {}", fixedWorkshop);
-        return coldPress103Mapper.selectByWorkshop(fixedWorkshop);
-    }
 
-    @Override
-    @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    public List<TempMonitor> getDataByWorkshop(String workshop) {
-        String fixedWorkshop = "103冷压";
-        return coldPress103Mapper.selectByWorkshop(fixedWorkshop);
-    }
+
+
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
@@ -63,13 +52,6 @@ public class ColdPress103ServiceImpl implements ColdPress103Service {
             request.getSortField(),
             request.getSortOrder()
         );
-    }
-
-    @Override
-    @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    public List<String> getAllWorkshops() {
-        // 只返回固定的workshop列表
-        return java.util.Arrays.asList("103冷压");
     }
 
     @Override
@@ -98,23 +80,9 @@ public class ColdPress103ServiceImpl implements ColdPress103Service {
         return statistics;
     }
 
-    @Override
-    @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    public Integer getDeviceCount(String workshop, Date startTime, Date endTime) {
-        // 服务层也强制限定车间
-        String fixedWorkshop = "103冷压";
-        Integer count = coldPress103Mapper.countDevices(fixedWorkshop, startTime, endTime);
-        return count != null ? count : 0;
-    }
 
-    @Override
-    @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
-    public List<TempMonitor> getElectricEnergyTrend(String workshop, String deviceId, Date startTime, Date endTime, Integer limit) {
-        // 服务层也强制限定车间
-        String fixedWorkshop = "103冷压";
-        log.debug("从数据库获取电能趋势数据，车间: {}, 设备: {}, 数量限制: {}", fixedWorkshop, deviceId, limit);
-        return coldPress103Mapper.selectElectricEnergyTrend(fixedWorkshop, deviceId, startTime, endTime, limit);
-    }
+
+
 
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)

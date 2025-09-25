@@ -34,20 +34,6 @@ public class ColdPress103Controller {
     @Autowired
     private TempMonitorCacheLoader tempMonitorCacheLoader;
 
-    @ApiOperation("获取最新温湿电能数据（103冷压）")
-    @GetMapping("/latest")
-    public BaseResponse<List<TempMonitor>> getLatestData() {
-        List<TempMonitor> dataList = coldPress103Service.getLatestData();
-        return ResultUtils.success(dataList);
-    }
-
-    @ApiOperation("按车间查询温湿电能数据（103冷压）")
-    @GetMapping("/workshop/{workshop}")
-    public BaseResponse<List<TempMonitor>> getDataByWorkshop(
-            @ApiParam("车间名称") @PathVariable String workshop) {
-        List<TempMonitor> dataList = coldPress103Service.getDataByWorkshop(workshop);
-        return ResultUtils.success(dataList);
-    }
 
     @ApiOperation("分页查询温湿电能数据（103冷压，支持多条件查询）")
     @PostMapping("/query")
@@ -62,14 +48,9 @@ public class ColdPress103Controller {
         return ResultUtils.success(page);
     }
 
-    @ApiOperation("获取所有车间列表（103冷压）")
-    @GetMapping("/workshops")
-    public BaseResponse<List<String>> getAllWorkshops() {
-        List<String> workshops = coldPress103Service.getAllWorkshops();
-        return ResultUtils.success(workshops);
-    }
 
-    @ApiOperation("获取统计信息（103冷压）")
+
+    @ApiOperation("总电能消耗（103冷压）")
     @GetMapping("/statistics")
     public BaseResponse<TempMonitorStatistics> getStatistics(
             @ApiParam("车间") @RequestParam(required = false) String workshop,
@@ -81,24 +62,6 @@ public class ColdPress103Controller {
         } catch (Exception e) {
             log.error("获取统计数据失败", e);
             return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取统计数据失败");
-        }
-    }
-
-    @ApiOperation("获取电能趋势数据（103冷压）")
-    @GetMapping("/electric-energy-trend")
-    public BaseResponse<List<TempMonitor>> getElectricEnergyTrend(
-            @ApiParam("车间") @RequestParam(required = false) String workshop,
-            @ApiParam("设备ID") @RequestParam(required = false) String deviceId,
-            @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
-            @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime,
-            @ApiParam("限制数量") @RequestParam(required = false) Integer limit) {
-        try {
-            String fixedWorkshop = "103冷压";
-            List<TempMonitor> trendData = coldPress103Service.getElectricEnergyTrend(fixedWorkshop, deviceId, startTime, endTime, limit);
-            return ResultUtils.success(trendData);
-        } catch (Exception e) {
-            log.error("获取电能趋势数据失败", e);
-            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取电能趋势数据失败");
         }
     }
 
@@ -131,7 +94,7 @@ public class ColdPress103Controller {
         }
     }
 
-    @ApiOperation("获取每日电能消耗数据（103冷压，查询模式-历史数据）")
+    @ApiOperation("日模式查询（103冷压）")
     @GetMapping("/electric-energy-daily-consumption-query")
     public BaseResponse<List<DailyEnergyConsumption>> getDailyEnergyConsumptionQuery(
             @ApiParam("车间") @RequestParam(required = false) String workshop,
@@ -160,7 +123,7 @@ public class ColdPress103Controller {
         }
     }
 
-    @ApiOperation("获取电能消耗量（103冷压，后端计算差值）")
+    @ApiOperation("电能消耗卡片（103冷压，后端计算差值）")
     @GetMapping("/electric-energy-consumption")
     public BaseResponse<Double> getEnergyConsumption(
             @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,

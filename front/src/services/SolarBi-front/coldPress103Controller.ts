@@ -2,26 +2,11 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** 获取最新温湿电能数据 GET /api/cold-press-103/latest */
-export async function getLatestDataUsingGET(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListTempMonitor>('/api/cold-press-103/latest', {
-    method: 'GET',
-    ...(options || {}),
-  });
-}
-
-
-/** 获取所有车间列表 GET /api/cold-press-103/workshops */
-export async function getAllWorkshopsUsingGET(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListString>('/api/cold-press-103/workshops', {
-    method: 'GET',
-    ...(options || {}),
-  });
-}
 
 
 
-/** 获取统计信息 GET /api/cold-press-103/statistics */
+
+/** 总电能消耗卡片 GET /api/cold-press-103/statistics */
 export async function getStatisticsUsingGET(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: {
@@ -166,18 +151,7 @@ export async function refreshCacheUsingPOST(
 
 
 
-/** 按车间查询温湿电能数据（103冷压） GET /api/cold-press-103/workshop/${param0} */
-export async function getDataByWorkshopUsingGET(
-  params: { workshop: string },
-  options?: { [key: string]: any },
-) {
-  const { workshop: param0, ...queryParams } = params;
-  return request<API.BaseResponseListTempMonitor>(`/api/cold-press-103/workshop/${param0}`, {
-    method: 'GET',
-    params: { ...queryParams },
-    ...(options || {}),
-  });
-}
+
 
 /** 分页查询温湿电能数据（103冷压，支持多条件查询） POST /api/cold-press-103/query */
 export async function queryByConditionUsingPOST(

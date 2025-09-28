@@ -47,6 +47,25 @@
         ORDER BY Name, UpdateTime DESC
     </select>
 
+    <!-- 🔥 查询需要减去的三个嵌套表原始数据 -->
+    <select id="selectNestedTablesRawData" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
+        SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop
+        FROM RSWS_TempMonitor_Copy
+        WHERE ElectricEnergy IS NOT NULL
+        AND (
+        (Workshop = '105烧结' AND DeviceID = '30107338' AND NodeID = '2') OR
+        (Workshop = '112终检' AND DeviceID = '30107338' AND NodeID = '1') OR
+        (Workshop = '101配料' AND DeviceID = '30107338' AND NodeID = '3')
+        )
+        <if test="startTime != null">
+            AND UpdateTime &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND UpdateTime &lt;= #{endTime}
+        </if>
+        ORDER BY Workshop, UpdateTime DESC
+    </select>
+
     <!-- 电能消耗卡片 -->
     <select id="selectEnergyConsumption" resultType="java.lang.Double">
         <choose>

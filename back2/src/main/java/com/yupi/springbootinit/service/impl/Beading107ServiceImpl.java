@@ -1,5 +1,8 @@
 package com.yupi.springbootinit.service.impl;
-
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yupi.springbootinit.mapper.sqlserver.Beading107Mapper;
 import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
@@ -112,23 +115,52 @@ public class Beading107ServiceImpl implements Beading107Service {
         String fixedWorkshop = "107串珠";
         log.debug("优化版本：使用统一计算工具类，车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}", fixedWorkshop, deviceId, startTime, endTime);
 
-        // 🔥 使用现有的非分页查询方法
+        // 🔥 获取107串珠数据
         List<TempMonitor> rawData = beading107Mapper.selectHourlyRawData(
                 fixedWorkshop, startTime, endTime
         );
 
-        log.info("从非分页查询获取原始数据记录数: {}, 时间范围: {} 到 {}", rawData.size(), startTime, endTime);
-
-        // 🔥 调用统一的计算工具类
-        List<HourlyEnergyConsumption> result = EnergyCalculationUtils.calculateHourlyEnergyFromRawData(
-                rawData, startTime, endTime, fixedWorkshop
+        // 🔥 获取嵌套表数据
+        List<TempMonitor> nestedRawData = beading107Mapper.selectNestedTablesRawData(
+                startTime, endTime
         );
 
+        log.info("从非分页查询获取107串珠数据记录数: {}, 嵌套表数据记录数: {}, 时间范围: {} 到 {}",
+                rawData.size(), nestedRawData.size(), startTime, endTime);
+
+        // 🔥 分别计算107串珠和嵌套表的小时能耗
+        List<HourlyEnergyConsumption> mainResult = EnergyCalculationUtils.calculateHourlyEnergyFromRawData(
+                rawData, startTime, endTime, fixedWorkshop
+        );
+        List<HourlyEnergyConsumption> nestedResult = EnergyCalculationUtils.calculateHourlyEnergyFromRawData(
+                nestedRawData, startTime, endTime, "嵌套表"
+        );
+
+        // 🔥 减法操作：从主结果中减去嵌套表对应时间的消耗
+        Map<Date, Double> nestedMap = nestedResult.stream()
+                .collect(Collectors.toMap(
+                        HourlyEnergyConsumption::getHour,
+                        item -> item.getEnergyConsumption() != null ? item.getEnergyConsumption() : 0.0,
+                        Double::sum
+                ));
+
+        for (HourlyEnergyConsumption mainItem : mainResult) {
+            if (mainItem.getHour() != null && mainItem.getEnergyConsumption() != null) {
+                Double nestedConsumption = nestedMap.get(mainItem.getHour());
+                if (nestedConsumption != null && nestedConsumption > 0) {
+                    Double netConsumption = Math.max(0.0, mainItem.getEnergyConsumption() - nestedConsumption);
+                    log.debug("小时: {}, 107串珠: {} kWh, 嵌套表: {} kWh, 净消耗: {} kWh",
+                            mainItem.getHour(), mainItem.getEnergyConsumption(), nestedConsumption, netConsumption);
+                    mainItem.setEnergyConsumption(netConsumption);
+                }
+            }
+        }
+
         // 保持原有调试日志
-        if (result != null && !result.isEmpty()) {
-            log.info("=== 每小时电能消耗数据调试信息（优化版本-107串珠） ===");
-            log.info("计算结果总数: {}", result.size());
-            for (HourlyEnergyConsumption item : result) {
+        if (mainResult != null && !mainResult.isEmpty()) {
+            log.info("=== 每小时电能消耗数据调试信息（优化版本-107串珠，已减去嵌套表） ===");
+            log.info("计算结果总数: {}", mainResult.size());
+            for (HourlyEnergyConsumption item : mainResult) {
                 log.info("设备: {}, 小时: {}, 开始能耗: {}, 结束能耗: {}, 消耗量: {}, 开始时间: {}, 结束时间: {}",
                         item.getDeviceId(), item.getHour(), item.getStartEnergy(), item.getEndEnergy(),
                         item.getEnergyConsumption(), item.getStartTime(), item.getEndTime());
@@ -138,9 +170,8 @@ public class Beading107ServiceImpl implements Beading107Service {
             log.warn("计算结果为空，原始数据记录数: {}", rawData.size());
         }
 
-        return result;
+        return mainResult;
     }
-
 
     /**
      * 日模式查询
@@ -156,22 +187,51 @@ public class Beading107ServiceImpl implements Beading107Service {
         String fixedWorkshop = "107串珠";
         log.debug("优化版本：使用selectHourlyRawData非分页查询后Java计算日能耗，车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}", fixedWorkshop, deviceId, startTime, endTime);
 
-        // 🔥 复用同样的非分页查询方法
+        // 🔥 获取107串珠数据
         List<TempMonitor> rawData = beading107Mapper.selectHourlyRawData(
                 fixedWorkshop, startTime, endTime
         );
 
-        log.info("从非分页查询获取原始数据记录数: {}, 时间范围: {} 到 {}", rawData.size(), startTime, endTime);
-
-        // 🔥 调用统一工具类的日计算方法
-        List<DailyEnergyConsumption> result = EnergyCalculationUtils.calculateDailyEnergyFromRawData(
-                rawData, startTime, endTime, fixedWorkshop
+        // 🔥 获取嵌套表数据
+        List<TempMonitor> nestedRawData = beading107Mapper.selectNestedTablesRawData(
+                startTime, endTime
         );
 
+        log.info("从非分页查询获取107串珠数据记录数: {}, 嵌套表数据记录数: {}, 时间范围: {} 到 {}",
+                rawData.size(), nestedRawData.size(), startTime, endTime);
+
+        // 🔥 分别计算107串珠和嵌套表的日能耗
+        List<DailyEnergyConsumption> mainResult = EnergyCalculationUtils.calculateDailyEnergyFromRawData(
+                rawData, startTime, endTime, fixedWorkshop
+        );
+        List<DailyEnergyConsumption> nestedResult = EnergyCalculationUtils.calculateDailyEnergyFromRawData(
+                nestedRawData, startTime, endTime, "嵌套表"
+        );
+
+        // 🔥 减法操作：从主结果中减去嵌套表对应日期的消耗
+        Map<Date, Double> nestedMap = nestedResult.stream()
+                .collect(Collectors.toMap(
+                        DailyEnergyConsumption::getDay,
+                        item -> item.getEnergyConsumption() != null ? item.getEnergyConsumption() : 0.0,
+                        Double::sum
+                ));
+
+        for (DailyEnergyConsumption mainItem : mainResult) {
+            if (mainItem.getDay() != null && mainItem.getEnergyConsumption() != null) {
+                Double nestedConsumption = nestedMap.get(mainItem.getDay());
+                if (nestedConsumption != null && nestedConsumption > 0) {
+                    Double netConsumption = Math.max(0.0, mainItem.getEnergyConsumption() - nestedConsumption);
+                    log.debug("日期: {}, 107串珠: {} kWh, 嵌套表: {} kWh, 净消耗: {} kWh",
+                            mainItem.getDay(), mainItem.getEnergyConsumption(), nestedConsumption, netConsumption);
+                    mainItem.setEnergyConsumption(netConsumption);
+                }
+            }
+        }
+
         // 保持原有调试日志
-        if (result != null && !result.isEmpty()) {
-            log.info("=== 每日电能消耗数据调试信息（优化版本-107串珠） ===");
-            for (DailyEnergyConsumption item : result) {
+        if (mainResult != null && !mainResult.isEmpty()) {
+            log.info("=== 每日电能消耗数据调试信息（优化版本-107串珠，已减去嵌套表） ===");
+            for (DailyEnergyConsumption item : mainResult) {
                 log.info("设备: {}, 日期: {}, 开始能耗: {}, 结束能耗: {}, 消耗量: {}, 开始时间: {}, 结束时间: {}",
                         item.getDeviceId(), item.getDay(), item.getStartEnergy(), item.getEndEnergy(),
                         item.getEnergyConsumption(), item.getStartTime(), item.getEndTime());
@@ -179,9 +239,8 @@ public class Beading107ServiceImpl implements Beading107Service {
             log.info("=== 调试信息结束 ===");
         }
 
-        return result;
+        return mainResult;
     }
-
 
     /**
      * 电能消耗卡片计算
@@ -196,44 +255,70 @@ public class Beading107ServiceImpl implements Beading107Service {
         String fixedWorkshop = "107串珠";
         log.debug("优化版本：使用Java计算总电能消耗，开始时间: {}, 结束时间: {}, 模式: {}", startTime, endTime, mode);
 
-        // 🔥 复用同样的非分页查询方法
+        // 🔥 获取107串珠数据
         List<TempMonitor> rawData = beading107Mapper.selectHourlyRawData(
                 fixedWorkshop, startTime, endTime
         );
 
-        log.info("从非分页查询获取原始数据记录数: {}", rawData.size());
+        // 🔥 获取嵌套表数据
+        List<TempMonitor> nestedRawData = beading107Mapper.selectNestedTablesRawData(
+                startTime, endTime
+        );
+
+        log.info("从非分页查询获取107串珠数据记录数: {}, 嵌套表数据记录数: {}", rawData.size(), nestedRawData.size());
 
         // 🔥 根据模式计算总消耗
-        Double totalConsumption = 0.0;
+        Double mainTotalConsumption = 0.0;
+        Double nestedTotalConsumption = 0.0;
 
         if ("day".equals(mode)) {
             // 日模式：先计算日能耗，再求总和
-            List<DailyEnergyConsumption> dailyResults = EnergyCalculationUtils.calculateDailyEnergyFromRawData(
+            List<DailyEnergyConsumption> mainDailyResults = EnergyCalculationUtils.calculateDailyEnergyFromRawData(
                     rawData, startTime, endTime, fixedWorkshop
             );
+            List<DailyEnergyConsumption> nestedDailyResults = EnergyCalculationUtils.calculateDailyEnergyFromRawData(
+                    nestedRawData, startTime, endTime, "嵌套表"
+            );
 
-            totalConsumption = dailyResults.stream()
+            mainTotalConsumption = mainDailyResults.stream()
                     .filter(item -> item.getEnergyConsumption() != null)
                     .mapToDouble(DailyEnergyConsumption::getEnergyConsumption)
                     .sum();
 
-            log.info("日模式计算: {}天数据，总消耗: {} kWh", dailyResults.size(), totalConsumption);
+            nestedTotalConsumption = nestedDailyResults.stream()
+                    .filter(item -> item.getEnergyConsumption() != null)
+                    .mapToDouble(DailyEnergyConsumption::getEnergyConsumption)
+                    .sum();
+
+            log.info("日模式计算: 107串珠总消耗: {} kWh, 嵌套表总消耗: {} kWh", mainTotalConsumption, nestedTotalConsumption);
 
         } else {
             // 小时模式：先计算小时能耗，再求总和
-            List<HourlyEnergyConsumption> hourlyResults = EnergyCalculationUtils.calculateHourlyEnergyFromRawData(
+            List<HourlyEnergyConsumption> mainHourlyResults = EnergyCalculationUtils.calculateHourlyEnergyFromRawData(
                     rawData, startTime, endTime, fixedWorkshop
             );
+            List<HourlyEnergyConsumption> nestedHourlyResults = EnergyCalculationUtils.calculateHourlyEnergyFromRawData(
+                    nestedRawData, startTime, endTime, "嵌套表"
+            );
 
-            totalConsumption = hourlyResults.stream()
+            mainTotalConsumption = mainHourlyResults.stream()
                     .filter(item -> item.getEnergyConsumption() != null)
                     .mapToDouble(HourlyEnergyConsumption::getEnergyConsumption)
                     .sum();
 
-            log.info("小时模式计算: {}小时数据，总消耗: {} kWh", hourlyResults.size(), totalConsumption);
+            nestedTotalConsumption = nestedHourlyResults.stream()
+                    .filter(item -> item.getEnergyConsumption() != null)
+                    .mapToDouble(HourlyEnergyConsumption::getEnergyConsumption)
+                    .sum();
+
+            log.info("小时模式计算: 107串珠总消耗: {} kWh, 嵌套表总消耗: {} kWh", mainTotalConsumption, nestedTotalConsumption);
         }
 
-        log.info("计算得到总电能消耗: {} kWh, 模式: {}", totalConsumption, mode);
-        return totalConsumption != null ? totalConsumption : 0.0;
+        // 🔥 计算净消耗
+        Double netTotalConsumption = Math.max(0.0, mainTotalConsumption - nestedTotalConsumption);
+
+        log.info("计算得到总电能消耗: {} kWh, 模式: {}（107串珠: {} - 嵌套表: {} = 净消耗: {}）",
+                netTotalConsumption, mode, mainTotalConsumption, nestedTotalConsumption, netTotalConsumption);
+        return netTotalConsumption;
     }
 }

@@ -15,25 +15,31 @@ import java.util.List;
  */
 public interface AirConditioningService {
 
-    List<TempMonitor> getLatestData();
-
-    List<TempMonitor> getDataByWorkshop(String workshop);
-
-    List<String> getAllWorkshops();
-
-
-
+    /**
+     * 分页查询温湿电能数据（支持多条件查询）
+     */
     Page<TempMonitor> queryByCondition(TempMonitorQueryRequest request);
 
+    /**
+     * 获取统计信息
+     */
     TempMonitorStatistics getStatistics(String workshop, Date startTime, Date endTime);
 
-    Integer getDeviceCount(String workshop, Date startTime, Date endTime);
-    List<TempMonitor> getElectricEnergyTrend(String workshop, String deviceId, Date startTime, Date endTime, Integer limit);
 
-    List<HourlyEnergyConsumption> getHourlyEnergyConsumption(String workshop, String deviceId, Date startTime, Date endTime);
 
+    /**
+     * 获取每小时电能消耗数据（查询模式-历史数据）
+     */
     List<HourlyEnergyConsumption> getHourlyEnergyConsumptionQuery(String workshop, String deviceId, Date startTime, Date endTime);
 
+    /**
+     * 获取每日电能消耗数据（查询模式-历史数据）
+     */
     List<DailyEnergyConsumption> getDailyEnergyConsumptionQuery(String workshop, String deviceId, Date startTime, Date endTime);
+
+    /**
+     * 计算电能消耗差值
+     */
+    Double getEnergyConsumption(Date startTime, Date endTime, String mode);
 }
 

@@ -110,6 +110,3 @@ export const getColumns = (isMobile: boolean): ProColumns<API.TempMonitor>[] => 
     ? columns.filter(col => ['electricEnergy', 'updateTime'].includes(col.dataIndex as string))
     : columns;
 };
-
-
-

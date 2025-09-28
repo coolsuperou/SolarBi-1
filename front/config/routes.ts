@@ -8,10 +8,10 @@ export default [
     ],
   },
   {
-    path: '/power_monitor',
+    path: '/airConditioning',
     name: '114_空调水机主机',
     icon: 'thunderbolt',
-    component: './PowerMonitor',
+    component: './AirConditioning',
     access: 'canUser',
   },
   {
@@ -52,7 +52,7 @@ export default [
   },
   {
     path: '/cold-press-103',
-    name: '103冷压车间',
+    name: '103冷压',
     icon: 'GatewayOutlined',
     component: './ColdPress103',
     access: 'canUser',
@@ -123,6 +123,6 @@ export default [
       { icon: 'table', path: 'user', component: './Admin/User', name: '用户管理' },
     ],
   },
-  { path: '/', redirect: '/power_monitor' }, // 重定向到电能监控页面
+  { path: '/', redirect: '/airConditioning'},
   { path: '*', layout: false, component: './404' },
 ];

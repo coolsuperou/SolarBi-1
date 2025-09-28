@@ -130,7 +130,7 @@ export async function getDailyEnergyConsumptionQueryUsingGET(
 export async function refreshCacheUsingPOST(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: {
-    /** 车间名称，可为空，默认104还原 */
+    /** 车间名称，可为空，默认103冷压 */
     workshop?: string;
   },
   options?: { [key: string]: any },
@@ -153,7 +153,7 @@ export async function refreshCacheUsingPOST(
 
 
 
-/** 分页查询温湿电能数据（104还原，支持多条件查询） POST /api/restoration-104/query */
+/** 分页查询温湿电能数据（103冷压，支持多条件查询） POST /api/restoration-104/query */
 export async function queryByConditionUsingPOST(
   body: API.TempMonitorQueryRequest,
   options?: { [key: string]: any },
@@ -169,7 +169,7 @@ export async function queryByConditionUsingPOST(
 }
 
 
-/** 获取电能消耗量（104还原，后端计算差值） GET /api/restoration-104/electric-energy-consumption */
+/** 获取电能消耗量（103冷压，后端计算差值） GET /api/restoration-104/electric-energy-consumption */
 export async function getEnergyConsumptionUsingGET(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: {

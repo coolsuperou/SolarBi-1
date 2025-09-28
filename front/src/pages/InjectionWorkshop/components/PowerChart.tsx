@@ -61,13 +61,13 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartOptions, trendData, isMobi
             color: '#00d4ff',
             fontSize: isMobile ? (isSmallMobile ? '14px' : '15px') : '16px'
           }}>
-            <Spin 
+            <Spin
               indicator={<LoadingOutlined style={{ fontSize: isMobile ? 32 : 40, color: '#00d4ff' }} spin />}
               size="large"
             />
-            <div style={{ 
-              marginTop: '20px', 
-              fontWeight: 'bold', 
+            <div style={{
+              marginTop: '20px',
+              fontWeight: 'bold',
               fontSize: isMobile ? (isSmallMobile ? '14px' : '15px') : '16px',
               color: '#00d4ff',
               textShadow: '0 0 8px rgba(0, 212, 255, 0.6)'

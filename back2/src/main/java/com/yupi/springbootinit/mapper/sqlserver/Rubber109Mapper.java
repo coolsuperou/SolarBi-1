@@ -20,9 +20,8 @@ import java.util.List;
  */
 @Mapper
 public interface Rubber109Mapper extends BaseMapper<TempMonitor> {
-
     /**
-     * 表格分页
+     * 表格分页、表格数据
      */
     Page<TempMonitor> selectPageByCondition(Page<TempMonitor> page,
                                             @Param("deviceId") String deviceId,
@@ -44,24 +43,14 @@ public interface Rubber109Mapper extends BaseMapper<TempMonitor> {
 
 
     /**
-     * 小时模式查询
+     * 🔥 表格查询不分页用于优化性能
      */
-    List<HourlyEnergyConsumption> selectHourlyEnergyConsumptionQuery(
+    List<TempMonitor> selectHourlyRawData(
             @Param("workshop") String workshop,
-            @Param("deviceId") String deviceId,
             @Param("startTime") Date startTime,
             @Param("endTime") Date endTime
     );
 
-    /**
-     * 日模式查询
-     */
-    List<DailyEnergyConsumption> selectDailyEnergyConsumptionQuery(
-            @Param("workshop") String workshop,
-            @Param("deviceId") String deviceId,
-            @Param("startTime") Date startTime,
-            @Param("endTime") Date endTime
-    );
 
     /**
      * 电能消耗卡片

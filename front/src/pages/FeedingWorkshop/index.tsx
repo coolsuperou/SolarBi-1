@@ -1,14 +1,14 @@
 import {
-  getAllWorkshopsUsingGET,
   getDailyEnergyConsumptionQueryUsingGET,
-  getDataByWorkshopUsingGET,
-  getElectricEnergyTrendUsingGET,
   getHourlyEnergyConsumptionQueryUsingGET,
-  getHourlyEnergyConsumptionUsingGET,
   getStatisticsUsingGET,
+  getEnergyConsumptionUsingGET,
   queryByConditionUsingPOST
 } from '@/services/SolarBi-front/feedingWorkshopController';
+// 第10行后：添加import
 import type {ActionType, ProColumns} from '@ant-design/pro-components';
+import DataTable from './components/DataTable';
+import {getColumns} from './config/columns';
 import {PageContainer} from '@ant-design/pro-components';
 import '@umijs/max';
 import {message} from 'antd';
@@ -18,10 +18,11 @@ import StatisticsCards from './components/StatisticsCards';
 import SearchForm from './components/SearchForm';
 import PowerChart from './components/PowerChart';
 import DailyPowerChart from './components/DailyPowerChart';
-import DataTable from './components/DataTable';
+
 import darkThemeStyles from '@/styles/darkTheme';
 import {pageBackgroundStyles, pageStylesCSS} from '@/styles/pageStyles';
-import {getColumns} from './config/columns';
+import { TIME_FORMATS } from './config/timeFormats'; // 🔥 引入时间格式配置
+
 
 // 固定目标车间
 const TARGET_WORKSHOP = '101配料';
@@ -41,7 +42,6 @@ const FeedingWorkshopPage: React.FC = () => {
   const startTimeRef = useRef<any>();
   const endTimeRef = useRef<any>();
   const [selectedWorkshop, setSelectedWorkshop] = useState<string>(TARGET_WORKSHOP);
-  const [workshops, setWorkshops] = useState<string[]>([]);
   const [stats, setStats] = useState({
     totalDevices: 0,
     avgTemperature: 0,
@@ -53,6 +53,7 @@ const FeedingWorkshopPage: React.FC = () => {
   const [searchParams, setSearchParams] = useState<API.TempMonitorQueryRequest>({});
   const [isDefaultTimeRange, setIsDefaultTimeRange] = useState<boolean>(true); // 跟踪是否为默认24小时05分范围
   const [tempSearchParams, setTempSearchParams] = useState<API.TempMonitorQueryRequest>({}); // 临时搜索参数，用于表格刷新
+
   const [screenSize, setScreenSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
   // 基于state的响应式检测函数
@@ -87,36 +88,41 @@ const FeedingWorkshopPage: React.FC = () => {
     let endTime;
 
     if (mode === 'hour') {
-      // 小时模式默认加载最近24小时
-      endTime = now.format('YYYY-MM-DD HH:mm:ss');
-      startTime = now.clone().subtract(24, 'hours').format('YYYY-MM-DD HH:mm:ss');
+      // 小时模式：前端生成最近N小时参数（N可在配置中调整）
+      endTime = `${now.format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_END}`;
+      startTime = `${now.clone().subtract(TIME_FORMATS.DEFAULT_HOUR_RANGE, 'hours').format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_START}`;
 
       setTrendData([]);
       setChartOptions({});
       loadTrendData(false, startTime, endTime);
-      calculateEnergyConsumption(startTime, endTime);
+      loadEnergyConsumption(startTime, endTime);
     } else { // 'day' mode
-      // 日模式默认加载最近7天
-      endTime = now.format('YYYY-MM-DD HH:mm:ss');
-      startTime = now.clone().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
+      // 日模式：最近N天（N可在配置中调整）
+      endTime = `${now.clone().add(TIME_FORMATS.DAY_END_OFFSET, 'days').format('YYYY-MM-DD')}${TIME_FORMATS.DAY_END}`;
+      startTime = `${now.clone().subtract(TIME_FORMATS.DEFAULT_DAY_RANGE, 'days').format('YYYY-MM-DD')}${TIME_FORMATS.DAY_START}`;
 
       setDailyTrendData([]);
       setDailyChartOptions({});
       loadDailyTrendData(false, startTime, endTime);
-      calculateDailyEnergyConsumption(startTime, endTime);
+      loadEnergyConsumption(startTime, endTime);
     }
 
     // 核心: 更新searchParams状态，让表单显示默认值
     setSearchParams({ startTime, endTime });
 
+    // 🔥 重置表格搜索参数为空，让表格使用默认时间范围
+    setTempSearchParams({});
+
     // 重置其他相关状态
     setSelectedWorkshop('');
     setEnergyConsumption(0);
     setIsDefaultTimeRange(true);
-    // 修改：让表格也使用默认时间范围，而不是全量查询
-    setTempSearchParams({ startTime, endTime });
-    actionRef.current?.reload();
     loadStatistics(undefined, startTime, endTime);
+
+    // 🔥 刷新表格数据（稍微延迟确保状态更新完成）
+    setTimeout(() => {
+      actionRef.current?.reload();
+    }, 100);
   };
 
   // 监听窗口大小变化
@@ -191,10 +197,6 @@ const FeedingWorkshopPage: React.FC = () => {
         }));
       }
 
-      // 重新渲染表格以应用响应式列配置
-      if (actionRef.current?.reload) {
-        actionRef.current.reload();
-      }
     }, 100);
 
     return () => clearTimeout(timer);
@@ -202,19 +204,6 @@ const FeedingWorkshopPage: React.FC = () => {
 
   // 重构: 使用一个useEffect处理模式切换和初始加载
   useEffect(() => {
-    const loadWorkshops = async () => {
-      try {
-        // 注意：这里调用的是注射环保设备的API
-        const response = await getAllWorkshopsUsingGET();
-        if (response?.code === 0 && response.data) {
-          setWorkshops(response.data);
-        }
-      } catch (error: any) {
-        message.error('获取车间列表失败：' + error.message);
-      }
-    };
-
-    loadWorkshops();
     loadDefaults(currentMode); // 初始加载和模式切换时，加载对应模式的默认数据
   }, [currentMode]); // 当模式改变时，此hook会重新运行
 
@@ -225,97 +214,115 @@ const FeedingWorkshopPage: React.FC = () => {
       const formattedStartTime = startTime ? moment(startTime).format('YYYY-MM-DD HH:mm:ss') : undefined;
       const formattedEndTime = endTime ? moment(endTime).format('YYYY-MM-DD HH:mm:ss') : undefined;
 
-      // 获取基础统计数据（设备数、温度、湿度）
+      // 获取统计数据（包含totalElectricEnergy）
       const response = await getStatisticsUsingGET({
         workshop,
         startTime: formattedStartTime,
         endTime: formattedEndTime,
       });
 
-      // 获取101配料的电能数据
-      const electricEnergyResponse = await queryByConditionUsingPOST({
-        workshop: '101配料',
-        startTime: formattedStartTime,
-        endTime: formattedEndTime,
-        current: 1,
-        pageSize: 1  // 只需要最新一条记录
-      });
-
-      let totalElectricEnergy = 0;
-      if (electricEnergyResponse?.code === 0 && electricEnergyResponse.data && electricEnergyResponse.data.records && electricEnergyResponse.data.records.length > 0) {
-        // 获取最新一条记录的电能信息（数据通常按时间倒序排列）
-        const latestRecord = electricEnergyResponse.data.records[0];
-        totalElectricEnergy = Number(latestRecord.electricEnergy) || 0;
-      }
-
       if (response?.code === 0 && response.data) {
-    setStats({
+        setStats({
           totalDevices: response.data.totalDevices || 0,
           avgTemperature: Number((response.data.avgTemperature || 0).toFixed(1)),
           avgHumidity: Number((response.data.avgHumidity || 0).toFixed(1)),
-      totalElectricEnergy: Number(totalElectricEnergy.toFixed(2)),
-    });
+          totalElectricEnergy: Number((response.data.totalElectricEnergy || 0).toFixed(2)),
+        });
       }
     } catch (error: any) {
       console.error('获取统计数据失败：', error);
     }
   };
 
+// 加载电能消耗数据
+  const loadEnergyConsumption = async (startTime: string, endTime: string) => {
+    try {
+      const formattedStartTime = moment(startTime).format('YYYY-MM-DD HH:mm:ss');
+      const formattedEndTime = moment(endTime).format('YYYY-MM-DD HH:mm:ss');
+
+      const response = await getEnergyConsumptionUsingGET({
+        startTime: formattedStartTime,
+        endTime: formattedEndTime,
+        mode: currentMode  // 传递当前模式
+      });
+
+      if (response?.code === 0 && response.data !== undefined) {
+        setEnergyConsumption(Number(response.data.toFixed(2)));
+      } else {
+        setEnergyConsumption(0);
+      }
+    } catch (error: any) {
+      console.error('获取电能消耗失败：', error);
+      setEnergyConsumption(0);
+    }
+  };
   // 处理搜索
   const handleSearch = (values: any) => {
+    // 🔥 分离显示参数和查询参数
+
+    // 显示参数：保持用户的原始选择（选择框显示用）
+    const displayParams: API.TempMonitorQueryRequest = {
+      ...values,
+      current: 1,
+      pageSize: 20,
+    };
+
+    // 查询参数：应用TIME_FORMATS配置（后端查询用）
     const queryParams: API.TempMonitorQueryRequest = {
       ...values,
       current: 1,
       pageSize: 20,
     };
 
-    // 处理时间范围 - 根据当前模式使用不同的时间格式
+    // 处理显示参数的时间格式（不加偏移）
     if (values.startTime) {
       if (currentMode === 'hour') {
-        queryParams.startTime = moment(values.startTime).format('YYYY-MM-DD HH:00:00');
+        displayParams.startTime = `${moment(values.startTime).format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_START}`;
       } else {
-        // 日模式：开始时间使用当天00:00:00
-        queryParams.startTime = moment(values.startTime).format('YYYY-MM-DD 00:00:00');
+        displayParams.startTime = `${moment(values.startTime).format('YYYY-MM-DD')}${TIME_FORMATS.DAY_START}`;
       }
     }
     if (values.endTime) {
       if (currentMode === 'hour') {
-        // 小时模式：结束时间改为选择小时后的05分，例如选择8时查询的是8:05之前的数据
-        queryParams.endTime = moment(values.endTime).format('YYYY-MM-DD HH:05:00');
+        displayParams.endTime = `${moment(values.endTime).format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_END}`;
       } else {
-        // 日模式：结束时间使用当天23:59:59
-        queryParams.endTime = moment(values.endTime).format('YYYY-MM-DD 23:59:59');
+        // 日模式：显示参数不加偏移
+        displayParams.endTime = `${moment(values.endTime).format('YYYY-MM-DD')}${TIME_FORMATS.DAY_END}`;
       }
     }
 
-    setSearchParams(queryParams);
+    // 处理查询参数的时间格式（加偏移）
+    if (values.startTime) {
+      if (currentMode === 'hour') {
+        queryParams.startTime = `${moment(values.startTime).format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_START}`;
+      } else {
+        queryParams.startTime = `${moment(values.startTime).format('YYYY-MM-DD')}${TIME_FORMATS.DAY_START}`;
+      }
+    }
+    if (values.endTime) {
+      if (currentMode === 'hour') {
+        queryParams.endTime = `${moment(values.endTime).format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_END}`;
+      } else {
+        // 日模式：查询参数加偏移
+        queryParams.endTime = `${moment(values.endTime).clone().add(TIME_FORMATS.DAY_END_OFFSET, 'days').format('YYYY-MM-DD')}${TIME_FORMATS.DAY_END}`;
+      }
+    }
+
+    // 🔥 关键修复：显示参数用于选择框显示（保持用户选择）
+    setSearchParams(displayParams);
     setSelectedWorkshop(values.workshop || '');
+
+    // 查询参数用于实际查询（带偏移）
+    setTempSearchParams(queryParams);
 
     // 判断是否为默认时间范围：如果没有指定时间，则为默认模式
     const isDefaultMode = !queryParams.startTime || !queryParams.endTime;
     setIsDefaultTimeRange(isDefaultMode);
-    // 修改：无论默认模式还是手动搜索，表格都使用相应的时间范围
-    setTempSearchParams(queryParams);
-    actionRef.current?.reload();
 
-    // 根据模式和是否有时间范围来计算电能消耗
+    // 根据时间范围加载电能消耗
     if (queryParams.startTime && queryParams.endTime) {
-      // 有时间范围：按范围查询
-      if (currentMode === 'hour') {
-        console.log('准备计算小时模式电能消耗，参数:', {
-          startTime: queryParams.startTime,
-          endTime: queryParams.endTime,
-          workshop: TARGET_WORKSHOP
-        });
-        calculateEnergyConsumption(queryParams.startTime, queryParams.endTime);
-      } else if (currentMode === 'day') {
-        console.log('准备计算日模式电能消耗，参数:', {
-          startTime: queryParams.startTime,
-          endTime: queryParams.endTime,
-          workshop: TARGET_WORKSHOP
-        });
-        calculateDailyEnergyConsumption(queryParams.startTime, queryParams.endTime);
-      }
+      // 有时间范围：加载电能消耗
+      loadEnergyConsumption(queryParams.startTime, queryParams.endTime);
     } else {
       // 没有时间范围：回到默认模式
       console.log('没有时间范围，触发默认模式加载');
@@ -332,11 +339,17 @@ const FeedingWorkshopPage: React.FC = () => {
     } else if (currentMode === 'day') {
       loadDailyTrendData(false, queryParams.startTime, queryParams.endTime);
     }
+
+    // 刷新表格
+    actionRef.current?.reload();
   };
 
   // 重构: 简化重置处理函数
   const handleReset = () => {
     loadDefaults(currentMode);
+    // 重置表格搜索参数
+    setTempSearchParams({});
+    actionRef.current?.reload();
   };
 
   // 重构: 简化模式切换处理函数
@@ -344,121 +357,78 @@ const FeedingWorkshopPage: React.FC = () => {
     if (mode === currentMode) return;
     setCurrentMode(mode); // 触发useEffect
     message.success(`已切换到${mode === 'hour' ? '小时' : '日'}模式`);
+
+    // 🔥 模式切换时也刷新表格，使用新模式的默认时间范围
+    setTimeout(() => {
+      actionRef.current?.reload();
+    }, 100); // 稍微延迟确保currentMode状态已更新
   };
 
-  // 计算电能消耗
-  const calculateEnergyConsumption = async (startTime: string, endTime: string) => {
+  // 数据表格请求处理函数 - 与BI图表保持一致的时间范围逻辑
+  const handleTableRequest = async (params: any) => {
     try {
-      console.log('开始计算电能消耗:', startTime, '到', endTime);
+      let requestParams = {
+        ...tempSearchParams,
+        current: params.current,
+        pageSize: params.pageSize,
+      };
 
-      // 确保时间格式为 yyyy-MM-dd HH:mm:ss
-      const formattedStartTime = moment(startTime).format('YYYY-MM-DD HH:mm:ss');
-      const formattedEndTime = moment(endTime).format('YYYY-MM-DD HH:mm:ss');
+      // 🔥 关键修改：确保表格查询总是有明确的时间范围（与图表逻辑完全一致）
+      if (!requestParams.startTime || !requestParams.endTime) {
+        // 没有搜索时间范围，使用默认时间范围（与loadDefaults函数一致）
+        const now = moment();
 
-      // 获取整个时间范围内的所有数据
-      const response = await getElectricEnergyTrendUsingGET({
-        workshop: TARGET_WORKSHOP,
-        startTime: formattedStartTime,
-        endTime: formattedEndTime
-        // 不设置limit，获取全部数据
-      });
+        if (currentMode === 'hour') {
+          // 小时模式：最近N小时，格式与图表一致
+          requestParams.endTime = `${now.format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_END}`;
+          requestParams.startTime = `${now.clone().subtract(TIME_FORMATS.DEFAULT_HOUR_RANGE, 'hours').format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_START}`;
+        } else {
+          // 日模式：最近N天，格式与图表一致
+          requestParams.endTime = `${now.clone().add(TIME_FORMATS.DAY_END_OFFSET, 'days').format('YYYY-MM-DD')}${TIME_FORMATS.DAY_END}`;
+          requestParams.startTime = `${now.clone().subtract(TIME_FORMATS.DEFAULT_DAY_RANGE, 'days').format('YYYY-MM-DD')}${TIME_FORMATS.DAY_START}`;
+        }
 
-      console.log('获取时间范围数据响应:', response);
-
-      if (response?.code === 0 && response.data && response.data.length > 0) {
-        // 按时间排序数据
-        const sortedData = response.data.sort((a, b) =>
-          moment(a.updateTime).valueOf() - moment(b.updateTime).valueOf()
-        );
-
-        console.log('排序后的数据:', sortedData.length, '条');
-        console.log('第一条数据:', sortedData[0]);
-        console.log('最后一条数据:', sortedData[sortedData.length - 1]);
-
-        // 取第一条和最后一条记录计算消耗
-        const startEnergy = Number(sortedData[0].electricEnergy) || 0;
-        const endEnergy = Number(sortedData[sortedData.length - 1].electricEnergy) || 0;
-        const consumption = Math.max(0, endEnergy - startEnergy);
-
-        console.log('电能消耗计算结果:', {
-          startTime: sortedData[0].updateTime,
-          endTime: sortedData[sortedData.length - 1].updateTime,
-          startEnergy,
-          endEnergy,
-          consumption
+        console.log('📊 表格查询使用默认时间范围（与图表一致）:', {
+          mode: currentMode,
+          startTime: requestParams.startTime,
+          endTime: requestParams.endTime
         });
-
-        setEnergyConsumption(consumption);
-
-        // 静默设置电能消耗，不显示提示信息
       } else {
-        setEnergyConsumption(0);
-        console.log('API响应详情:', {
-          code: response?.code,
-          message: response?.message,
-          dataLength: response?.data?.length
+        // 有搜索时间范围，直接使用已格式化的时间（遵循TIME_FORMATS配置）
+        // 🔥 不再重新格式化，保持TIME_FORMATS配置的完整性
+
+        console.log('🔍 表格查询使用搜索时间范围:', {
+          startTime: requestParams.startTime,
+          endTime: requestParams.endTime,
+          deviceId: requestParams.deviceId,
+          name: requestParams.name
         });
-        message.warning('指定时间范围内没有找到电能数据，请检查时间范围或数据源');
       }
+
+      const response = await queryByConditionUsingPOST(requestParams);
+
+      if (response?.code === 0 && response.data) {
+        const totalRecords = response.data.total || 0;
+        const currentRecords = response.data.records?.length || 0;
+
+        console.log(`📋 表格查询结果: 当前页 ${currentRecords} 条，总计 ${totalRecords} 条`);
+
+        return {
+          data: response.data.records || [],
+          success: true,
+          total: totalRecords,
+        };
+      }
+
+      console.warn('表格查询失败:', response?.message);
+      return { data: [], success: false, total: 0 };
     } catch (error: any) {
-      console.error('计算电能消耗失败：', error);
-      setEnergyConsumption(0);
-      message.error(`计算电能消耗失败: ${error.message}`);
+      console.error('表格查询异常:', error);
+      message.error('获取数据失败：' + error.message);
+      return { data: [], success: false, total: 0 };
     }
   };
 
-  // 计算日模式电能消耗
-  const calculateDailyEnergyConsumption = async (startTime: string, endTime: string) => {
-    try {
-      console.log('开始计算日模式电能消耗:', startTime, '到', endTime);
-
-      // 确保时间格式为 yyyy-MM-dd HH:mm:ss
-      const formattedStartTime = moment(startTime).format('YYYY-MM-DD HH:mm:ss');
-      const formattedEndTime = moment(endTime).format('YYYY-MM-DD HH:mm:ss');
-
-      // 获取日模式电能消耗数据
-      const response = await getDailyEnergyConsumptionQueryUsingGET({
-        workshop: TARGET_WORKSHOP,
-        startTime: formattedStartTime,
-        endTime: formattedEndTime
-      });
-
-      console.log('获取日模式电能消耗数据响应:', response);
-
-      if (response?.code === 0 && response.data && response.data.length > 0) {
-        // 计算所有天数的电能消耗总和
-        const totalConsumption = response.data.reduce((total, item) => {
-          const dailyConsumption = Number(item.energyConsumption) || 0;
-          return total + dailyConsumption;
-        }, 0);
-
-        console.log('日模式电能消耗计算结果:', {
-          totalDays: response.data.length,
-          dailyData: response.data.map(item => ({
-            day: item.day,
-            consumption: item.energyConsumption
-          })),
-          totalConsumption
-        });
-
-        setEnergyConsumption(totalConsumption);
-
-        // 静默设置电能消耗，不显示提示信息
-      } else {
-        setEnergyConsumption(0);
-        console.log('日模式API响应详情:', {
-          code: response?.code,
-          message: response?.message,
-          dataLength: response?.data?.length
-        });
-        message.warning('指定时间范围内没有找到日电能数据，请检查时间范围或数据源');
-      }
-    } catch (error: any) {
-      console.error('计算日模式电能消耗失败：', error);
-      setEnergyConsumption(0);
-      message.error(`计算日模式电能消耗失败: ${error.message}`);
-    }
-  };
 
   // 加载每日电能消耗数据 - 显示日用电量差值（结束日期以后最近记录 - 开始日期以后最近记录）
   const loadDailyTrendData = async (isRealtime = false, startTime?: string, endTime?: string) => {
@@ -477,8 +447,8 @@ const FeedingWorkshopPage: React.FC = () => {
       const requestParams: any = {
         workshop: targetWorkshop,
         deviceId: undefined,
-        startTime: rawStartTime ? moment(rawStartTime).format('YYYY-MM-DD HH:mm:ss') : undefined,
-        endTime: rawEndTime ? moment(rawEndTime).format('YYYY-MM-DD HH:mm:ss') : undefined,
+        startTime: rawStartTime,  // 🔥 直接使用已格式化的时间（遵循TIME_FORMATS配置）
+        endTime: rawEndTime,      // 🔥 直接使用已格式化的时间（遵循TIME_FORMATS配置）
       };
 
       console.log('请求每日电能消耗数据参数:', requestParams);
@@ -572,17 +542,17 @@ const FeedingWorkshopPage: React.FC = () => {
           // 如果有搜索时间范围，优先使用搜索范围
           if (startTime && endTime) {
             adjustedMinTime = moment(startTime).valueOf();
-            adjustedMaxTime = moment(endTime).valueOf();
+            adjustedMaxTime = moment(endTime).subtract(1, 'day').valueOf();
           } else {
-            // 默认模式：使用固定的7天范围
+            // 默认模式：使用配置的天数范围
             const now = moment();
-            adjustedMinTime = now.clone().subtract(7, 'days').valueOf();
+            adjustedMinTime = now.clone().subtract(TIME_FORMATS.DEFAULT_DAY_RANGE, 'days').valueOf();
             adjustedMaxTime = now.clone().add(1, 'days').valueOf();
           }
         } else {
           const now = moment();
           adjustedMaxTime = now.clone().add(1, 'days').valueOf();
-          adjustedMinTime = now.clone().subtract(7, 'days').valueOf();
+          adjustedMinTime = now.clone().subtract(TIME_FORMATS.DEFAULT_DAY_RANGE, 'days').valueOf();
         }
 
         if (isFinite(minValue) && isFinite(maxValue)) {
@@ -882,8 +852,8 @@ const FeedingWorkshopPage: React.FC = () => {
       const requestParams: any = {
         workshop: targetWorkshop,
         deviceId: undefined,
-        startTime: rawStartTime ? moment(rawStartTime).format('YYYY-MM-DD HH:mm:ss') : undefined,
-        endTime: rawEndTime ? moment(rawEndTime).format('YYYY-MM-DD HH:mm:ss') : undefined,
+        startTime: rawStartTime,  // 🔥 直接使用已格式化的时间（遵循TIME_FORMATS配置）
+        endTime: rawEndTime,      // 🔥 直接使用已格式化的时间（遵循TIME_FORMATS配置）
       };
 
       console.log('请求每小时电能消耗数据参数:', requestParams);
@@ -892,21 +862,12 @@ const FeedingWorkshopPage: React.FC = () => {
       console.log('传入的startTime:', startTime);
       console.log('传入的endTime:', endTime);
 
-      // 根据是否为默认状态调用不同的API
-      let response;
-      if (isDefaultTimeRange) {
-        // 默认模式：使用实时更新逻辑（最新小时用最新记录减去开始时间记录）
-        console.log('🔴 调用默认模式API（实时更新） - /electric-energy-hourly-consumption');
-        response = await getHourlyEnergyConsumptionUsingGET(requestParams);
-      } else {
-        // 查询模式：使用标准逻辑（所有小时都用结束时间以后最近记录减去开始时间以后最近记录）
-        console.log('🔵 调用查询模式API（历史数据） - /electric-energy-hourly-consumption-query');
-        response = await getHourlyEnergyConsumptionQueryUsingGET(requestParams);
-      }
+      // 统一使用查询模式接口
+      console.log('🔵 调用查询模式API - /electric-energy-hourly-consumption-query');
+      const response = await getHourlyEnergyConsumptionQueryUsingGET(requestParams);
 
       if (response?.code === 0 && response.data) {
-        const modeText = isDefaultTimeRange ? '默认模式-实时更新' : '查询模式-历史数据';
-        console.log(`获取到每小时电能消耗数据（${modeText}）:`, response.data);
+        console.log('获取到每小时电能消耗数据（查询模式）:', response.data);
         console.log('数据点数量:', response.data.length);
         console.log('时间范围:', response.data.length > 0 ? {
           first: response.data[0].hour,
@@ -1003,16 +964,16 @@ const FeedingWorkshopPage: React.FC = () => {
             adjustedMinTime = moment(startTime).valueOf();
             adjustedMaxTime = moment(endTime).valueOf();
           } else {
-            // 默认模式：使用固定的24小时范围，确保实时更新时图表不会缩小
+            // 默认模式：使用配置的小时范围，确保实时更新时图表不会缩小
             const now = moment();
-            // 固定显示过去24小时到当前时间后2小时的范围
-            adjustedMinTime = now.clone().subtract(24, 'hours').valueOf();
+            // 固定显示过去N小时到当前时间后2小时的范围
+            adjustedMinTime = now.clone().subtract(TIME_FORMATS.DEFAULT_HOUR_RANGE, 'hours').valueOf();
             adjustedMaxTime = now.clone().add(2, 'hours').valueOf();
           }
         } else {
           const now = moment();
           adjustedMaxTime = now.clone().add(2, 'hours').valueOf();
-          adjustedMinTime = now.clone().subtract(24, 'hours').valueOf();
+          adjustedMinTime = now.clone().subtract(TIME_FORMATS.DEFAULT_HOUR_RANGE, 'hours').valueOf();
         }
 
         if (isFinite(minValue) && isFinite(maxValue)) {
@@ -1301,25 +1262,7 @@ const FeedingWorkshopPage: React.FC = () => {
     }
   };
 
-  // 图表实时更新 - 仅在默认模式下启用
-  useEffect(() => {
-    if (!showChart || !isDefaultTimeRange) {
-      console.log('停止图表实时更新 - 图表隐藏或非默认模式');
-      return;
-    }
-
-    console.log('启动图表实时更新，间隔30秒（仅默认模式）');
-    const chartUpdateInterval = setInterval(() => {
-      console.log('图表实时更新检查:', moment().format('HH:mm:ss'), '- 默认模式');
-      // 只在默认模式下进行实时更新
-      loadTrendData(true);
-    }, 600000); // 30秒更新一次，避免过于频繁
-
-    return () => {
-      console.log('停止图表实时更新');
-      clearInterval(chartUpdateInterval);
-    };
-  }, [showChart, isDefaultTimeRange]); // 移除searchParams依赖，只在默认/查询模式切换时重新执行
+  // 已删除实时更新逻辑，统一使用查询模式
 
 
 
@@ -1327,54 +1270,9 @@ const FeedingWorkshopPage: React.FC = () => {
    * 表格列定义 - 响应式配置
    */
   // 根据屏幕尺寸决定显示的列（抽离到 config/columns）
-  const columns: ProColumns<API.TempMonitor>[] = getColumns(isMobile());
 
-  // 表格请求函数，与原 ProTable.request 逻辑一致
-  const tableRequest = async (params: any) => {
-    try {
-      let response: any;
 
-      if (Object.keys(tempSearchParams).length > 0) {
-        const queryRequest: API.TempMonitorQueryRequest = {
-          ...tempSearchParams,
-          current: params.current || 1,
-          pageSize: params.pageSize || 20,
-        };
-        response = await queryByConditionUsingPOST(queryRequest);
 
-        if (response?.code === 0 && response.data) {
-          return {
-            data: response.data.records || [],
-            success: true,
-            total: response.data.total || 0,
-          };
-        }
-      } else {
-        response = await getDataByWorkshopUsingGET({ workshop: TARGET_WORKSHOP });
-        if (response?.code === 0 && response.data) {
-          return {
-            data: response.data || [],
-            success: true,
-            total: response.data?.length || 0,
-          };
-        }
-      }
-
-      message.error(response?.message || '获取数据失败');
-      return {
-        data: [],
-        success: false,
-        total: 0,
-      };
-    } catch (error: any) {
-      message.error('获取数据失败：' + error.message);
-      return {
-        data: [],
-        success: false,
-        total: 0,
-      };
-    }
-  };
 
   return (
     <div style={darkThemeStyles.pageContainer}>
@@ -1438,12 +1336,13 @@ const FeedingWorkshopPage: React.FC = () => {
 
       {/* 数据表格 */}
       <DataTable
-          columns={columns}
-        actionRef={actionRef as any}
-        request={tableRequest}
+        columns={getColumns(isMobile())}
+        actionRef={actionRef}
+        request={handleTableRequest}
         isMobile={isMobile()}
         darkThemeStyles={darkThemeStyles}
       />
+
     </PageContainer>
     </div>
   );

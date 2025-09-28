@@ -41,103 +41,38 @@ public class GranulationWorkshopController {
     @Autowired
     private TempMonitorCacheLoader tempMonitorCacheLoader;
 
-    @ApiOperation("获取最新温湿电能数据")
-    @GetMapping("/latest")
-    public BaseResponse<List<TempMonitor>> getLatestData() {
-        List<TempMonitor> dataList = granulationWorkshopService.getLatestData();
-        return ResultUtils.success(dataList);
-    }
 
-    @ApiOperation("按车间查询温湿电能数据")
-    @GetMapping("/workshop/{workshop}")
-    public BaseResponse<List<TempMonitor>> getDataByWorkshop(
-            @ApiParam("车间名称") @PathVariable String workshop) {
-        List<TempMonitor> dataList = granulationWorkshopService.getDataByWorkshop(workshop);
-        return ResultUtils.success(dataList);
-    }
-
-    @ApiOperation("获取所有车间列表")
-    @GetMapping("/workshops")
-    public BaseResponse<List<String>> getAllWorkshops() {
-        List<String> workshops = granulationWorkshopService.getAllWorkshops();
-        return ResultUtils.success(workshops);
-    }
-
-
-
-    @ApiOperation("分页查询温湿电能数据（支持多条件查询）")
+    @ApiOperation("分页查询温湿电能数据（102造粒环保设备，支持多条件查询）")
     @PostMapping("/query")
     public BaseResponse<Page<TempMonitor>> queryByCondition(@RequestBody TempMonitorQueryRequest request) {
-        // 设置默认分页参数
         if (request.getCurrent() <= 0) {
             request.setCurrent(1);
         }
         if (request.getPageSize() <= 0 || request.getPageSize() > 100) {
             request.setPageSize(20);
         }
-        
         Page<TempMonitor> page = granulationWorkshopService.queryByCondition(request);
         return ResultUtils.success(page);
     }
 
-    @ApiOperation("获取电能趋势数据（固定102造粒环保设备）")
-    @GetMapping("/electric-energy-trend")
-    public BaseResponse<List<TempMonitor>> getElectricEnergyTrend(
-            @ApiParam("车间") @RequestParam(required = false) String workshop,
-            @ApiParam("设备ID") @RequestParam(required = false) String deviceId,
-            @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
-            @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime,
-            @ApiParam("限制数量") @RequestParam(required = false) Integer limit) {
-        try {
-            // 强制限定车间为 102造粒环保设备
-            String fixedWorkshop = "102造粒环保设备";
-            
-            // 只有实时模式需要限制数量，其他情况都不限制
-            Integer finalLimit = limit;
-            // 如果没有指定limit，则不限制数量，返回所有数据
-            
-            List<TempMonitor> trendData = granulationWorkshopService.getElectricEnergyTrend(fixedWorkshop, deviceId, startTime, endTime, finalLimit);
-            return ResultUtils.success(trendData);
-        } catch (Exception e) {
-            log.error("获取电能趋势数据失败", e);
-            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取电能趋势数据失败");
-        }
-    }
 
-    @ApiOperation("获取每小时电能消耗数据（默认模式-实时更新）- 最新小时用最新记录减去开始时间记录")
-    @GetMapping("/electric-energy-hourly-consumption")
-    public BaseResponse<List<HourlyEnergyConsumption>> getHourlyEnergyConsumption(
+
+    @ApiOperation("总电能消耗（102造粒环保设备）")
+    @GetMapping("/statistics")
+    public BaseResponse<TempMonitorStatistics> getStatistics(
             @ApiParam("车间") @RequestParam(required = false) String workshop,
-            @ApiParam("设备ID") @RequestParam(required = false) String deviceId,
             @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
             @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
         try {
-            // 小时模式后端校验：若两者都传，最大 7 天
-            if (startTime != null && endTime != null) {
-                if (!endTime.after(startTime)) {
-                    return ResultUtils.error(ErrorCode.PARAMS_ERROR, "结束时间必须晚于开始时间");
-                }
-                long diffMs = endTime.getTime() - startTime.getTime();
-                long diffDays = diffMs / (1000 * 60 * 60 * 24);
-                if (diffDays > 7) {
-                    return ResultUtils.error(ErrorCode.PARAMS_ERROR, "小时模式时间范围过大，请选择不超过7天");
-                }
-            }
-            // 强制限定车间为 102造粒环保设备
-            String fixedWorkshop = "102造粒环保设备";
-            
-            log.info("🔴 Controller调用默认模式API: /electric-energy-hourly-consumption - 车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}", 
-                fixedWorkshop, deviceId, startTime, endTime);
-
-            List<HourlyEnergyConsumption> consumptionData = granulationWorkshopService.getHourlyEnergyConsumption(fixedWorkshop, deviceId, startTime, endTime);
-            return ResultUtils.success(consumptionData);
+            TempMonitorStatistics statistics = granulationWorkshopService.getStatistics("102造粒环保设备", startTime, endTime);
+            return ResultUtils.success(statistics);
         } catch (Exception e) {
-            log.error("获取每小时电能消耗数据失败", e);
-            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取每小时电能消耗数据失败");
+            log.error("获取统计数据失败", e);
+            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取统计数据失败");
         }
     }
 
-    @ApiOperation("获取每小时电能消耗数据（查询模式-历史数据）- 所有小时都用标准逻辑")
+    @ApiOperation("获取每小时电能消耗数据（102造粒环保设备，查询模式-历史数据）")
     @GetMapping("/electric-energy-hourly-consumption-query")
     public BaseResponse<List<HourlyEnergyConsumption>> getHourlyEnergyConsumptionQuery(
             @ApiParam("车间") @RequestParam(required = false) String workshop,
@@ -145,7 +80,6 @@ public class GranulationWorkshopController {
             @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
             @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
         try {
-            // 小时模式查询后端校验：若两者都传，最大 31 天（历史查询可以放宽）
             if (startTime != null && endTime != null) {
                 if (!endTime.after(startTime)) {
                     return ResultUtils.error(ErrorCode.PARAMS_ERROR, "结束时间必须晚于开始时间");
@@ -156,12 +90,9 @@ public class GranulationWorkshopController {
                     return ResultUtils.error(ErrorCode.PARAMS_ERROR, "时间范围过大，请选择不超过31天");
                 }
             }
-            // 强制限定车间为 102造粒环保设备
             String fixedWorkshop = "102造粒环保设备";
-            
-            log.info("🔵 Controller调用查询模式API: /electric-energy-hourly-consumption-query - 车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}", 
-                fixedWorkshop, deviceId, startTime, endTime);
-
+            log.info("🔵 Controller调用查询模式API: /electric-energy-hourly-consumption-query - 车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}",
+                    fixedWorkshop, deviceId, startTime, endTime);
             List<HourlyEnergyConsumption> consumptionData = granulationWorkshopService.getHourlyEnergyConsumptionQuery(fixedWorkshop, deviceId, startTime, endTime);
             return ResultUtils.success(consumptionData);
         } catch (Exception e) {
@@ -170,7 +101,7 @@ public class GranulationWorkshopController {
         }
     }
 
-    @ApiOperation("获取每日电能消耗数据（查询模式-历史数据）- 结束日期以后最新记录减去开始日期以后最新记录")
+    @ApiOperation("日模式查询（102造粒环保设备）")
     @GetMapping("/electric-energy-daily-consumption-query")
     public BaseResponse<List<DailyEnergyConsumption>> getDailyEnergyConsumptionQuery(
             @ApiParam("车间") @RequestParam(required = false) String workshop,
@@ -178,7 +109,6 @@ public class GranulationWorkshopController {
             @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
             @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
         try {
-            // 日模式查询后端校验：若两者都传，最大 90 天
             if (startTime != null && endTime != null) {
                 if (!endTime.after(startTime)) {
                     return ResultUtils.error(ErrorCode.PARAMS_ERROR, "结束时间必须晚于开始时间");
@@ -189,12 +119,9 @@ public class GranulationWorkshopController {
                     return ResultUtils.error(ErrorCode.PARAMS_ERROR, "日模式时间范围过大，请选择不超过90天");
                 }
             }
-            // 强制限定车间为 102造粒环保设备
             String fixedWorkshop = "102造粒环保设备";
-            
-            log.info("🟡 Controller调用日模式查询API: /electric-energy-daily-consumption-query - 车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}", 
-                fixedWorkshop, deviceId, startTime, endTime);
-
+            log.info("🟡 Controller调用日模式查询API: /electric-energy-daily-consumption-query - 车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}",
+                    fixedWorkshop, deviceId, startTime, endTime);
             List<DailyEnergyConsumption> consumptionData = granulationWorkshopService.getDailyEnergyConsumptionQuery(fixedWorkshop, deviceId, startTime, endTime);
             return ResultUtils.success(consumptionData);
         } catch (Exception e) {
@@ -203,44 +130,32 @@ public class GranulationWorkshopController {
         }
     }
 
-    /**
-     * 刷新缓存并预加载上个时间段数据
-     * 使用说明：
-     * 1) 先对所有与 TempMonitor 相关的缓存空间执行清空（@CacheEvict allEntries=true），
-     * 2) 再调用带有 @Cacheable 的服务方法进行"预热"，保证刷新后前端立即命中缓存。
-     *
-     * 缓存策略：全局不过期（Duration.ZERO），只在手动刷新时更新。
-     */
-    @ApiOperation("刷新缓存并预加载上个时间段数据")
+    @ApiOperation("电能消耗卡片（102造粒环保设备，后端计算差值）")
+    @GetMapping("/electric-energy-consumption")
+    public BaseResponse<Double> getEnergyConsumption(
+            @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
+            @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime,
+            @ApiParam("模式：hour/day") @RequestParam(required = false, defaultValue = "hour") String mode) {
+        try {
+            Double consumption = granulationWorkshopService.getEnergyConsumption(startTime, endTime, mode);
+            return ResultUtils.success(consumption);
+        } catch (Exception e) {
+            log.error("获取电能消耗量失败", e);
+            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取电能消耗量失败");
+        }
+    }
+
+    @ApiOperation("刷新缓存并预加载上个时间段数据（102造粒环保设备）")
     @PostMapping("/refresh-cache")
     public BaseResponse<Boolean> refreshCache(
             @ApiParam("车间名称，可为空，默认102造粒环保设备") @RequestParam(required = false) String workshop) {
         try {
             String fixedWorkshop = (workshop == null || workshop.isEmpty()) ? "102造粒环保设备" : workshop;
-            // 重建一年窗口缓存并原子切换
             tempMonitorCacheLoader.rebuildOneYearWindow(fixedWorkshop);
-
             return ResultUtils.success(Boolean.TRUE);
         } catch (Exception e) {
             log.error("刷新缓存失败", e);
             return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "刷新缓存失败");
-        }
-    }
-
-    @ApiOperation("获取统计数据")
-    @GetMapping("/statistics")
-    public BaseResponse<TempMonitorStatistics> getStatistics(
-            @ApiParam("车间") @RequestParam(required = false) String workshop,
-            @ApiParam("开始时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
-            @ApiParam("结束时间") @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
-        try {
-            // 强制限定车间为 102造粒环保设备
-            String fixedWorkshop = "102造粒环保设备";
-            TempMonitorStatistics statistics = granulationWorkshopService.getStatistics(fixedWorkshop, startTime, endTime);
-            return ResultUtils.success(statistics);
-        } catch (Exception e) {
-            log.error("获取统计数据失败", e);
-            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "获取统计数据失败");
         }
     }
 }

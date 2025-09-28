@@ -35,7 +35,7 @@ const DailyPowerChart: React.FC<DailyPowerChartProps> = ({ chartOptions, trendDa
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Space>
             <CalendarOutlined style={{ color: '#00d4ff', filter: 'drop-shadow(0 0 10px rgba(0, 212, 255, 0.6))' }} />
-            <span style={darkThemeStyles.title}>106清洗日电能消耗监控</span>
+            <span style={darkThemeStyles.title}>106清洗 日电能消耗监控</span>
           </Space>
           <Space>
             <Badge

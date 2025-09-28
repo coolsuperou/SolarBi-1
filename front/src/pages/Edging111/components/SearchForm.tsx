@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, Space, Typography, Button, message } from 'antd';
 import { EyeOutlined, SearchOutlined, ReloadOutlined, UpOutlined, DownOutlined, ClockCircleOutlined, CalendarOutlined, BarChartOutlined } from '@ant-design/icons';
 import moment from 'moment'; // Added import for moment
+import { TIME_FORMATS } from '../config/timeFormats'; // 🔥 引入时间格式配置
 
 type DarkThemeStyles = {
   pageContainer: React.CSSProperties;
@@ -152,7 +153,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     const dateValue = e.target.value;
                     const hourValue = (document.getElementById('startHour') as HTMLSelectElement)?.value || '00';
                     if (dateValue) {
-                      const formattedValue = `${dateValue} ${hourValue}:00:00`;
+                      const formattedValue = `${dateValue} ${hourValue}${TIME_FORMATS.HOUR_START}`;
                       setSearchParams((prev: any) => ({ ...prev, startTime: formattedValue }));
                     }
                   }}
@@ -183,7 +184,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     const hourValue = e.target.value;
                     const dateValue = startTimeRef.current?.value;
                     if (dateValue) {
-                      const formattedValue = `${dateValue} ${hourValue}:00:00`;
+                      const formattedValue = `${dateValue} ${hourValue}${TIME_FORMATS.HOUR_START}`;
                       setSearchParams((prev: any) => ({ ...prev, startTime: formattedValue }));
                     }
                   }}
@@ -228,7 +229,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     const dateValue = e.target.value;
                     const hourValue = (document.getElementById('endHour') as HTMLSelectElement)?.value || '23';
                     if (dateValue) {
-                      const formattedValue = `${dateValue} ${hourValue}:05:00`;
+                      const formattedValue = `${dateValue} ${hourValue}${TIME_FORMATS.HOUR_END}`;
                       setSearchParams((prev: any) => ({ ...prev, endTime: formattedValue }));
                     }
                   }}
@@ -259,7 +260,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     const hourValue = e.target.value;
                     const dateValue = endTimeRef.current?.value;
                     if (dateValue) {
-                      const formattedValue = `${dateValue} ${hourValue}:05:00`;
+                      const formattedValue = `${dateValue} ${hourValue}${TIME_FORMATS.HOUR_END}`;
                       setSearchParams((prev: any) => ({ ...prev, endTime: formattedValue }));
                     }
                   }}
@@ -305,7 +306,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                   onChange={(e) => {
                     const dateValue = e.target.value;
                     if (dateValue) {
-                      const formattedValue = `${dateValue} 00:00:00`;
+                      const formattedValue = `${dateValue}${TIME_FORMATS.DAY_START}`;
                       setSearchParams((prev: any) => ({ ...prev, startTime: formattedValue }));
                     }
                   }}
@@ -343,7 +344,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
                   onChange={(e) => {
                     const dateValue = e.target.value;
                     if (dateValue) {
-                      const formattedValue = `${dateValue} 23:59:59`;
+                      // 用户选择什么日期就显示什么日期（偏移在查询时处理）
+                      const formattedValue = `${dateValue}${TIME_FORMATS.DAY_END}`;
                       setSearchParams((prev: any) => ({ ...prev, endTime: formattedValue }));
                     }
                   }}

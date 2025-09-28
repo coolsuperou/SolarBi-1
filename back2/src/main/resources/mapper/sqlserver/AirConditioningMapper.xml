@@ -2,479 +2,259 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.yupi.springbootinit.mapper.sqlserver.AirConditioningMapper">
 
-    <!-- 查询设备数量统计 -->
-    <select id="countDevices" resultType="java.lang.Integer">
-        SELECT COUNT(DISTINCT DeviceID)
-        FROM RSWS_TempMonitor_Copy
-        <where>
-            AND Workshop = '114_空调水机主机'
-            <if test="startTime != null">
-                AND UpdateTime &gt;= #{startTime}
-            </if>
-            <if test="endTime != null">
-                AND UpdateTime &lt;= #{endTime}
-            </if>
-        </where>
-    </select>
 
-    <!-- 查询温度、湿度、电能统计信息 -->
+    <!-- 总电能消耗卡片 -->
     <select id="getStatistics" resultType="com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics">
         WITH LatestDeviceData AS (
-            SELECT 
-                DeviceID,
-                Tem,
-                Hum,
-                ElectricEnergy,
-                UpdateTime,
-                Workshop,
-                ROW_NUMBER() OVER (PARTITION BY DeviceID ORDER BY UpdateTime DESC) as rn
-            FROM RSWS_TempMonitor_Copy
-            <where>
-                <if test="workshop != null and workshop != ''">
-                    AND Workshop = #{workshop}
-                </if>
-                <if test="startTime != null">
-                    AND UpdateTime &gt;= #{startTime}
-                </if>
-                <if test="endTime != null">
-                    AND UpdateTime &lt;= #{endTime}
-                </if>
-            </where>
-        )
         SELECT
-            AVG(Tem) as avgTemperature,
-            MIN(Tem) as minTemperature,
-            MAX(Tem) as maxTemperature,
-            AVG(Hum) as avgHumidity,
-            MIN(Hum) as minHumidity,
-            MAX(Hum) as maxHumidity,
-            SUM(ElectricEnergy) as totalElectricEnergy,
-            AVG(ElectricEnergy) as avgElectricEnergy
-        FROM LatestDeviceData
-        WHERE rn = 1
-    </select>
-
-    <!-- 查询电能趋势数据 -->
-    <select id="selectElectricEnergyTrend" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
-        SELECT 
-        <if test="limit != null">TOP(#{limit})</if>
-            Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, 
-            ElectricEnergy, NodeID, Workshop
-        FROM RSWS_TempMonitor_Copy
-        <where>
-            ElectricEnergy IS NOT NULL AND ElectricEnergy > 0
-            AND Workshop = '114_空调水机主机'
-            <if test="deviceId != null and deviceId != ''">
-                AND DeviceID = #{deviceId}
-            </if>
-            <if test="startTime != null">
-                AND UpdateTime &gt;= #{startTime}
-            </if>
-            <if test="endTime != null">
-                AND UpdateTime &lt;= #{endTime}
-            </if>
-        </where>
-        ORDER BY UpdateTime DESC
-    </select>
-
-    <!-- 默认模式-实时更新查询每小时电能消耗数据 -->
-    <select id="selectHourlyEnergyConsumption" resultType="com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption">
-        WITH HourlyBoundaries AS (
-            -- 生成时间范围内的每个小时边界
-            SELECT 
-                DATEADD(HOUR, DATEDIFF(HOUR, 0, 
-                    <if test="startTime != null">#{startTime}</if>
-                    <if test="startTime == null">DATEADD(DAY, -1, GETDATE())</if>
-                ) + ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 1, 0) as HourStart,
-                DATEADD(HOUR, DATEDIFF(HOUR, 0, 
-                    <if test="startTime != null">#{startTime}</if>
-                    <if test="startTime == null">DATEADD(DAY, -1, GETDATE())</if>
-                ) + ROW_NUMBER() OVER (ORDER BY (SELECT NULL)), 0) as HourEnd
-            FROM (
-                SELECT TOP (
-                    DATEDIFF(HOUR, 
-                        <if test="startTime != null">#{startTime}</if>
-                        <if test="startTime == null">DATEADD(DAY, -1, GETDATE())</if>, 
-                        <if test="endTime != null">#{endTime}</if>
-                        <if test="endTime == null">GETDATE()</if>
-                    ) + 1
-                ) 1 as num
-                FROM RSWS_TempMonitor_Copy
-            ) Numbers
-        ),
-        DeviceHourData AS (
-            -- 为每个设备和每个小时获取开始和结束时间的最近记录
-            SELECT 
-                h.HourStart,
-                h.HourEnd,
-                tm.DeviceID,
-                tm.Name,
-                tm.Workshop,
-                -- 小时开始时间以后的最近记录
-                (SELECT TOP 1 ElectricEnergy 
-                 FROM RSWS_TempMonitor_Copy t1
-                 WHERE t1.DeviceID = tm.DeviceID 
-                   AND t1.Workshop = '114_空调水机主机'
-                   AND t1.ElectricEnergy IS NOT NULL 
-                   AND t1.UpdateTime &gt;= h.HourStart
-                 ORDER BY t1.UpdateTime ASC) as StartEnergy,
-                (SELECT TOP 1 UpdateTime 
-                 FROM RSWS_TempMonitor_Copy t1
-                 WHERE t1.DeviceID = tm.DeviceID 
-                   AND t1.Workshop = '114_空调水机主机'
-                   AND t1.ElectricEnergy IS NOT NULL 
-                   AND t1.UpdateTime &gt;= h.HourStart
-                 ORDER BY t1.UpdateTime ASC) as StartTime,
-                -- 结束时间记录：如果是最新小时则用最新记录，否则用小时结束时间以后的最近记录
-                CASE 
-                    WHEN h.HourStart = (SELECT MAX(HourStart) FROM HourlyBoundaries)
-                    THEN (SELECT TOP 1 ElectricEnergy 
-                          FROM RSWS_TempMonitor_Copy t2
-                          WHERE t2.DeviceID = tm.DeviceID 
-                            AND t2.Workshop = '114_空调水机主机'
-                            AND t2.ElectricEnergy IS NOT NULL 
-                            AND t2.UpdateTime &lt;= h.HourEnd
-                          ORDER BY t2.UpdateTime DESC)
-                    ELSE (SELECT TOP 1 ElectricEnergy 
-                          FROM RSWS_TempMonitor_Copy t2
-                          WHERE t2.DeviceID = tm.DeviceID 
-                            AND t2.Workshop = '114_空调水机主机'
-                            AND t2.ElectricEnergy IS NOT NULL 
-                            AND t2.UpdateTime &gt;= h.HourEnd
-                          ORDER BY t2.UpdateTime ASC)
-                END as EndEnergy,
-                CASE 
-                    WHEN h.HourStart = (SELECT MAX(HourStart) FROM HourlyBoundaries)
-                    THEN (SELECT TOP 1 UpdateTime 
-                          FROM RSWS_TempMonitor_Copy t2
-                          WHERE t2.DeviceID = tm.DeviceID 
-                            AND t2.Workshop = '114_空调水机主机'
-                            AND t2.ElectricEnergy IS NOT NULL 
-                            AND t2.UpdateTime &lt;= h.HourEnd
-                          ORDER BY t2.UpdateTime DESC)
-                    ELSE (SELECT TOP 1 UpdateTime 
-                          FROM RSWS_TempMonitor_Copy t2
-                          WHERE t2.DeviceID = tm.DeviceID 
-                            AND t2.Workshop = '114_空调水机主机'
-                            AND t2.ElectricEnergy IS NOT NULL 
-                            AND t2.UpdateTime &gt;= h.HourEnd
-                          ORDER BY t2.UpdateTime ASC)
-                END as EndTime
-            FROM HourlyBoundaries h
-            CROSS JOIN (
-                SELECT DISTINCT DeviceID, Name, Workshop
-                FROM RSWS_TempMonitor_Copy
-                WHERE Workshop = '114_空调水机主机'
-                  AND ElectricEnergy IS NOT NULL
-                  <if test="deviceId != null and deviceId != ''">
-                      AND DeviceID = #{deviceId}
-                  </if>
-                  <if test="startTime != null">
-                      AND UpdateTime &gt;= #{startTime}
-                  </if>
-                  <if test="endTime != null">
-                      AND UpdateTime &lt;= #{endTime}
-                  </if>
-            ) tm
-        )
-        SELECT 
-            DeviceID as deviceId,
-            Name as name,
-            Workshop as workshop,
-            HourStart as hour,
-            CASE 
-                WHEN StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL AND EndEnergy &gt;= StartEnergy
-                THEN EndEnergy - StartEnergy
-                ELSE 0
-            END as energyConsumption,
-            StartEnergy as startEnergy,
-            EndEnergy as endEnergy,
-            StartTime as startTime,
-            EndTime as endTime
-        FROM DeviceHourData
-        WHERE StartEnergy IS NOT NULL 
-          AND EndEnergy IS NOT NULL
-          AND EndEnergy &gt;= StartEnergy
-        ORDER BY HourStart, DeviceID
-    </select>
-
-    <!-- 查询每小时电能消耗数据（查询模式-历史数据） -->
-    <select id="selectHourlyEnergyConsumptionQuery" resultType="com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption">
-        WITH HourlyBoundaries AS (
-        -- 生成时间范围内的每个小时边界
-        SELECT
-        DATEADD(HOUR, DATEDIFF(HOUR, 0,
-        <if test="startTime != null">#{startTime}</if>
-        <if test="startTime == null">DATEADD(DAY, -1, GETDATE())</if>
-        ) + ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 1, 0) as HourStart,
-        DATEADD(HOUR, DATEDIFF(HOUR, 0,
-        <if test="startTime != null">#{startTime}</if>
-        <if test="startTime == null">DATEADD(DAY, -1, GETDATE())</if>
-        ) + ROW_NUMBER() OVER (ORDER BY (SELECT NULL)), 0) as HourEnd
-        FROM (
-        SELECT TOP (
-        DATEDIFF(HOUR,
-        <if test="startTime != null">#{startTime}</if>
-        <if test="startTime == null">DATEADD(DAY, -1, GETDATE())</if>,
-        <if test="endTime != null">#{endTime}</if>
-        <if test="endTime == null">GETDATE()</if>
-        ) + 1
-        ) 1 as num
-        FROM RSWS_TempMonitor_Copy
-        ) Numbers
-        ),
-        DeviceHourData AS (
-        -- 为每个设备和每个小时获取开始和结束时间的记录
-        SELECT
-        h.HourStart,
-        h.HourEnd,
-        tm.DeviceID,
-        tm.Name,
-        tm.Workshop,
-        -- 小时开始时间以后的最近记录
-        (SELECT TOP 1 ElectricEnergy
-        FROM RSWS_TempMonitor_Copy t1
-        WHERE t1.DeviceID = tm.DeviceID
-        AND t1.Workshop = '114_空调水机主机'
-        AND t1.ElectricEnergy IS NOT NULL
-        AND t1.UpdateTime &gt;= h.HourStart
-        ORDER BY t1.UpdateTime ASC) as StartEnergy,
-        (SELECT TOP 1 UpdateTime
-        FROM RSWS_TempMonitor_Copy t1
-        WHERE t1.DeviceID = tm.DeviceID
-        AND t1.Workshop = '114_空调水机主机'
-        AND t1.ElectricEnergy IS NOT NULL
-        AND t1.UpdateTime &gt;= h.HourStart
-        ORDER BY t1.UpdateTime ASC) as StartTime,
-        -- 修改：获取每小时结束后最早的电能数据
-        (SELECT TOP 1 ElectricEnergy
-        FROM RSWS_TempMonitor_Copy t2
-        WHERE t2.DeviceID = tm.DeviceID
-        AND t2.Workshop = '114_空调水机主机'
-        AND t2.ElectricEnergy IS NOT NULL
-        AND t2.UpdateTime &gt;= h.HourEnd  -- 改为大于等于小时结束时间
-        ORDER BY t2.UpdateTime ASC) as EndEnergy,  -- 按时间升序取第一条
-        (SELECT TOP 1 UpdateTime
-        FROM RSWS_TempMonitor_Copy t2
-        WHERE t2.DeviceID = tm.DeviceID
-        AND t2.Workshop = '114_空调水机主机'
-        AND t2.ElectricEnergy IS NOT NULL
-        AND t2.UpdateTime &gt;= h.HourEnd
-        ORDER BY t2.UpdateTime ASC) as EndTime
-        FROM HourlyBoundaries h
-        CROSS JOIN (
-        SELECT DISTINCT DeviceID, Name, Workshop
+        Name,
+        ElectricEnergy,
+        ROW_NUMBER() OVER (PARTITION BY Name ORDER BY UpdateTime DESC) as rn
         FROM RSWS_TempMonitor_Copy
         WHERE Workshop = '114_空调水机主机'
         AND ElectricEnergy IS NOT NULL
-        <if test="deviceId != null and deviceId != ''">
-            AND DeviceID = #{deviceId}
-        </if>
         <if test="startTime != null">
             AND UpdateTime &gt;= #{startTime}
         </if>
         <if test="endTime != null">
             AND UpdateTime &lt;= #{endTime}
         </if>
-        ) tm
         )
         SELECT
-        DeviceID as deviceId,
-        Name as name,
-        Workshop as workshop,
-        HourStart as hour,
-        CASE
-        WHEN StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL AND EndEnergy &gt;= StartEnergy
-        THEN EndEnergy - StartEnergy
-        ELSE 0
-        END as energyConsumption,
-        StartEnergy as startEnergy,
-        EndEnergy as endEnergy,
-        StartTime as startTime,
-        EndTime as endTime
-        FROM DeviceHourData
-        WHERE StartEnergy IS NOT NULL
-        AND EndEnergy IS NOT NULL
-        AND EndEnergy &gt;= StartEnergy
-        ORDER BY HourStart, DeviceID
+        SUM(ElectricEnergy) as totalElectricEnergy
+        FROM LatestDeviceData
+        WHERE rn = 1
     </select>
 
-    <!-- 查询每日电能消耗数据（查询模式-历史数据） -->
-    <select id="selectDailyEnergyConsumptionQuery" resultType="com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption">
-        WITH DailyBoundaries AS (
-            -- 生成时间范围内的每个日期边界
-            SELECT 
-                CAST(DATEADD(DAY, DATEDIFF(DAY, 0, 
-                    <if test="startTime != null">#{startTime}</if>
-                    <if test="startTime == null">DATEADD(DAY, -7, GETDATE())</if>
-                ) + ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 1, 0) AS DATETIME) as DayStart,
-                CAST(DATEADD(DAY, DATEDIFF(DAY, 0, 
-                    <if test="startTime != null">#{startTime}</if>
-                    <if test="startTime == null">DATEADD(DAY, -7, GETDATE())</if>
-                ) + ROW_NUMBER() OVER (ORDER BY (SELECT NULL)), 0) AS DATETIME) as DayEnd
-            FROM (
+
+
+
+
+    <!--不分页的数据表格，用于优化查询速度 -->
+    <select id="selectHourlyRawData" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
+        SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop
+        FROM RSWS_TempMonitor_Copy
+        WHERE Workshop = '114_空调水机主机'
+        AND ElectricEnergy IS NOT NULL
+        <if test="startTime != null">
+            AND UpdateTime &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND UpdateTime &lt;= #{endTime}
+        </if>
+        ORDER BY Name, UpdateTime DESC
+    </select>
+
+    <!-- 电能消耗卡片 -->
+    <select id="selectEnergyConsumption" resultType="java.lang.Double">
+        <choose>
+            <!-- 日模式：使用日查询的energyConsumption总和 -->
+            <when test="mode != null and mode == 'day'">
+                WITH DailyBoundaries AS (
+                SELECT
+                DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 1,
+                CAST(
+                <if test="startTime != null">#{startTime}</if>
+                <if test="startTime == null">DATEADD(DAY, -7, GETDATE())</if>
+                AS DATE)
+                ) as DayStart,
+                DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)),
+                CAST(
+                <if test="startTime != null">#{startTime}</if>
+                <if test="startTime == null">DATEADD(DAY, -7, GETDATE())</if>
+                AS DATE)
+                ) as DayEnd
+                FROM (
                 SELECT TOP (
-                    DATEDIFF(DAY, 
-                        <if test="startTime != null">#{startTime}</if>
-                        <if test="startTime == null">DATEADD(DAY, -7, GETDATE())</if>, 
-                        <if test="endTime != null">#{endTime}</if>
-                        <if test="endTime == null">GETDATE()</if>
-                    ) + 1
-                ) 1 as num
-                FROM RSWS_TempMonitor_Copy
-            ) Numbers
-        ),
-        DeviceDayData AS (
-            -- 为每个设备和每个日期获取开始和结束时间的记录
-            SELECT 
-                h.DayStart,
-                h.DayEnd,
-                tm.DeviceID,
-                tm.Name,
-                tm.Workshop,
-                -- 日期开始时间以后的最近记录
-                (SELECT TOP 1 ElectricEnergy 
-                 FROM RSWS_TempMonitor_Copy t1
-                 WHERE t1.DeviceID = tm.DeviceID 
-                   AND t1.Workshop = '114_空调水机主机'
-                   AND t1.ElectricEnergy IS NOT NULL 
-                   AND t1.UpdateTime &gt;= h.DayStart
-                 ORDER BY t1.UpdateTime ASC) as StartEnergy,
-                (SELECT TOP 1 UpdateTime 
-                 FROM RSWS_TempMonitor_Copy t1
-                 WHERE t1.DeviceID = tm.DeviceID 
-                   AND t1.Workshop = '114_空调水机主机'
-                   AND t1.ElectricEnergy IS NOT NULL 
-                   AND t1.UpdateTime &gt;= h.DayStart
-                 ORDER BY t1.UpdateTime ASC) as StartTime,
-                -- 获取结束电能数据：如果是今天则用当天最新数据，否则用下一天最早数据
-                CASE 
-                    WHEN CAST(h.DayStart AS DATE) = CAST(GETDATE() AS DATE) THEN
-                        -- 如果是今天，获取当天最新的电能数据
-                        (SELECT TOP 1 ElectricEnergy 
-                         FROM RSWS_TempMonitor_Copy t2
-                         WHERE t2.DeviceID = tm.DeviceID 
-                           AND t2.Workshop = '114_空调水机主机'
-                           AND t2.ElectricEnergy IS NOT NULL 
-                           AND t2.UpdateTime &gt;= h.DayStart
-                           AND t2.UpdateTime &lt; h.DayEnd  -- 在当天范围内
-                         ORDER BY t2.UpdateTime DESC)  -- 按时间降序取最新一条
-                    ELSE
-                        -- 其他日期，获取日期结束后最早的电能数据
-                        (SELECT TOP 1 ElectricEnergy 
-                         FROM RSWS_TempMonitor_Copy t2
-                         WHERE t2.DeviceID = tm.DeviceID 
-                           AND t2.Workshop = '114_空调水机主机'
-                           AND t2.ElectricEnergy IS NOT NULL 
-                           AND t2.UpdateTime &gt;= h.DayEnd
-                         ORDER BY t2.UpdateTime ASC)
-                END as EndEnergy,
-                -- 获取结束时间：如果是今天则用当天最新时间，否则用下一天最早时间
-                CASE 
-                    WHEN CAST(h.DayStart AS DATE) = CAST(GETDATE() AS DATE) THEN
-                        (SELECT TOP 1 UpdateTime 
-                         FROM RSWS_TempMonitor_Copy t2
-                         WHERE t2.DeviceID = tm.DeviceID 
-                           AND t2.Workshop = '114_空调水机主机'
-                           AND t2.ElectricEnergy IS NOT NULL 
-                           AND t2.UpdateTime &gt;= h.DayStart
-                           AND t2.UpdateTime &lt; h.DayEnd
-                         ORDER BY t2.UpdateTime DESC)
-                    ELSE
-                        (SELECT TOP 1 UpdateTime 
-                         FROM RSWS_TempMonitor_Copy t2
-                         WHERE t2.DeviceID = tm.DeviceID 
-                           AND t2.Workshop = '114_空调水机主机'
-                           AND t2.ElectricEnergy IS NOT NULL 
-                           AND t2.UpdateTime &gt;= h.DayEnd
-                         ORDER BY t2.UpdateTime ASC)
-                END as EndTime
-            FROM DailyBoundaries h
-            CROSS JOIN (
+                DATEDIFF(DAY,
+                <if test="startTime != null">#{startTime}</if>
+                <if test="startTime == null">DATEADD(DAY, -7, GETDATE())</if>,
+                <if test="endTime != null">#{endTime}</if>
+                <if test="endTime == null">GETDATE()</if>
+                ) + 1
+                ) 1 as DummyColumn
+                FROM sys.objects
+                ) dummy
+                ),
+                DeviceDailyData AS (
+                SELECT
+                DayStart,
+                SUM(
+                CASE
+                WHEN tm_start.ElectricEnergy IS NOT NULL
+                THEN tm_start.ElectricEnergy
+                ELSE 0
+                END
+                ) as StartEnergy,
+                SUM(
+                CASE
+                WHEN tm_end.ElectricEnergy IS NOT NULL
+                THEN tm_end.ElectricEnergy
+                ELSE 0
+                END
+                ) as EndEnergy
+                FROM DailyBoundaries db
+                CROSS JOIN (
                 SELECT DISTINCT DeviceID, Name, Workshop
                 FROM RSWS_TempMonitor_Copy
                 WHERE Workshop = '114_空调水机主机'
-                  AND ElectricEnergy IS NOT NULL
-                  <if test="deviceId != null and deviceId != ''">
-                      AND DeviceID = #{deviceId}
-                  </if>
-                  <if test="startTime != null">
-                      AND UpdateTime &gt;= #{startTime}
-                  </if>
-                  <if test="endTime != null">
-                      AND UpdateTime &lt;= #{endTime}
-                  </if>
-            ) tm
-        )
-        SELECT 
-            DeviceID as deviceId,
-            Name as name,
-            Workshop as workshop,
-            DayStart as day,
-            CASE 
+                AND ElectricEnergy IS NOT NULL
+                <if test="startTime != null">
+                    AND UpdateTime &gt;= #{startTime}
+                </if>
+                <if test="endTime != null">
+                    AND UpdateTime &lt;= #{endTime}
+                </if>
+                ) devices
+                LEFT JOIN RSWS_TempMonitor_Copy tm_start ON (
+                tm_start.DeviceID = devices.DeviceID
+                AND tm_start.Name = devices.Name
+                AND tm_start.Workshop = '114_空调水机主机'
+                AND tm_start.ElectricEnergy IS NOT NULL
+                AND tm_start.UpdateTime = (
+                SELECT TOP 1 UpdateTime
+                FROM RSWS_TempMonitor_Copy inner_tm
+                WHERE inner_tm.DeviceID = devices.DeviceID
+                AND inner_tm.Name = devices.Name
+                AND inner_tm.Workshop = '114_空调水机主机'
+                AND inner_tm.UpdateTime &gt;= db.DayStart
+                AND inner_tm.ElectricEnergy IS NOT NULL
+                ORDER BY inner_tm.UpdateTime ASC
+                )
+                )
+                LEFT JOIN RSWS_TempMonitor_Copy tm_end ON (
+                tm_end.DeviceID = devices.DeviceID
+                AND tm_end.Name = devices.Name
+                AND tm_end.Workshop = '114_空调水机主机'
+                AND tm_end.ElectricEnergy IS NOT NULL
+                AND tm_end.UpdateTime = (
+                SELECT TOP 1 UpdateTime
+                FROM RSWS_TempMonitor_Copy inner_tm
+                WHERE inner_tm.DeviceID = devices.DeviceID
+                AND inner_tm.Name = devices.Name
+                AND inner_tm.Workshop = '114_空调水机主机'
+                AND inner_tm.UpdateTime &gt;= db.DayEnd
+                AND inner_tm.ElectricEnergy IS NOT NULL
+                ORDER BY inner_tm.UpdateTime ASC
+                )
+                )
+                GROUP BY DayStart
+                )
+                SELECT
+                COALESCE(SUM(
+                CASE
                 WHEN StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL AND EndEnergy &gt;= StartEnergy
                 THEN EndEnergy - StartEnergy
                 ELSE 0
-            END as energyConsumption,
-            StartEnergy as startEnergy,
-            EndEnergy as endEnergy,
-            StartTime as startTime,
-            EndTime as endTime
-        FROM DeviceDayData
-        WHERE StartEnergy IS NOT NULL 
-          AND EndEnergy IS NOT NULL
-          AND EndEnergy &gt;= StartEnergy
-        ORDER BY DayStart, DeviceID
+                END
+                ), 0) AS totalConsumption
+                FROM DeviceDailyData
+                WHERE StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL
+            </when>
+
+            <!-- 小时模式：使用改进的设备边界查询逻辑 -->
+            <otherwise>
+                WITH DeviceList AS (
+                SELECT DISTINCT DeviceID, Name
+                FROM RSWS_TempMonitor_Copy
+                WHERE Workshop = '114_空调水机主机'
+                AND ElectricEnergy IS NOT NULL
+                ),
+                DeviceBounds AS (
+                SELECT
+                dl.DeviceID,
+                dl.Name,
+                <choose>
+                    <when test="startTime != null">#{startTime}</when>
+                    <otherwise>DATEADD(HOUR,-24,GETDATE())</otherwise>
+                </choose> AS StartTime,
+
+                -- 为每个设备找到结束时间以后最近的一条数据的时间，如果没有则用 endTime 内的最近一条时间
+                COALESCE(
+                (SELECT TOP 1 UpdateTime
+                FROM RSWS_TempMonitor_Copy t
+                WHERE t.Workshop = '114_空调水机主机'
+                AND t.DeviceID = dl.DeviceID
+                AND t.Name = dl.Name
+                AND t.ElectricEnergy IS NOT NULL
+                <if test="endTime != null">
+                    AND t.UpdateTime &gt; #{endTime}
+                </if>
+                ORDER BY t.UpdateTime ASC),
+                (SELECT TOP 1 UpdateTime
+                FROM RSWS_TempMonitor_Copy t
+                WHERE t.Workshop = '114_空调水机主机'
+                AND t.DeviceID = dl.DeviceID
+                AND t.Name = dl.Name
+                AND t.ElectricEnergy IS NOT NULL
+                <if test="startTime != null">
+                    AND t.UpdateTime &gt;= #{startTime}
+                </if>
+                <if test="endTime != null">
+                    AND t.UpdateTime &lt;= #{endTime}
+                </if>
+                ORDER BY t.UpdateTime DESC)
+                ) AS ActualEndTime
+                FROM DeviceList dl
+                ),
+                DeviceEnergyData AS (
+                SELECT
+                db.DeviceID,
+                db.Name,
+                -- 获取开始时间的电能值
+                (SELECT TOP 1 ElectricEnergy
+                FROM RSWS_TempMonitor_Copy t_start
+                WHERE t_start.Workshop = '114_空调水机主机'
+                AND t_start.DeviceID = db.DeviceID
+                AND t_start.Name = db.Name
+                AND t_start.UpdateTime &gt;= db.StartTime
+                AND t_start.ElectricEnergy IS NOT NULL
+                ORDER BY t_start.UpdateTime ASC) AS StartEnergy,
+
+                -- 获取结束时间的电能值
+                (SELECT TOP 1 ElectricEnergy
+                FROM RSWS_TempMonitor_Copy t_end
+                WHERE t_end.Workshop = '114_空调水机主机'
+                AND t_end.DeviceID = db.DeviceID
+                AND t_end.Name = db.Name
+                AND t_end.UpdateTime &lt;= db.ActualEndTime
+                AND t_end.ElectricEnergy IS NOT NULL
+                ORDER BY t_end.UpdateTime DESC) AS EndEnergy
+                FROM DeviceBounds db
+                WHERE db.ActualEndTime IS NOT NULL
+                )
+                SELECT
+                COALESCE(SUM(
+                CASE
+                WHEN StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL AND EndEnergy &gt;= StartEnergy
+                THEN EndEnergy - StartEnergy
+                ELSE 0
+                END
+                ), 0) AS totalConsumption
+                FROM DeviceEnergyData
+                WHERE StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL
+            </otherwise>
+        </choose>
     </select>
-    
-    <!-- 批量按 Id 游标加载一年窗口内的数据 -->
-    <select id="selectBatchByIdRange" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
-        SELECT TOP (#{limit})
-            Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop
-        FROM RSWS_TempMonitor_Copy
-        <where>
-            AND Workshop = #{workshop}
-            <if test="startTime != null">
-                AND UpdateTime &gt;= #{startTime}
-            </if>
-            <if test="endTime != null">
-                AND UpdateTime &lt;= #{endTime}
-            </if>
-            <if test="lastId != null">
-                AND Id &gt; #{lastId}
-            </if>
-        </where>
-        ORDER BY Id ASC
-    </select>
+    <!-- 数据表格 -->
 
     <select id="selectPageByCondition" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
         SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop
         FROM RSWS_TempMonitor_Copy
-        <where>
-            AND Workshop = '114_空调水机主机'
-            <if test="deviceId != null and deviceId != ''">
-                AND DeviceID LIKE CONCAT('%', #{deviceId}, '%')
-            </if>
-            <if test="name != null and name != ''">
-                AND Name LIKE CONCAT('%', #{name}, '%')
-            </if>
-            <if test="startTime != null">
-                AND UpdateTime &gt;= #{startTime}
-            </if>
-            <if test="endTime != null">
-                AND UpdateTime &lt;= #{endTime}
-            </if>
-        </where>
-        <if test="sortField != null and sortField != ''">
-            ORDER BY ${sortField}
-            <if test="sortOrder != null and sortOrder != ''">
-                ${sortOrder}
-            </if>
+        WHERE Workshop = '114_空调水机主机'
+        <if test="startTime != null">
+            AND UpdateTime &gt;= #{startTime}
         </if>
-        <if test="sortField == null or sortField == ''">
-            ORDER BY UpdateTime DESC
+        <if test="endTime != null">
+            AND UpdateTime &lt;= #{endTime}
         </if>
+        <if test="deviceId != null and deviceId != ''">
+            AND DeviceID LIKE CONCAT('%', #{deviceId}, '%')
+        </if>
+        <if test="name != null and name != ''">
+            AND Name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        ORDER BY  UpdateTime DESC
     </select>
-
 </mapper>
 

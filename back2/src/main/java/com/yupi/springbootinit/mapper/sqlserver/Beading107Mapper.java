@@ -52,6 +52,16 @@ public interface Beading107Mapper extends BaseMapper<TempMonitor> {
             @Param("endTime") Date endTime
     );
 
+    /**
+     * 🔥 查询需要减去的三个嵌套表原始数据
+     *      (Workshop = '105烧结' AND DeviceID = '30107338' AND NodeID = '2')
+     *       (Workshop = '112终检' AND DeviceID = '30107338' AND NodeID = '1')
+     *        (Workshop = '101配料' AND DeviceID = '30107338' AND NodeID = '3
+     */
+    List<TempMonitor> selectNestedTablesRawData(
+            @Param("startTime") Date startTime,
+            @Param("endTime") Date endTime
+    );
 
     /**
      * 电能消耗卡片

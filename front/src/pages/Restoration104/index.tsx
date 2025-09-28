@@ -1,15 +1,15 @@
 import {
   getDailyEnergyConsumptionQueryUsingGET,
-  getEnergyConsumptionUsingGET,
   getHourlyEnergyConsumptionQueryUsingGET,
   getStatisticsUsingGET,
+  getEnergyConsumptionUsingGET,
   queryByConditionUsingPOST
 } from '@/services/SolarBi-front/restoration104Controller';
 // 第10行后：添加import
-import type {ActionType} from '@ant-design/pro-components';
-import {PageContainer} from '@ant-design/pro-components';
+import type {ActionType, ProColumns} from '@ant-design/pro-components';
 import DataTable from './components/DataTable';
 import {getColumns} from './config/columns';
+import {PageContainer} from '@ant-design/pro-components';
 import '@umijs/max';
 import {message} from 'antd';
 import React, {useEffect, useRef, useState} from 'react';
@@ -21,6 +21,7 @@ import DailyPowerChart from './components/DailyPowerChart';
 
 import darkThemeStyles from '@/styles/darkTheme';
 import {pageBackgroundStyles, pageStylesCSS} from '@/styles/pageStyles';
+import { TIME_FORMATS } from './config/timeFormats'; // 🔥 引入时间格式配置
 
 
 // 固定目标车间
@@ -87,18 +88,18 @@ const Restoration104Page: React.FC = () => {
     let endTime;
 
     if (mode === 'hour') {
-      // 小时模式：前端生成最近24小时参数
-      endTime = now.format('YYYY-MM-DD HH:00:00');
-      startTime = now.clone().subtract(24, 'hours').format('YYYY-MM-DD HH:00:00');
+      // 小时模式：前端生成最近N小时参数（N可在配置中调整）
+      endTime = `${now.format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_END}`;
+      startTime = `${now.clone().subtract(TIME_FORMATS.DEFAULT_HOUR_RANGE, 'hours').format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_START}`;
 
       setTrendData([]);
       setChartOptions({});
       loadTrendData(false, startTime, endTime);
       loadEnergyConsumption(startTime, endTime);
     } else { // 'day' mode
-      // 日模式：最近7天
-      endTime = now.format('YYYY-MM-DD HH:mm:ss');
-      startTime = now.clone().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
+      // 日模式：最近N天（N可在配置中调整）
+      endTime = `${now.clone().add(TIME_FORMATS.DAY_END_OFFSET, 'days').format('YYYY-MM-DD')}${TIME_FORMATS.DAY_END}`;
+      startTime = `${now.clone().subtract(TIME_FORMATS.DEFAULT_DAY_RANGE, 'days').format('YYYY-MM-DD')}${TIME_FORMATS.DAY_START}`;
 
       setDailyTrendData([]);
       setDailyChartOptions({});
@@ -257,35 +258,61 @@ const Restoration104Page: React.FC = () => {
   };
   // 处理搜索
   const handleSearch = (values: any) => {
+    // 🔥 分离显示参数和查询参数
+
+    // 显示参数：保持用户的原始选择（选择框显示用）
+    const displayParams: API.TempMonitorQueryRequest = {
+      ...values,
+      current: 1,
+      pageSize: 20,
+    };
+
+    // 查询参数：应用TIME_FORMATS配置（后端查询用）
     const queryParams: API.TempMonitorQueryRequest = {
       ...values,
       current: 1,
       pageSize: 20,
     };
 
-    // 处理时间范围 - 根据当前模式使用不同的时间格式
+    // 处理显示参数的时间格式（不加偏移）
     if (values.startTime) {
       if (currentMode === 'hour') {
-        queryParams.startTime = moment(values.startTime).format('YYYY-MM-DD HH:00:00');
+        displayParams.startTime = `${moment(values.startTime).format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_START}`;
       } else {
-        // 日模式：开始时间使用当天00:00:00
-        queryParams.startTime = moment(values.startTime).format('YYYY-MM-DD 00:00:00');
+        displayParams.startTime = `${moment(values.startTime).format('YYYY-MM-DD')}${TIME_FORMATS.DAY_START}`;
       }
     }
     if (values.endTime) {
       if (currentMode === 'hour') {
-        // 小时模式：改为整点
-        queryParams.endTime = moment(values.endTime).format('YYYY-MM-DD HH:00:00');
+        displayParams.endTime = `${moment(values.endTime).format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_END}`;
       } else {
-        // 日模式：结束时间使用当天23:59:59
-        queryParams.endTime = moment(values.endTime).format('YYYY-MM-DD 23:59:59');
+        // 日模式：显示参数不加偏移
+        displayParams.endTime = `${moment(values.endTime).format('YYYY-MM-DD')}${TIME_FORMATS.DAY_END}`;
       }
     }
 
-    setSearchParams(queryParams);
+    // 处理查询参数的时间格式（加偏移）
+    if (values.startTime) {
+      if (currentMode === 'hour') {
+        queryParams.startTime = `${moment(values.startTime).format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_START}`;
+      } else {
+        queryParams.startTime = `${moment(values.startTime).format('YYYY-MM-DD')}${TIME_FORMATS.DAY_START}`;
+      }
+    }
+    if (values.endTime) {
+      if (currentMode === 'hour') {
+        queryParams.endTime = `${moment(values.endTime).format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_END}`;
+      } else {
+        // 日模式：查询参数加偏移
+        queryParams.endTime = `${moment(values.endTime).clone().add(TIME_FORMATS.DAY_END_OFFSET, 'days').format('YYYY-MM-DD')}${TIME_FORMATS.DAY_END}`;
+      }
+    }
+
+    // 🔥 关键修复：显示参数用于选择框显示（保持用户选择）
+    setSearchParams(displayParams);
     setSelectedWorkshop(values.workshop || '');
 
-    // 更新临时搜索参数用于表格
+    // 查询参数用于实际查询（带偏移）
     setTempSearchParams(queryParams);
 
     // 判断是否为默认时间范围：如果没有指定时间，则为默认模式
@@ -352,13 +379,13 @@ const Restoration104Page: React.FC = () => {
         const now = moment();
 
         if (currentMode === 'hour') {
-          // 小时模式：最近24小时，格式与图表一致
-          requestParams.endTime = now.format('YYYY-MM-DD HH:00:00');
-          requestParams.startTime = now.clone().subtract(24, 'hours').format('YYYY-MM-DD HH:00:00');
+          // 小时模式：最近N小时，格式与图表一致
+          requestParams.endTime = `${now.format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_END}`;
+          requestParams.startTime = `${now.clone().subtract(TIME_FORMATS.DEFAULT_HOUR_RANGE, 'hours').format('YYYY-MM-DD HH')}${TIME_FORMATS.HOUR_START}`;
         } else {
-          // 日模式：最近7天，格式与图表一致
-          requestParams.endTime = now.format('YYYY-MM-DD HH:mm:ss');
-          requestParams.startTime = now.clone().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
+          // 日模式：最近N天，格式与图表一致
+          requestParams.endTime = `${now.clone().add(TIME_FORMATS.DAY_END_OFFSET, 'days').format('YYYY-MM-DD')}${TIME_FORMATS.DAY_END}`;
+          requestParams.startTime = `${now.clone().subtract(TIME_FORMATS.DEFAULT_DAY_RANGE, 'days').format('YYYY-MM-DD')}${TIME_FORMATS.DAY_START}`;
         }
 
         console.log('📊 表格查询使用默认时间范围（与图表一致）:', {
@@ -367,13 +394,8 @@ const Restoration104Page: React.FC = () => {
           endTime: requestParams.endTime
         });
       } else {
-        // 有搜索时间范围，确保时间格式正确（与handleSearch函数一致）
-        if (requestParams.startTime) {
-          requestParams.startTime = moment(requestParams.startTime).format('YYYY-MM-DD HH:mm:ss');
-        }
-        if (requestParams.endTime) {
-          requestParams.endTime = moment(requestParams.endTime).format('YYYY-MM-DD HH:mm:ss');
-        }
+        // 有搜索时间范围，直接使用已格式化的时间（遵循TIME_FORMATS配置）
+        // 🔥 不再重新格式化，保持TIME_FORMATS配置的完整性
 
         console.log('🔍 表格查询使用搜索时间范围:', {
           startTime: requestParams.startTime,
@@ -425,8 +447,8 @@ const Restoration104Page: React.FC = () => {
       const requestParams: any = {
         workshop: targetWorkshop,
         deviceId: undefined,
-        startTime: rawStartTime ? moment(rawStartTime).format('YYYY-MM-DD HH:mm:ss') : undefined,
-        endTime: rawEndTime ? moment(rawEndTime).format('YYYY-MM-DD HH:mm:ss') : undefined,
+        startTime: rawStartTime,  // 🔥 直接使用已格式化的时间（遵循TIME_FORMATS配置）
+        endTime: rawEndTime,      // 🔥 直接使用已格式化的时间（遵循TIME_FORMATS配置）
       };
 
       console.log('请求每日电能消耗数据参数:', requestParams);
@@ -520,17 +542,17 @@ const Restoration104Page: React.FC = () => {
           // 如果有搜索时间范围，优先使用搜索范围
           if (startTime && endTime) {
             adjustedMinTime = moment(startTime).valueOf();
-            adjustedMaxTime = moment(endTime).valueOf();
+            adjustedMaxTime = moment(endTime).subtract(1, 'day').valueOf();
           } else {
-            // 默认模式：使用固定的7天范围
+            // 默认模式：使用配置的天数范围
             const now = moment();
-            adjustedMinTime = now.clone().subtract(7, 'days').valueOf();
+            adjustedMinTime = now.clone().subtract(TIME_FORMATS.DEFAULT_DAY_RANGE, 'days').valueOf();
             adjustedMaxTime = now.clone().add(1, 'days').valueOf();
           }
         } else {
           const now = moment();
           adjustedMaxTime = now.clone().add(1, 'days').valueOf();
-          adjustedMinTime = now.clone().subtract(7, 'days').valueOf();
+          adjustedMinTime = now.clone().subtract(TIME_FORMATS.DEFAULT_DAY_RANGE, 'days').valueOf();
         }
 
         if (isFinite(minValue) && isFinite(maxValue)) {
@@ -830,8 +852,8 @@ const Restoration104Page: React.FC = () => {
       const requestParams: any = {
         workshop: targetWorkshop,
         deviceId: undefined,
-        startTime: rawStartTime ? moment(rawStartTime).format('YYYY-MM-DD HH:mm:ss') : undefined,
-        endTime: rawEndTime ? moment(rawEndTime).format('YYYY-MM-DD HH:mm:ss') : undefined,
+        startTime: rawStartTime,  // 🔥 直接使用已格式化的时间（遵循TIME_FORMATS配置）
+        endTime: rawEndTime,      // 🔥 直接使用已格式化的时间（遵循TIME_FORMATS配置）
       };
 
       console.log('请求每小时电能消耗数据参数:', requestParams);
@@ -942,16 +964,16 @@ const Restoration104Page: React.FC = () => {
             adjustedMinTime = moment(startTime).valueOf();
             adjustedMaxTime = moment(endTime).valueOf();
           } else {
-            // 默认模式：使用固定的24小时范围，确保实时更新时图表不会缩小
+            // 默认模式：使用配置的小时范围，确保实时更新时图表不会缩小
             const now = moment();
-            // 固定显示过去24小时到当前时间后2小时的范围
-            adjustedMinTime = now.clone().subtract(24, 'hours').valueOf();
+            // 固定显示过去N小时到当前时间后2小时的范围
+            adjustedMinTime = now.clone().subtract(TIME_FORMATS.DEFAULT_HOUR_RANGE, 'hours').valueOf();
             adjustedMaxTime = now.clone().add(2, 'hours').valueOf();
           }
         } else {
           const now = moment();
           adjustedMaxTime = now.clone().add(2, 'hours').valueOf();
-          adjustedMinTime = now.clone().subtract(24, 'hours').valueOf();
+          adjustedMinTime = now.clone().subtract(TIME_FORMATS.DEFAULT_HOUR_RANGE, 'hours').valueOf();
         }
 
         if (isFinite(minValue) && isFinite(maxValue)) {

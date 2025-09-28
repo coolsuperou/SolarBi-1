@@ -19,7 +19,6 @@ public interface Beading107Service {
 
 
 
-
     /**
      * 分页查询温湿电能数据（支持多条件查询）
      */

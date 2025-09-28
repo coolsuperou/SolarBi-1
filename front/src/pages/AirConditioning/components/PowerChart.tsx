@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Badge, Space, Spin } from 'antd';
-import { CalendarOutlined, LoadingOutlined } from '@ant-design/icons';
+import { BarChartOutlined, LoadingOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 
 type DarkThemeStyles = {
@@ -19,7 +19,7 @@ type DarkThemeStyles = {
   statisticCard: React.CSSProperties;
 };
 
-interface DailyPowerChartProps {
+interface PowerChartProps {
   chartOptions: any;
   trendData: any[];
   isMobile: boolean;
@@ -28,19 +28,19 @@ interface DailyPowerChartProps {
   loading?: boolean;
 }
 
-const DailyPowerChart: React.FC<DailyPowerChartProps> = ({ chartOptions, trendData, isMobile, isSmallMobile, darkThemeStyles, loading = false }) => {
+const PowerChart: React.FC<PowerChartProps> = ({ chartOptions, trendData, isMobile, isSmallMobile, darkThemeStyles, loading = false }) => {
   return (
     <Card
       title={
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Space>
-            <CalendarOutlined style={{ color: '#00d4ff', filter: 'drop-shadow(0 0 10px rgba(0, 212, 255, 0.6))' }} />
-            <span style={darkThemeStyles.title}>114_空调水机主机 日电能消耗监控</span>
+            <BarChartOutlined style={{ color: '#00d4ff', filter: 'drop-shadow(0 0 10px rgba(0, 212, 255, 0.6))' }} />
+            <span style={darkThemeStyles.title}>114_空调水机主机 实时电能监控</span>
           </Space>
           <Space>
             <Badge
               status="processing"
-              text={<span style={{ fontSize: '12px', color: '#00d4ff', fontWeight: 'bold', textShadow: '0 0 8px rgba(0, 212, 255, 0.6)' }}>日模式</span>}
+              text={<span style={{ fontSize: '12px', color: '#00d4ff', fontWeight: 'bold', textShadow: '0 0 8px rgba(0, 212, 255, 0.6)' }}>实时更新中</span>}
             />
           </Space>
         </div>
@@ -61,18 +61,18 @@ const DailyPowerChart: React.FC<DailyPowerChartProps> = ({ chartOptions, trendDa
             color: '#00d4ff',
             fontSize: isMobile ? (isSmallMobile ? '14px' : '15px') : '16px'
           }}>
-            <Spin 
+            <Spin
               indicator={<LoadingOutlined style={{ fontSize: isMobile ? 32 : 40, color: '#00d4ff' }} spin />}
               size="large"
             />
-            <div style={{ 
-              marginTop: '20px', 
-              fontWeight: 'bold', 
+            <div style={{
+              marginTop: '20px',
+              fontWeight: 'bold',
               fontSize: isMobile ? (isSmallMobile ? '14px' : '15px') : '16px',
               color: '#00d4ff',
               textShadow: '0 0 8px rgba(0, 212, 255, 0.6)'
             }}>
-              正在加载日电能数据...
+              正在加载电能数据...
             </div>
           </div>
         ) : trendData.length > 0 && chartOptions.series ? (
@@ -95,10 +95,10 @@ const DailyPowerChart: React.FC<DailyPowerChartProps> = ({ chartOptions, trendDa
             color: '#999',
             fontSize: isMobile ? (isSmallMobile ? '14px' : '15px') : '16px'
           }}>
-            <div style={{ marginBottom: '20px', fontSize: isMobile ? (isSmallMobile ? '36px' : '42px') : '48px', opacity: 0.3 }}>📅</div>
-            <div style={{ marginBottom: '10px', fontWeight: 'bold', fontSize: isMobile ? (isSmallMobile ? '14px' : '15px') : '16px' }}>暂无日电能数据</div>
+            <div style={{ marginBottom: '20px', fontSize: isMobile ? (isSmallMobile ? '36px' : '42px') : '48px', opacity: 0.3 }}>📊</div>
+            <div style={{ marginBottom: '10px', fontWeight: 'bold', fontSize: isMobile ? (isSmallMobile ? '14px' : '15px') : '16px' }}>暂无电能数据</div>
             <div style={{ fontSize: isMobile ? (isSmallMobile ? '12px' : '13px') : '14px', textAlign: 'center', opacity: 0.7 }}>
-              当前时间范围内没有有效的日电能记录<br/>
+              当前时间范围内没有有效的电能记录<br/>
               请检查数据源或调整时间范围
             </div>
           </div>
@@ -108,4 +108,7 @@ const DailyPowerChart: React.FC<DailyPowerChartProps> = ({ chartOptions, trendDa
   );
 };
 
-export default DailyPowerChart;
+export default PowerChart;
+
+
+

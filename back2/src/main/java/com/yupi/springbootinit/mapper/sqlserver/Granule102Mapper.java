@@ -24,22 +24,7 @@ import java.util.List;
 public interface Granule102Mapper extends BaseMapper<TempMonitor> {
 
     /**
-     * 查询最新数据（显示所有数据）
-     */
-    @Select("SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop " +
-            "FROM RSWS_TempMonitor_Copy WHERE Workshop = '102造粒' ORDER BY UpdateTime DESC")
-    List<TempMonitor> selectLatestData();
-
-    /**
-     * 根据车间查询数据
-     */
-    @Select("SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop " +
-            "FROM RSWS_TempMonitor_Copy WHERE Workshop = '102造粒' ORDER BY UpdateTime DESC")
-    List<TempMonitor> selectByWorkshop(String workshop);
-
-    /**
-     * 分页查询温湿电能数据（支持多条件查询）
-     * 使用XML配置文件实现复杂查询
+     * 表格分页、表格数据
      */
     Page<TempMonitor> selectPageByCondition(Page<TempMonitor> page,
                                             @Param("deviceId") String deviceId,
@@ -51,65 +36,31 @@ public interface Granule102Mapper extends BaseMapper<TempMonitor> {
                                             @Param("sortOrder") String sortOrder);
 
     /**
-     * 查询设备数量统计
-     * 使用XML配置文件实现
+     * 总电能消耗卡片
      */
-    Integer countDevices(@Param("workshop") String workshop,
-                         @Param("startTime") Date startTime,
-                         @Param("endTime") Date endTime);
+    TempMonitorStatistics getStatistics(
+            @Param("workshop") String workshop,
+            @Param("startTime") Date startTime,
+            @Param("endTime") Date endTime
+    );
+
 
     /**
-     * 查询温度、湿度、电能统计信息
-     * 使用XML配置文件实现
+     * 🔥 表格查询不分页用于优化性能
      */
-    TempMonitorStatistics getStatistics(@Param("workshop") String workshop,
-                                        @Param("startTime") Date startTime,
-                                        @Param("endTime") Date endTime);
+    List<TempMonitor> selectHourlyRawData(
+            @Param("workshop") String workshop,
+            @Param("startTime") Date startTime,
+            @Param("endTime") Date endTime
+    );
+
 
     /**
-     * 查询电能趋势数据
-     * 用于绘制电能变化曲线图
+     * 电能消耗卡片
      */
-    List<TempMonitor> selectElectricEnergyTrend(@Param("workshop") String workshop,
-                                                @Param("deviceId") String deviceId,
-                                                @Param("startTime") Date startTime,
-                                                @Param("endTime") Date endTime,
-                                                @Param("limit") Integer limit);
-
-    /**
-     * 查询每小时电能消耗数据（默认模式-实时更新）
-     * 最新小时用最新记录减去开始时间记录
-     */
-    List<HourlyEnergyConsumption> selectHourlyEnergyConsumption(@Param("workshop") String workshop,
-                                                                @Param("deviceId") String deviceId,
-                                                                @Param("startTime") Date startTime,
-                                                                @Param("endTime") Date endTime);
-
-    /**
-     * 查询每小时电能消耗数据（查询模式-历史数据）
-     * 所有小时都用标准逻辑：结束时间以后最近记录 - 开始时间以后最近记录
-     */
-    List<HourlyEnergyConsumption> selectHourlyEnergyConsumptionQuery(@Param("workshop") String workshop,
-                                                                     @Param("deviceId") String deviceId,
-                                                                     @Param("startTime") Date startTime,
-                                                                     @Param("endTime") Date endTime);
-
-    /**
-     * 查询每日电能消耗数据（查询模式-历史数据）
-     * 所有日期都用标准逻辑：结束日期以后最近记录 - 开始日期以后最近记录
-     */
-    List<DailyEnergyConsumption> selectDailyEnergyConsumptionQuery(@Param("workshop") String workshop,
-                                                                   @Param("deviceId") String deviceId,
-                                                                   @Param("startTime") Date startTime,
-                                                                   @Param("endTime") Date endTime);
-
-    /**
-     * 批量按 Id 游标加载一年窗口内的数据（用于构建 Redis 全量缓存）
-     * 使用 keyset pagination：Id > lastId，按 Id 升序取 TOP(limit)
-     */
-    List<TempMonitor> selectBatchByIdRange(@Param("workshop") String workshop,
-                                           @Param("startTime") Date startTime,
-                                           @Param("endTime") Date endTime,
-                                           @Param("lastId") Long lastId,
-                                           @Param("limit") Integer limit);
+    Double selectEnergyConsumption(
+            @Param("startTime") Date startTime,
+            @Param("endTime") Date endTime,
+            @Param("mode") String mode  // 新增模式参数
+    );
 }

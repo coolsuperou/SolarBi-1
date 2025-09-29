@@ -9,7 +9,12 @@ declare namespace API {
     data?: BiResponse;
     message?: string;
   };
-
+// 在其他BaseResponse类型定义附近添加
+  type BaseResponseDouble = {
+    code?: number;
+    data?: number;
+    message?: string;
+  };
   type BaseResponseBoolean = {
     code?: number;
     data?: boolean;

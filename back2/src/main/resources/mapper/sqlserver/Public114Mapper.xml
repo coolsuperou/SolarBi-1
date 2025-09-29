@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yupi.springbootinit.mapper.sqlserver.Public114Mapper">
+
+
+
+ <!-- 总电能消耗卡片 -->
+    <select id="getStatistics" resultType="com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics">
+        WITH LatestDeviceData AS (
+            SELECT 
+                Name,
+                ElectricEnergy,
+                ROW_NUMBER() OVER (PARTITION BY Name ORDER BY UpdateTime DESC) as rn
+            FROM RSWS_TempMonitor_Copy
+            WHERE Workshop = '114公共'
+                AND ElectricEnergy IS NOT NULL
+                <if test="startTime != null">
+                    AND UpdateTime &gt;= #{startTime}
+                </if>
+                <if test="endTime != null">
+                    AND UpdateTime &lt;= #{endTime}
+                </if>
+        )
+        SELECT
+            SUM(ElectricEnergy) as totalElectricEnergy
+        FROM LatestDeviceData
+        WHERE rn = 1
+    </select>
+
+
+
+
+
+    <!--不分页的数据表格，用于优化查询速度 -->
+    <select id="selectHourlyRawData" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
+        SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop
+        FROM RSWS_TempMonitor_Copy
+        WHERE Workshop = '114公共'
+        AND ElectricEnergy IS NOT NULL
+        <if test="startTime != null">
+            AND UpdateTime &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND UpdateTime &lt;= #{endTime}
+        </if>
+        ORDER BY Name, UpdateTime DESC
+    </select>
+
+    <!-- 电能消耗卡片 -->
+    <select id="selectEnergyConsumption" resultType="java.lang.Double">
+        <choose>
+            <!-- 日模式：使用日查询的energyConsumption总和 -->
+            <when test="mode != null and mode == 'day'">
+                WITH DailyBoundaries AS (
+                SELECT
+                DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 1,
+                CAST(
+                <if test="startTime != null">#{startTime}</if>
+                <if test="startTime == null">DATEADD(DAY, -7, GETDATE())</if>
+                AS DATE)
+                ) as DayStart,
+                DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)),
+                CAST(
+                <if test="startTime != null">#{startTime}</if>
+                <if test="startTime == null">DATEADD(DAY, -7, GETDATE())</if>
+                AS DATE)
+                ) as DayEnd
+                FROM (
+                SELECT TOP (
+                DATEDIFF(DAY,
+                <if test="startTime != null">#{startTime}</if>
+                <if test="startTime == null">DATEADD(DAY, -7, GETDATE())</if>,
+                <if test="endTime != null">#{endTime}</if>
+                <if test="endTime == null">GETDATE()</if>
+                ) + 1
+                ) 1 as DummyColumn
+                FROM sys.objects
+                ) dummy
+                ),
+                DeviceDailyData AS (
+                SELECT
+                DayStart,
+                SUM(
+                CASE
+                WHEN tm_start.ElectricEnergy IS NOT NULL
+                THEN tm_start.ElectricEnergy
+                ELSE 0
+                END
+                ) as StartEnergy,
+                SUM(
+                CASE
+                WHEN tm_end.ElectricEnergy IS NOT NULL
+                THEN tm_end.ElectricEnergy
+                ELSE 0
+                END
+                ) as EndEnergy
+                FROM DailyBoundaries db
+                CROSS JOIN (
+                SELECT DISTINCT DeviceID, Name, Workshop
+                FROM RSWS_TempMonitor_Copy
+                WHERE Workshop = '114公共'
+                AND ElectricEnergy IS NOT NULL
+                <if test="startTime != null">
+                    AND UpdateTime &gt;= #{startTime}
+                </if>
+                <if test="endTime != null">
+                    AND UpdateTime &lt;= #{endTime}
+                </if>
+                ) devices
+                LEFT JOIN RSWS_TempMonitor_Copy tm_start ON (
+                tm_start.DeviceID = devices.DeviceID
+                AND tm_start.Name = devices.Name
+                AND tm_start.Workshop = '114公共'
+                AND tm_start.ElectricEnergy IS NOT NULL
+                AND tm_start.UpdateTime = (
+                SELECT TOP 1 UpdateTime
+                FROM RSWS_TempMonitor_Copy inner_tm
+                WHERE inner_tm.DeviceID = devices.DeviceID
+                AND inner_tm.Name = devices.Name
+                AND inner_tm.Workshop = '114公共'
+                AND inner_tm.UpdateTime &gt;= db.DayStart
+                AND inner_tm.ElectricEnergy IS NOT NULL
+                ORDER BY inner_tm.UpdateTime ASC
+                )
+                )
+                LEFT JOIN RSWS_TempMonitor_Copy tm_end ON (
+                tm_end.DeviceID = devices.DeviceID
+                AND tm_end.Name = devices.Name
+                AND tm_end.Workshop = '114公共'
+                AND tm_end.ElectricEnergy IS NOT NULL
+                AND tm_end.UpdateTime = (
+                SELECT TOP 1 UpdateTime
+                FROM RSWS_TempMonitor_Copy inner_tm
+                WHERE inner_tm.DeviceID = devices.DeviceID
+                AND inner_tm.Name = devices.Name
+                AND inner_tm.Workshop = '114公共'
+                AND inner_tm.UpdateTime &gt;= db.DayEnd
+                AND inner_tm.ElectricEnergy IS NOT NULL
+                ORDER BY inner_tm.UpdateTime ASC
+                )
+                )
+                GROUP BY DayStart
+                )
+                SELECT
+                COALESCE(SUM(
+                CASE
+                WHEN StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL AND EndEnergy &gt;= StartEnergy
+                THEN EndEnergy - StartEnergy
+                ELSE 0
+                END
+                ), 0) AS totalConsumption
+                FROM DeviceDailyData
+                WHERE StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL
+            </when>
+
+            <!-- 小时模式：使用改进的设备边界查询逻辑 -->
+            <otherwise>
+                WITH DeviceList AS (
+                SELECT DISTINCT DeviceID, Name
+                FROM RSWS_TempMonitor_Copy
+                WHERE Workshop = '114公共'
+                AND ElectricEnergy IS NOT NULL
+                ),
+                DeviceBounds AS (
+                SELECT
+                dl.DeviceID,
+                dl.Name,
+                <choose>
+                    <when test="startTime != null">#{startTime}</when>
+                    <otherwise>DATEADD(HOUR,-24,GETDATE())</otherwise>
+                </choose> AS StartTime,
+
+                -- 为每个设备找到结束时间以后最近的一条数据的时间，如果没有则用 endTime 内的最近一条时间
+                COALESCE(
+                (SELECT TOP 1 UpdateTime
+                FROM RSWS_TempMonitor_Copy t
+                WHERE t.Workshop = '114公共'
+                AND t.DeviceID = dl.DeviceID
+                AND t.Name = dl.Name
+                AND t.ElectricEnergy IS NOT NULL
+                <if test="endTime != null">
+                    AND t.UpdateTime &gt; #{endTime}
+                </if>
+                ORDER BY t.UpdateTime ASC),
+                (SELECT TOP 1 UpdateTime
+                FROM RSWS_TempMonitor_Copy t
+                WHERE t.Workshop = '114公共'
+                AND t.DeviceID = dl.DeviceID
+                AND t.Name = dl.Name
+                AND t.ElectricEnergy IS NOT NULL
+                <if test="startTime != null">
+                    AND t.UpdateTime &gt;= #{startTime}
+                </if>
+                <if test="endTime != null">
+                    AND t.UpdateTime &lt;= #{endTime}
+                </if>
+                ORDER BY t.UpdateTime DESC)
+                ) AS ActualEndTime
+                FROM DeviceList dl
+                ),
+                DeviceEnergyData AS (
+                SELECT
+                db.DeviceID,
+                db.Name,
+                -- 获取开始时间的电能值
+                (SELECT TOP 1 ElectricEnergy
+                FROM RSWS_TempMonitor_Copy t_start
+                WHERE t_start.Workshop = '114公共'
+                AND t_start.DeviceID = db.DeviceID
+                AND t_start.Name = db.Name
+                AND t_start.UpdateTime &gt;= db.StartTime
+                AND t_start.ElectricEnergy IS NOT NULL
+                ORDER BY t_start.UpdateTime ASC) AS StartEnergy,
+
+                -- 获取结束时间的电能值
+                (SELECT TOP 1 ElectricEnergy
+                FROM RSWS_TempMonitor_Copy t_end
+                WHERE t_end.Workshop = '114公共'
+                AND t_end.DeviceID = db.DeviceID
+                AND t_end.Name = db.Name
+                AND t_end.UpdateTime &lt;= db.ActualEndTime
+                AND t_end.ElectricEnergy IS NOT NULL
+                ORDER BY t_end.UpdateTime DESC) AS EndEnergy
+                FROM DeviceBounds db
+                WHERE db.ActualEndTime IS NOT NULL
+                )
+                SELECT
+                COALESCE(SUM(
+                CASE
+                WHEN StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL AND EndEnergy &gt;= StartEnergy
+                THEN EndEnergy - StartEnergy
+                ELSE 0
+                END
+                ), 0) AS totalConsumption
+                FROM DeviceEnergyData
+                WHERE StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL
+            </otherwise>
+        </choose>
+    </select>
+    <!-- 数据表格 -->
+
+    <select id="selectPageByCondition" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
+        SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop
+        FROM RSWS_TempMonitor_Copy
+        WHERE Workshop = '114公共'
+        <if test="startTime != null">
+            AND UpdateTime &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND UpdateTime &lt;= #{endTime}
+        </if>
+        <if test="deviceId != null and deviceId != ''">
+            AND DeviceID LIKE CONCAT('%', #{deviceId}, '%')
+        </if>
+        <if test="name != null and name != ''">
+            AND Name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        ORDER BY  UpdateTime DESC
+    </select>
+</mapper>

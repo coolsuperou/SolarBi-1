@@ -37,40 +37,44 @@ html.monthly-energy-page,
   background: linear-gradient(135deg, #0a1929 0%, #1a237e 50%, #000051 100%);
   color: #ffffff;
   min-height: 100vh;
-  padding: 20px;
+  padding: 0;
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
-  gap: 20px;
 }
 
 .page-title {
   text-align: center;
   color: #00d4ff;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
-  padding: 0;
+  padding: 15px 20px;
   margin: 0;
-  text-shadow: 0 0 15px rgba(0, 212, 255, 0.8), 0 0 30px rgba(0, 212, 255, 0.4);
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, #0a1929 0%, #1a237e 50%, #000051 100%);
+  box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
   flex-shrink: 0;
-  letter-spacing: 2px;
 }
 
 /* 查询区域 */
 .query-section {
-  background: rgba(10, 25, 41, 0.6);
-  border: 3px solid #00d4ff;
-  border-radius: 12px;
-  padding: 20px 30px;
+  background: rgba(10, 25, 41, 0.95);
+  border-bottom: 2px solid #00d4ff;
+  padding: 15px 20px;
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 30px;
-  box-shadow: 0 0 30px rgba(0, 212, 255, 0.6),
-              inset 0 0 20px rgba(0, 212, 255, 0.1);
+  gap: 20px;
+  box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
+  position: sticky;
+  top: 63px;
+  z-index: 99;
   flex-shrink: 0;
 }
 
@@ -83,24 +87,19 @@ html.monthly-energy-page,
 .query-label {
   color: #00d4ff;
   font-weight: 600;
-  font-size: 15px;
 }
 
 .query-select {
-  background: rgba(10, 25, 41, 0.8);
-  border: 2px solid #00d4ff;
-  border-radius: 6px;
+  background: rgba(26, 35, 126, 0.8);
+  border: 1px solid #00d4ff;
+  border-radius: 4px;
   color: #ffffff;
-  padding: 10px 16px;
+  padding: 8px 12px;
   outline: none;
-  font-size: 14px;
-  min-width: 100px;
-  cursor: pointer;
 }
 
 .query-select:focus {
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
-  border-color: #00d4ff;
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
 }
 
 .query-select option {
@@ -110,25 +109,24 @@ html.monthly-energy-page,
 
 /* 查询按钮 */
 .query-button {
-  background: #00d4ff;
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
   border: 2px solid #00d4ff;
   border-radius: 8px;
-  color: #0a1929;
+  color: #fff;
   font-weight: bold;
-  padding: 10px 30px;
+  padding: 8px 24px;
   cursor: pointer;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
-  text-shadow: none;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
   transition: all 0.3s ease;
   outline: none;
-  font-size: 15px;
-  letter-spacing: 1px;
+  font-size: 14px;
 }
 
 .query-button:hover {
-  background: #00b8d4;
-  box-shadow: 0 0 30px rgba(0, 212, 255, 0.9);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #0099cc 0%, #00d4ff 100%);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.7);
+  transform: translateY(-2px);
 }
 
 .query-button:active {
@@ -143,12 +141,12 @@ html.monthly-energy-page,
 
 /* 表格容器 */
 .table-container {
-  background: rgba(10, 25, 41, 0.6);
-  border: 3px solid #00d4ff;
+  background: rgba(10, 25, 41, 0.9);
+  border: 2px solid #00d4ff;
+  border-top: none;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 0 40px rgba(0, 212, 255, 0.7),
-              inset 0 0 30px rgba(0, 212, 255, 0.1);
+  box-shadow: 0 0 25px rgba(0, 212, 255, 0.4);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -178,13 +176,30 @@ html.monthly-energy-page,
 
 .data-table th,
 .data-table td {
-  border: 1px solid rgba(0, 212, 255, 0.25);
-  padding: 10px 8px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  padding: 8px;
   text-align: center;
   white-space: nowrap;
 }
 
-/* 🎯 表头固定在表格顶部 */
+/* 表格四个角的圆角效果 */
+.data-table thead tr:first-child th:first-child {
+  border-top-left-radius: 10px;
+}
+
+.data-table thead tr:first-child th:last-child {
+  border-top-right-radius: 10px;
+}
+
+.data-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 10px;
+}
+
+.data-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 10px;
+}
+
+/* 🎯 表头固定在查询区域下方 */
 .monthly-energy-container .data-table thead {
   position: sticky;
   top: 0;
@@ -192,37 +207,36 @@ html.monthly-energy-page,
 }
 
 .monthly-energy-container .data-table thead th {
-  background: rgba(10, 25, 41, 0.95) !important;
+  background: #0a1929 !important;
   color: #00d4ff !important;
   font-weight: 700;
   position: sticky;
   top: 0;
   z-index: 50;
-  border: 1px solid rgba(0, 212, 255, 0.4) !important;
-  padding: 12px 8px !important;
+  border: 1px solid #00d4ff !important;
 }
 
 /* ✅ 左上角"车间"列：既固定在左侧，也固定在顶部 */
 .monthly-energy-container .data-table thead th.info-header {
-  background: rgba(10, 25, 41, 0.95) !important;
-  border-right: 2px solid rgba(0, 212, 255, 0.6) !important;
+  background: #0a1929 !important;
+  border-right: 2px solid #00d4ff !important;
   color: #00d4ff !important;
   font-weight: 700 !important;
-  text-align: center !important;
+  text-align: left !important;
   position: sticky !important;
   left: 0 !important;
   top: 0 !important;
   z-index: 60 !important;
   min-width: 150px;
   max-width: 150px;
-  padding: 12px !important;
-  box-shadow: 2px 0 8px rgba(0, 212, 255, 0.4);
+  padding: 8px 12px !important;
+  box-shadow: 2px 0 5px rgba(0, 212, 255, 0.3);
 }
 
 /* 信息列数据单元格（tbody中的"车间"列） */
 .monthly-energy-container table.data-table tbody tr td.info-cell {
-  background: rgba(10, 25, 41, 0.9) !important;
-  border-right: 2px solid rgba(0, 212, 255, 0.6) !important;
+  background: #0a1929 !important;
+  border-right: 2px solid #00d4ff !important;
   color: #00d4ff !important;
   font-weight: 600;
   text-align: left !important;
@@ -231,17 +245,16 @@ html.monthly-energy-page,
   z-index: 10 !important;
   min-width: 150px;
   max-width: 150px;
-  padding: 10px 12px !important;
-  box-shadow: 2px 0 8px rgba(0, 212, 255, 0.4) !important;
+  padding: 8px 12px !important;
+  box-shadow: 2px 0 5px rgba(0, 212, 255, 0.3) !important;
 }
 
 /* 数据单元格 */
 .data-cell {
-  background: rgba(10, 25, 41, 0.4);
+  background: rgba(10, 25, 41, 0.3);
   color: #ffffff;
-  min-width: 85px;
+  min-width: 80px;
   transition: background-color 0.2s ease;
-  font-size: 13px;
 }
 
 .data-cell:hover {
@@ -257,20 +270,20 @@ html.monthly-energy-page,
 
 /* 合计行 */
 .total-row {
-  background: rgba(10, 25, 41, 0.5) !important;
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 255, 136, 0.2)) !important;
 }
 
 .total-row td {
-  color: #ffffff !important;
+  color: #00ff88 !important;
   font-weight: 700;
-  border-top: 2px solid rgba(0, 212, 255, 0.4);
+  border-top: 2px solid #00ff88;
 }
 
 .monthly-energy-container table.data-table tbody tr.total-row td.info-cell {
-  background: rgba(10, 25, 41, 0.9) !important;
-  border-right: 2px solid rgba(0, 212, 255, 0.6) !important;
-  color: #00d4ff !important;
-  box-shadow: 2px 0 8px rgba(0, 212, 255, 0.4) !important;
+  background: #0a1929 !important;
+  border-right: 2px solid #00ff88 !important;
+  color: #00ff88 !important;
+  box-shadow: 2px 0 5px rgba(0, 255, 136, 0.4) !important;
   position: sticky !important;
   left: 0 !important;
   z-index: 15 !important;
@@ -283,35 +296,36 @@ html.monthly-energy-page,
 }
 
 /* 🔥 滚动条样式 - 只显示底部横向滚动条 */
-.table-wrapper {
+.table-container {
   scrollbar-width: thin !important;
-  scrollbar-color: #00d4ff rgba(10, 25, 41, 0.3) !important;
+  scrollbar-color: #00d4ff rgba(10, 25, 41, 0.8) !important;
 }
 
-.table-wrapper::-webkit-scrollbar {
-  width: 0 !important;
-  height: 14px !important;
+.table-container::-webkit-scrollbar {
+  display: block !important;
+  width: 0 !important; /* 隐藏垂直滚动条 */
+  height: 12px !important; /* 保留横向滚动条 */
 }
 
-.table-wrapper::-webkit-scrollbar-track {
-  background: rgba(10, 25, 41, 0.8) !important;
-  border-radius: 6px !important;
-  margin: 0 10px;
+.table-container::-webkit-scrollbar-track {
+  display: block !important;
+  background: rgba(10, 25, 41, 0.5) !important;
+  border-radius: 4px !important;
 }
 
-.table-wrapper::-webkit-scrollbar-thumb {
+.table-container::-webkit-scrollbar-thumb {
+  display: block !important;
   background: #00d4ff !important;
-  border-radius: 6px !important;
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.8),
-              inset 0 0 5px rgba(255, 255, 255, 0.2) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.6) !important;
 }
 
-.table-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #00e5ff !important;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 1),
-              inset 0 0 8px rgba(255, 255, 255, 0.3) !important;
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #00ff88 !important;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.8) !important;
 }
 
-.table-wrapper::-webkit-scrollbar-corner {
-  background: transparent !important;
+.table-container::-webkit-scrollbar-corner {
+  display: block !important;
+  background: rgba(10, 25, 41, 0.5) !important;
 }

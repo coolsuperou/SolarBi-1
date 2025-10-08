@@ -1,0 +1,16 @@
+{
+  "id": "snapshot_1759798808094_nvnnwwmzs",
+  "approvalId": "approval_1759798808077_xaywi5xxo",
+  "approvalTitle": "月度能耗动态查询 - 设计文档",
+  "version": 1,
+  "timestamp": "2025-10-07T01:00:08.094Z",
+  "trigger": "initial",
+  "status": "pending",
+  "content": "# Design Document\r\n\r\n## Overview\r\n\r\n月度能耗动态查询功能是对现有月度统计功能的重构，核心改进是**动态识别车间**而非使用硬编码列表。系统将自动查询数据库获取该月所有产生能耗数据的车间，按名称排序后展示完整的月度能耗统计表。\r\n\r\n## Code Reuse Analysis\r\n\r\n### Existing Components to Leverage\r\n- **EnergyCalculationUtils**: 复用 `calculateDailyEnergyFromRawData()` 方法进行日能耗计算\r\n- **EnergyTimeConfig**: 复用时间配置（7:00-次日6:59）\r\n- **MonthlyEnergyStatistics DTO**: 复用现有数据传输对象\r\n- **前端样式**: 复用 index.less 中的科技蓝主题样式\r\n\r\n### Integration Points\r\n- **数据库**: 查询 `RSWS_TempMonitor_Copy` 表\r\n- **Mapper层**: 新增动态车间查询SQL\r\n- **API接口**: 修改返回数据结构，包含车间列表\r\n\r\n## Architecture\r\n\r\n采用经典的三层架构，通过动态查询实现车间列表的自动识别：\r\n\r\n```mermaid\r\ngraph TD\r\n    A[前端页面] -->|HTTP GET| B[Controller]\r\n    B -->|调用| C[Service]\r\n    C -->|查询车间列表| D[Mapper - selectAvailableWorkshops]\r\n    C -->|查询原始数据| E[Mapper - selectMonthlyRawData]\r\n    D -->|返回| F[车间列表]\r\n    E -->|返回| G[TempMonitor数据]\r\n    F -->|遍历| H[EnergyCalculationUtils]\r\n    G -->|传入| H\r\n    H -->|计算| I[DailyEnergyConsumption]\r\n    I -->|聚合| J[MonthlyEnergyStatistics]\r\n    J -->|返回| A\r\n```\r\n\r\n### Modular Design Principles\r\n- **Single File Responsibility**: Mapper/Service/Controller/前端组件各司其职\r\n- **代码复用**: 最大化利用现有工具类和配置\r\n- **动态查询**: 消除硬编码，提升可维护性\r\n\r\n## Components and Interfaces\r\n\r\n### 后端组件\r\n\r\n#### 1. MonthlyStatisticsMapper\r\n新增方法：\r\n```java\r\nList<String> selectAvailableWorkshops(@Param(\"startTime\") Date startTime,\r\n                                      @Param(\"endTime\") Date endTime);\r\n```\r\n\r\n#### 2. MonthlyEnergyStatistics DTO\r\n新增字段：\r\n```java\r\nprivate List<String> workshopList; // 车间列表（按顺序）\r\n```\r\n\r\n#### 3. MonthlyStatisticsServiceImpl\r\n关键变更：\r\n```java\r\n// 删除： private static final List<String> WORKSHOPS = ...\r\n\r\n// 新增：动态查询\r\nList<String> workshops = monthlyStatisticsMapper.selectAvailableWorkshops(\r\n    monthStart, monthEnd);\r\nworkshops.sort(Comparator.naturalOrder());\r\nstatistics.setWorkshopList(workshops);\r\n```\r\n\r\n### 前端组件\r\n\r\n#### 4. MonthlyEnergyPage\r\n关键变更：\r\n```typescript\r\n// 删除： const workshops = [\"空调水机主机\", ...]\r\n\r\n// 新增：从后端获取\r\nconst workshops = data?.workshopList || [];\r\n```\r\n\r\n## Data Models\r\n\r\n### MonthlyEnergyStatistics (扩展)\r\n```java\r\n{\r\n    year: Integer,\r\n    month: Integer,\r\n    daysInMonth: Integer,\r\n    workshopList: List<String>,          // 🔥 新增\r\n    workshopDailyData: Map<String, List<Double>>,\r\n    workshopMonthlyTotal: Map<String, Double>,\r\n    dailyTotal: List<Double>,\r\n    monthlyTotal: Double\r\n}\r\n```\r\n\r\n## Error Handling\r\n\r\n1. **该月无车间数据**: 返回空列表，前端显示\"暂无数据\"\r\n2. **数据库查询失败**: 返回500错误，前端显示错误提示\r\n3. **某车间无有效数据**: 该车间行显示全\"-\"\r\n\r\n## Testing Strategy\r\n\r\n- **单元测试**: 测试动态车间查询、排序、空数据处理\r\n- **集成测试**: 测试完整流程、不同月份、无数据场景\r\n- **端到端测试**: 验证表格展示、数据准确性、交互效果\r\n\r\n",
+  "fileStats": {
+    "size": 3520,
+    "lines": 112,
+    "lastModified": "2025-10-07T00:59:58.926Z"
+  },
+  "comments": []
+}

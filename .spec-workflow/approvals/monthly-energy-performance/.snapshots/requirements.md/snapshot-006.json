@@ -1,0 +1,16 @@
+{
+  "id": "snapshot_1759827903906_k5md853or",
+  "approvalId": "approval_1759827824387_5pv3chln5",
+  "approvalTitle": "月度能耗统计性能优化 - 需求文档v5（极简版）",
+  "version": 6,
+  "timestamp": "2025-10-07T09:05:03.906Z",
+  "trigger": "approved",
+  "status": "pending",
+  "content": "# 需求文档 - 月度能耗统计性能优化\n\n## 功能介绍\n\n月度能耗统计功能目前存在性能瓶颈。当查询一个月的数据时，需要从数据库获取所有车间（约27个）的原始监控数据，每个车间每天24小时的数据量巨大，导致查询和计算耗时过长。本需求旨在优化查询速度和计算性能，将响应时间从当前的10-30秒优化到3秒以内。\n\n## 需求清单\n\n### 需求1：Service层计算逻辑优化\n\n**用户故事**：作为系统管理员，我希望优化MonthlyEnergyServiceImpl的计算逻辑，减少CPU和内存占用，提升响应速度。\n\n#### 验收标准\n\n1. WHEN Service层接收原始数据后 THEN 应只进行一次Stream分组操作\n2. WHEN 计算日能耗时 THEN 应避免在EnergyCalculationUtils中重复遍历已分组的数据\n3. WHEN 处理27个车间时 THEN Service层应使用并行Stream提升计算效率\n4. IF 某个车间无有效数据 THEN Service应提前跳过，不调用计算工具类\n5. WHEN 数据转换为DTO时 THEN 应使用高效的数据结构（LinkedHashMap），避免重复查找\n\n### 需求2：Service层日志和监控优化\n\n**用户故事**：作为开发人员，我希望Service层有详细的性能日志，便于监控和调优。\n\n#### 验收标准\n\n1. WHEN Service开始处理时 THEN 应记录开始时间戳\n2. WHEN 查询数据库完成时 THEN 应记录查询耗时\n3. WHEN 每个车间计算完成时 THEN 应记录车间名称和计算耗时\n4. WHEN 整个统计完成时 THEN 应记录总耗时、车间数量、数据点数量\n5. IF 某个环节耗时超过阈值 THEN 应记录WARNING日志便于优化\n\n## 非功能性需求\n\n### 性能要求\n\n- Service层计算耗时应在2秒内完成\n- 27个车间的并行计算效率提升至少30%\n\n### 可维护性\n\n- 优化代码应保持清晰的注释\n- 性能关键路径应有日志记录\n\n### 兼容性\n\n- 优化后应保持API接口不变\n- 前端代码无需修改\n- 数据格式保持一致\n\n",
+  "fileStats": {
+    "size": 1990,
+    "lines": 51,
+    "lastModified": "2025-10-07T09:04:04.092Z"
+  },
+  "comments": []
+}

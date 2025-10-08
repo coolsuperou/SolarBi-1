@@ -85,7 +85,7 @@ const MonthlyEnergyPage: React.FC = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th className="info-header">车间</th>
+                <th className="info-header">信息</th>
                 {Array.from({ length: data.daysInMonth }, (_, i) => i + 1).map((day) => (
                   <th key={day}>{day.toString().padStart(2, '0')}日</th>
                 ))}

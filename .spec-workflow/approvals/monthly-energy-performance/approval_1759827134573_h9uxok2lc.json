@@ -1,0 +1,39 @@
+{
+  "id": "approval_1759827134573_h9uxok2lc",
+  "title": "月度能耗统计性能优化 - 需求文档v4（仅计算优化）",
+  "filePath": ".spec-workflow/specs/monthly-energy-performance/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-07T08:52:14.573Z",
+  "category": "spec",
+  "categoryName": "monthly-energy-performance",
+  "response": "Feedback Summary (2 comments):\n\nSpecific Text Comments:\n1. \"- 内存占用不超过300MB\n- CPU占用率不超过70%\": 这两个不需要\n2. \"### 可扩展性\n\n- 优化方案应支持未来增加更多车间\n- 缓存策略应支持分布式部署\n- 计算逻辑应...\": 这个不需要\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"这两个不需要\",\n      \"timestamp\": \"2025-10-07T08:54:53.725Z\",\n      \"selectedText\": \"- 内存占用不超过300MB\\n- CPU占用率不超过70%\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759827293725_baqsl52fz\"\n    },\n    {\n      \"type\": \"selection\",\n      \"comment\": \"这个不需要\",\n      \"timestamp\": \"2025-10-07T08:55:12.916Z\",\n      \"selectedText\": \"### 可扩展性\\n\\n- 优化方案应支持未来增加更多车间\\n- 缓存策略应支持分布式部署\\n- 计算逻辑应支持其他统计维度（季度、年度）\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759827312916_8acz17jqx\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (2 comments):\\n\\nSpecific Text Comments:\\n1. \\\"- 内存占用不超过300MB\\n- CPU占用率不超过70%\\\": 这两个不需要\\n2. \\\"### 可扩展性\\n\\n- 优化方案应支持未来增加更多车间\\n- 缓存策略应支持分布式部署\\n- 计算逻辑应...\\\": 这个不需要\\n\",\n  \"timestamp\": \"2025-10-07T08:55:21.557Z\"\n}",
+  "respondedAt": "2025-10-07T08:55:21.912Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "这两个不需要",
+      "timestamp": "2025-10-07T08:54:53.725Z",
+      "selectedText": "- 内存占用不超过300MB\n- CPU占用率不超过70%",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759827293725_baqsl52fz"
+    },
+    {
+      "type": "selection",
+      "comment": "这个不需要",
+      "timestamp": "2025-10-07T08:55:12.916Z",
+      "selectedText": "### 可扩展性\n\n- 优化方案应支持未来增加更多车间\n- 缓存策略应支持分布式部署\n- 计算逻辑应支持其他统计维度（季度、年度）",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759827312916_8acz17jqx"
+    }
+  ]
+}

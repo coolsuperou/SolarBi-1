@@ -1,0 +1,30 @@
+{
+  "filePath": ".spec-workflow/specs/monthly-energy-dynamic/requirements.md",
+  "currentVersion": 3,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-09-30T09:31:24.811Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759224684794_tx7s6cn06",
+      "approvalTitle": "月度能耗统计（动态车间）- 需求文档"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-07T00:42:23.698Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1759224684794_tx7s6cn06",
+      "approvalTitle": "月度能耗统计（动态车间）- 需求文档"
+    },
+    {
+      "version": 3,
+      "filename": "snapshot-003.json",
+      "timestamp": "2025-10-07T00:54:45.606Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759798210916_dwcy8jrzp",
+      "approvalTitle": "月度能耗动态查询 - 需求文档"
+    }
+  ]
+}

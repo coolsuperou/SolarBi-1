@@ -1,0 +1,27 @@
+{
+  "id": "approval_1759826807669_xcduwldp3",
+  "title": "月度能耗统计性能优化 - 需求文档v2（聚焦Service层）",
+  "filePath": ".spec-workflow/specs/monthly-energy-performance/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-07T08:46:47.669Z",
+  "category": "spec",
+  "categoryName": "monthly-energy-performance",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"### 需求1：数据库查询优化\n\n**用户故事**：作为系统用户，我希望查询月度能耗数据时能在3秒内...\": 数据库查询部分不需要改变\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"数据库查询部分不需要改变\",\n      \"timestamp\": \"2025-10-07T08:47:48.540Z\",\n      \"selectedText\": \"### 需求1：数据库查询优化\\n\\n**用户故事**：作为系统用户，我希望查询月度能耗数据时能在3秒内返回结果，以便快速查看和分析数据。\\n\\n#### 验收标准\\n\\n1. WHEN 用户点击查询按钮 THEN 系统应在3秒内返回月度统计数据\\n2. WHEN 查询2月份数据（28/29天）THEN 系统应比31天的月份查询更快\\n3. WHEN 数据库中有索引时 THEN 查询性能应比无索引快至少50%\\n4. IF 某个月数据量特别大（>10万条）THEN 系统应仍能在5秒内完成查询\\n5. WHEN 同时有多个用户查询不同月份时 THEN 系统应保持稳定性能\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759826868540_ruokxqawy\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"### 需求1：数据库查询优化\\n\\n**用户故事**：作为系统用户，我希望查询月度能耗数据时能在3秒内...\\\": 数据库查询部分不需要改变\\n\",\n  \"timestamp\": \"2025-10-07T08:47:53.140Z\"\n}",
+  "respondedAt": "2025-10-07T08:47:53.165Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "数据库查询部分不需要改变",
+      "timestamp": "2025-10-07T08:47:48.540Z",
+      "selectedText": "### 需求1：数据库查询优化\n\n**用户故事**：作为系统用户，我希望查询月度能耗数据时能在3秒内返回结果，以便快速查看和分析数据。\n\n#### 验收标准\n\n1. WHEN 用户点击查询按钮 THEN 系统应在3秒内返回月度统计数据\n2. WHEN 查询2月份数据（28/29天）THEN 系统应比31天的月份查询更快\n3. WHEN 数据库中有索引时 THEN 查询性能应比无索引快至少50%\n4. IF 某个月数据量特别大（>10万条）THEN 系统应仍能在5秒内完成查询\n5. WHEN 同时有多个用户查询不同月份时 THEN 系统应保持稳定性能",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759826868540_ruokxqawy"
+    }
+  ]
+}

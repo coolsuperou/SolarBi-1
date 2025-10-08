@@ -1,0 +1,46 @@
+{
+  "filePath": ".spec-workflow/specs/monthly-energy-dynamic/design.md",
+  "currentVersion": 5,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-07T01:00:08.094Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759798808077_xaywi5xxo",
+      "approvalTitle": "月度能耗动态查询 - 设计文档"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-07T01:17:40.953Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1759799446135_9mj4qyuhz",
+      "approvalTitle": "月度能耗动态查询 - 设计文档（全新实现）"
+    },
+    {
+      "version": 3,
+      "filename": "snapshot-003.json",
+      "timestamp": "2025-10-07T01:21:43.499Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1759799992671_w2b74k66r",
+      "approvalTitle": "月度能耗动态查询 - 设计文档 v3（修订：controller命名）"
+    },
+    {
+      "version": 4,
+      "filename": "snapshot-004.json",
+      "timestamp": "2025-10-07T01:27:58.293Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1759800241272_8v3isywws",
+      "approvalTitle": "月度能耗动态查询 - 设计文档 v4（统一MonthlyEnergy命名）"
+    },
+    {
+      "version": 5,
+      "filename": "snapshot-005.json",
+      "timestamp": "2025-10-07T01:29:44.390Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759800539849_6n96ft7hy",
+      "approvalTitle": "月度能耗动态查询 - 设计文档 v5（双层高亮）"
+    }
+  ]
+}

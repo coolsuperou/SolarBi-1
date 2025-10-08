@@ -1,0 +1,27 @@
+{
+  "id": "approval_1759826353013_14qal2aix",
+  "title": "月度能耗统计性能优化 - 需求文档",
+  "filePath": ".spec-workflow/specs/monthly-energy-performance/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-07T08:39:13.014Z",
+  "category": "spec",
+  "categoryName": "monthly-energy-performance",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"### 需求2：计算逻辑优化\n\n**用户故事**：作为系统管理员，我希望减少服务器CPU和内存占用，...\": 主要是针对service层进行优化\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"主要是针对service层进行优化\",\n      \"timestamp\": \"2025-10-07T08:43:45.500Z\",\n      \"selectedText\": \"### 需求2：计算逻辑优化\\n\\n**用户故事**：作为系统管理员，我希望减少服务器CPU和内存占用，以便系统能支持更多并发用户。\\n\\n#### 验收标准\\n\\n1. WHEN 计算日能耗时 THEN 系统应避免重复遍历数据\\n2. WHEN 处理27个车间数据时 THEN 系统应使用并行计算提升效率\\n3. IF 某个车间无数据 THEN 系统应跳过计算，不浪费资源\\n4. WHEN 数据已在内存分组后 THEN 系统应直接使用分组结果，不重复分组\\n5. WHEN 计算完成后 THEN 内存占用应及时释放\\n\\n### 需求3：缓存机制\\n\\n**用户故事**：作为频繁查看月度报表的用户，我希望重复查询相同月份时能立即返回结果。\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759826625500_jbcuxhzim\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"### 需求2：计算逻辑优化\\n\\n**用户故事**：作为系统管理员，我希望减少服务器CPU和内存占用，...\\\": 主要是针对service层进行优化\\n\",\n  \"timestamp\": \"2025-10-07T08:43:48.756Z\"\n}",
+  "respondedAt": "2025-10-07T08:43:48.776Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "主要是针对service层进行优化",
+      "timestamp": "2025-10-07T08:43:45.500Z",
+      "selectedText": "### 需求2：计算逻辑优化\n\n**用户故事**：作为系统管理员，我希望减少服务器CPU和内存占用，以便系统能支持更多并发用户。\n\n#### 验收标准\n\n1. WHEN 计算日能耗时 THEN 系统应避免重复遍历数据\n2. WHEN 处理27个车间数据时 THEN 系统应使用并行计算提升效率\n3. IF 某个车间无数据 THEN 系统应跳过计算，不浪费资源\n4. WHEN 数据已在内存分组后 THEN 系统应直接使用分组结果，不重复分组\n5. WHEN 计算完成后 THEN 内存占用应及时释放\n\n### 需求3：缓存机制\n\n**用户故事**：作为频繁查看月度报表的用户，我希望重复查询相同月份时能立即返回结果。",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759826625500_jbcuxhzim"
+    }
+  ]
+}

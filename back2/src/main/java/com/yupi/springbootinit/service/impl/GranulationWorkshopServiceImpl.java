@@ -1,7 +1,6 @@
 package com.yupi.springbootinit.service.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.yupi.springbootinit.mapper.sqlserver.ColdPress103Mapper;
 import com.yupi.springbootinit.mapper.sqlserver.GranulationWorkshopMapper;
 import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;

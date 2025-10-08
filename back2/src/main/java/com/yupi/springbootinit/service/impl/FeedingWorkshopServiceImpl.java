@@ -2,7 +2,6 @@ package com.yupi.springbootinit.service.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yupi.springbootinit.mapper.sqlserver.FeedingWorkshopMapper;
-import com.yupi.springbootinit.mapper.sqlserver.FeedingWorkshopMapper;
 import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorQueryRequest;

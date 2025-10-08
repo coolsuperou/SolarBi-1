@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yupi.springbootinit.mapper.sqlserver.MonthlyEnergyMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="TempMonitorResultMap" type="com.yupi.springbootinit.model.entity.TempMonitor">
+        <id property="id" column="Id"/>
+        <result property="deviceId" column="DeviceID"/>
+        <result property="name" column="Name"/>
+        <result property="tem" column="Tem"/>
+        <result property="hum" column="Hum"/>
+        <result property="mac" column="MAC"/>
+        <result property="updateTime" column="UpdateTime"/>
+        <result property="electricEnergy" column="ElectricEnergy"/>
+        <result property="nodeId" column="NodeID"/>
+        <result property="workshop" column="Workshop"/>
+    </resultMap>
+
+    <!-- 查询指定时间范围内的原始监控数据 -->
+    <select id="selectMonthlyRawData" resultMap="TempMonitorResultMap">
+        SELECT 
+            Id,
+            DeviceID,
+            Name,
+            Tem,
+            Hum,
+            MAC,
+            UpdateTime,
+            ElectricEnergy,
+            NodeID,
+            Workshop
+        FROM RSWS_TempMonitor_Copy
+        WHERE ElectricEnergy IS NOT NULL
+            <if test="workshop != null and workshop != ''">
+                AND Workshop = #{workshop}
+            </if>
+            <if test="startTime != null">
+                AND UpdateTime &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND UpdateTime &lt;= #{endTime}
+            </if>
+        ORDER BY Workshop, Name, UpdateTime ASC
+    </select>
+
+</mapper>
+
+

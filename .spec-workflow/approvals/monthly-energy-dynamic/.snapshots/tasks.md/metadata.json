@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/monthly-energy-dynamic/tasks.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-07T01:34:24.647Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759800864599_ncfnhziqk",
+      "approvalTitle": "月度能耗动态查询 - 任务清单"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-07T01:35:03.679Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759800864599_ncfnhziqk",
+      "approvalTitle": "月度能耗动态查询 - 任务清单"
+    }
+  ]
+}

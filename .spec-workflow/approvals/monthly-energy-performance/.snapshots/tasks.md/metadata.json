@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/monthly-energy-performance/tasks.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-07T09:11:35.982Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759828295956_53ug48nnp",
+      "approvalTitle": "月度能耗统计性能优化 - 任务清单（6个任务）"
+    }
+  ]
+}

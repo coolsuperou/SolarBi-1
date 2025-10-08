@@ -37,18 +37,6 @@ public interface TempMonitorMapper extends BaseMapper<TempMonitor> {
             "FROM RSWS_TempMonitor_Copy WHERE Workshop = '114_空调水机主机' ORDER BY UpdateTime DESC")
     List<TempMonitor> selectByWorkshop(String workshop);
 
-    /**
-     * 查询所有车间
-     */
-    @Select("SELECT DISTINCT Workshop FROM RSWS_TempMonitor_Copy WHERE Workshop = '114_空调水机主机'")
-    List<String> selectAllWorkshops();
-
-    /**
-     * 根据设备ID查询数据
-     */
-    @Select("SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop " +
-            "FROM RSWS_TempMonitor_Copy WHERE DeviceID = #{deviceId} AND Workshop = '114_空调水机主机' ORDER BY UpdateTime DESC")
-    List<TempMonitor> selectByDeviceId(String deviceId);
 
     /**
      * 分页查询温湿电能数据（支持多条件查询）

@@ -1,0 +1,27 @@
+{
+  "id": "approval_1759799446135_9mj4qyuhz",
+  "title": "月度能耗动态查询 - 设计文档（全新实现）",
+  "filePath": ".spec-workflow/specs/monthly-energy-dynamic/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-07T01:10:46.135Z",
+  "category": "spec",
+  "categoryName": "monthly-energy-dynamic",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"#### 7. monthlyStatistics.ts (新建)\n**文件**: `front/s...\": 前端service层的控件名字要叫controller\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"前端service层的控件名字要叫controller\",\n      \"timestamp\": \"2025-10-07T01:16:55.884Z\",\n      \"selectedText\": \"#### 7. monthlyStatistics.ts (新建)\\n**文件**: `front/src/services/SolarBi-front/monthlyStatistics.ts`\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759799815884_7o3ua5hyw\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"#### 7. monthlyStatistics.ts (新建)\\n**文件**: `front/s...\\\": 前端service层的控件名字要叫controller\\n\",\n  \"timestamp\": \"2025-10-07T01:17:40.643Z\"\n}",
+  "respondedAt": "2025-10-07T01:17:40.963Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "前端service层的控件名字要叫controller",
+      "timestamp": "2025-10-07T01:16:55.884Z",
+      "selectedText": "#### 7. monthlyStatistics.ts (新建)\n**文件**: `front/src/services/SolarBi-front/monthlyStatistics.ts`",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759799815884_7o3ua5hyw"
+    }
+  ]
+}

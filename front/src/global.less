@@ -671,3 +671,139 @@ body::after {
     height: 2px !important;
   }
 }
+
+/* 隐藏侧边栏滚动条 */
+.ant-layout-sider {
+  /* 隐藏滚动条但保持滚动功能 - Webkit浏览器 */
+  &::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+  }
+  
+  /* Firefox浏览器 */
+  scrollbar-width: none !important;
+  
+  /* IE浏览器 */
+  -ms-overflow-style: none !important;
+  
+  /* 确保可以滚动 */
+  overflow-y: auto !important;
+}
+
+/* ProLayout 侧边栏样式 */
+.ant-pro-sider {
+  &::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+  }
+  
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  overflow-y: auto !important;
+}
+
+/* 侧边栏菜单滚动条隐藏 */
+.ant-layout-sider .ant-menu {
+  &::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+  }
+  
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  overflow-y: auto !important;
+}
+
+/* ProLayout 菜单容器滚动条隐藏 */
+.ant-pro-sider-menu {
+  &::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+  }
+  
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* 更强的滚动条隐藏规则 - 覆盖所有可能的侧边栏元素 */
+.ant-layout-sider,
+.ant-layout-sider-children,
+.ant-pro-sider,
+.ant-pro-sider-menu,
+.ant-layout-sider .ant-layout-sider-children,
+.ant-layout-sider > div,
+.ant-pro-layout-sider {
+  &::-webkit-scrollbar {
+    display: none !important;
+    width: 0px !important;
+    height: 0px !important;
+  }
+  
+  &::-webkit-scrollbar-track {
+    display: none !important;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    display: none !important;
+  }
+  
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* 通用滚动条隐藏 - 如果上面的都不行，这个应该能覆盖所有情况 */
+* {
+  &::-webkit-scrollbar {
+    &[class*="sider"], &[class*="Sider"] {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+  }
+}
+
+/* 最后的杀手锏 - 直接针对所有包含sider的元素 */
+[class*="sider"]::-webkit-scrollbar,
+[class*="Sider"]::-webkit-scrollbar,
+[class*="layout-sider"]::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+[class*="sider"],
+[class*="Sider"],
+[class*="layout-sider"] {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* 终极解决方案 - 如果上面的都不行，这个会强制隐藏所有滚动条 */
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+::-webkit-scrollbar-track {
+  display: none !important;
+}
+
+::-webkit-scrollbar-thumb {
+  display: none !important;
+}
+
+::-webkit-scrollbar-corner {
+  display: none !important;
+}
+
+/* 针对body和html的滚动条隐藏 */
+html, body {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none !important;
+}

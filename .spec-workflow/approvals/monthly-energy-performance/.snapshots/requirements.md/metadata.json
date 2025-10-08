@@ -1,0 +1,54 @@
+{
+  "filePath": ".spec-workflow/specs/monthly-energy-performance/requirements.md",
+  "currentVersion": 6,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-07T08:39:13.046Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759826353013_14qal2aix",
+      "approvalTitle": "月度能耗统计性能优化 - 需求文档"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-07T08:43:48.762Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1759826353013_14qal2aix",
+      "approvalTitle": "月度能耗统计性能优化 - 需求文档"
+    },
+    {
+      "version": 3,
+      "filename": "snapshot-003.json",
+      "timestamp": "2025-10-07T08:47:53.147Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1759826807669_xcduwldp3",
+      "approvalTitle": "月度能耗统计性能优化 - 需求文档v2（聚焦Service层）"
+    },
+    {
+      "version": 4,
+      "filename": "snapshot-004.json",
+      "timestamp": "2025-10-07T08:51:00.932Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1759826949929_05pqd107h",
+      "approvalTitle": "月度能耗统计性能优化 - 需求文档v3（仅Service层）"
+    },
+    {
+      "version": 5,
+      "filename": "snapshot-005.json",
+      "timestamp": "2025-10-07T08:55:21.877Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1759827134573_h9uxok2lc",
+      "approvalTitle": "月度能耗统计性能优化 - 需求文档v4（仅计算优化）"
+    },
+    {
+      "version": 6,
+      "filename": "snapshot-006.json",
+      "timestamp": "2025-10-07T09:05:03.906Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759827824387_5pv3chln5",
+      "approvalTitle": "月度能耗统计性能优化 - 需求文档v5（极简版）"
+    }
+  ]
+}

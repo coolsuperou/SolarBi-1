@@ -7,7 +7,7 @@ import { PageContainer, ProTable } from '@ant-design/pro-components';
 import '@umijs/max';
 import { Button, message, Space, Typography } from 'antd';
 import React, { useRef, useState } from 'react';
-import darkThemeStyles from '@/pages/PowerMonitor/styles/darkThemeStyles';
+import darkThemeStyles from '@/styles/darkTheme';
 
 /**
  * 用户管理页面

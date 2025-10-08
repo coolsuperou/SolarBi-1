@@ -1,0 +1,27 @@
+{
+  "id": "approval_1759224684794_tx7s6cn06",
+  "title": "月度能耗统计（动态车间）- 需求文档",
+  "filePath": ".spec-workflow/specs/monthly-energy-dynamic/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-09-30T09:31:24.794Z",
+  "category": "spec",
+  "categoryName": "monthly-energy-dynamic",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"（30 个车间，30 天数据）\": 27个车间，每个月的天数数据\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"27个车间，每个月的天数数据\",\n      \"timestamp\": \"2025-10-07T00:42:09.566Z\",\n      \"selectedText\": \"（30 个车间，30 天数据）\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759797729566_rdptxa7wt\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"（30 个车间，30 天数据）\\\": 27个车间，每个月的天数数据\\n\",\n  \"timestamp\": \"2025-10-07T00:42:23.693Z\"\n}",
+  "respondedAt": "2025-10-07T00:42:23.708Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "27个车间，每个月的天数数据",
+      "timestamp": "2025-10-07T00:42:09.566Z",
+      "selectedText": "（30 个车间，30 天数据）",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759797729566_rdptxa7wt"
+    }
+  ]
+}

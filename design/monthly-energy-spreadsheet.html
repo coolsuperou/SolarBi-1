@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电能监控月度数据表</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a1929 0%, #1a237e 50%, #000051 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            text-align: center;
+            color: #00d4ff;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        /* 查询区域 */
+        .query-section {
+            background: rgba(10, 25, 41, 0.8);
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .query-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .query-label {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .query-select {
+            background: rgba(26, 35, 126, 0.8);
+            border: 1px solid #00d4ff;
+            border-radius: 4px;
+            color: #ffffff;
+            padding: 8px 12px;
+            outline: none;
+        }
+
+        .query-select:focus {
+            box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+        }
+
+        .query-select option {
+            background: #1a237e;
+            color: #ffffff;
+        }
+
+        /* 表格容器 */
+        .table-container {
+            background: rgba(10, 25, 41, 0.9);
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.4);
+        }
+
+        .table-wrapper {
+            overflow: auto;
+            max-height: 80vh;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 1400px;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            padding: 8px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* 表头样式 */
+        .data-table thead th {
+            background: linear-gradient(135deg, rgba(10, 25, 41, 0.95), rgba(0, 212, 255, 0.3));
+            color: #00d4ff;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* 固定列表头需要更高的z-index */
+        .data-table thead .info-header {
+            z-index: 20;
+        }
+
+        /* 信息列（固定） */
+        .info-header,
+        .info-cell {
+            background: linear-gradient(135deg, rgba(10, 25, 41, 0.95), rgba(26, 35, 126, 0.9)) !important;
+            border-right: 2px solid #00d4ff !important;
+            color: #00d4ff !important;
+            font-weight: 600;
+            text-align: left !important;
+            position: sticky;
+            left: 0;
+            z-index: 15;
+            min-width: 150px;
+            max-width: 150px;
+            padding: 8px 12px !important;
+            box-shadow: 2px 0 5px rgba(0, 212, 255, 0.3);
+        }
+
+        /* 数据单元格 */
+        .data-cell {
+            background: rgba(10, 25, 41, 0.3);
+            color: #ffffff;
+            min-width: 80px;
+            transition: background-color 0.2s ease;
+        }
+
+        .data-cell:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        /* 高亮数值（黄色） */
+        .highlight-value {
+            background: rgba(255, 215, 0, 0.1) !important;
+            color: #ffd700 !important;
+            font-weight: 600;
+        }
+
+        /* 合计行 */
+        .total-row {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 255, 136, 0.2)) !important;
+        }
+
+        .total-row td {
+            color: #00ff88 !important;
+            font-weight: 700;
+            border-top: 2px solid #00ff88;
+        }
+
+        .total-row .info-cell {
+            background: linear-gradient(135deg, rgba(10, 25, 41, 0.95), rgba(0, 255, 136, 0.4)) !important;
+            border-right: 2px solid #00ff88 !important;
+            color: #00ff88 !important;
+            box-shadow: 2px 0 5px rgba(0, 255, 136, 0.4);
+        }
+
+        /* 表格行悬停 */
+        .data-table tbody tr:not(.total-row):hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        /* 滚动条样式 */
+        .table-wrapper::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track {
+            background: rgba(10, 25, 41, 0.5);
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #00d4ff;
+            border-radius: 4px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #00ff88;
+        }
+
+        /* 响应式设计 */
+            @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .query-section {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .data-table {
+                font-size: 12px;
+                min-width: 1200px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 6px;
+            }
+
+            .info-header,
+            .info-cell {
+                min-width: 120px;
+                max-width: 120px;
+            }
+
+            .data-cell {
+                min-width: 70px;
+            }
+
+            /* 移动端固定列背景增强 */
+            .total-row .info-cell {
+                background: linear-gradient(135deg, rgba(10, 25, 41, 0.98), rgba(0, 255, 136, 0.5)) !important;
+            }
+        }
+
+        /* 工具提示 */
+        .tooltip {
+            position: absolute;
+            background: rgba(10, 25, 41, 0.95);
+            color: #00d4ff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            z-index: 1000;
+            display: none;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title">电能监控月度数据统计表</h1>
+
+        <!-- 查询条件 -->
+        <div class="query-section">
+            <div class="query-group">
+                <label class="query-label">年月</label>
+                <select class="query-select" id="yearSelect">
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                </select>
+            </div>
+            <div class="query-group">
+                <label class="query-label">月份</label>
+                <select class="query-select" id="monthSelect">
+                    <option value="01">01</option>
+                    <option value="02">02</option>
+                    <option value="03">03</option>
+                    <option value="04">04</option>
+                    <option value="05">05</option>
+                    <option value="06">06</option>
+                    <option value="07">07</option>
+                    <option value="08">08</option>
+                    <option value="09" selected>09</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="info-header">信息</th>
+                            <th>01日</th>
+                            <th>02日</th>
+                            <th>03日</th>
+                            <th>04日</th>
+                            <th>05日</th>
+                            <th>06日</th>
+                            <th>07日</th>
+                            <th>08日</th>
+                            <th>09日</th>
+                            <th>10日</th>
+                            <th>11日</th>
+                            <th>12日</th>
+                            <th>13日</th>
+                            <th>14日</th>
+                            <th>15日</th>
+                            <th>16日</th>
+                            <th>17日</th>
+                            <th>18日</th>
+                            <th>19日</th>
+                            <th>20日</th>
+                            <th>21日</th>
+                            <th>22日</th>
+                            <th>23日</th>
+                            <th>24日</th>
+                            <th>25日</th>
+                            <th>26日</th>
+                            <th>27日</th>
+                            <th>28日</th>
+                            <th>29日</th>
+                            <th>30日</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="info-cell">1办公楼</td>
+                            <td class="data-cell">2120.3</td>
+                            <td class="data-cell">2060.7</td>
+                            <td class="data-cell">1930.8</td>
+                            <td class="data-cell">1896.2</td>
+                            <td class="data-cell">1960</td>
+                            <td class="data-cell">1545.5</td>
+                            <td class="data-cell">918</td>
+                            <td class="data-cell highlight-value">2533.6</td>
+                            <td class="data-cell highlight-value">2467.2</td>
+                            <td class="data-cell">2035.7</td>
+                            <td class="data-cell">1786.7</td>
+                            <td class="data-cell">2002.8</td>
+                            <td class="data-cell">1453.7</td>
+                            <td class="data-cell">1121.6</td>
+                            <td class="data-cell highlight-value">2284.2</td>
+                            <td class="data-cell">2113.8</td>
+                            <td class="data-cell">1939.4</td>
+                            <td class="data-cell">1807.6</td>
+                            <td class="data-cell">1842.6</td>
+                            <td class="data-cell">1071.5</td>
+                            <td class="data-cell">919.6</td>
+                            <td class="data-cell">1757.6</td>
+                            <td class="data-cell">1832.2</td>
+                            <td class="data-cell">1624.8</td>
+                            <td class="data-cell">1589.3</td>
+                            <td class="data-cell">1678.4</td>
+                            <td class="data-cell">1456.7</td>
+                            <td class="data-cell">1234.5</td>
+                            <td class="data-cell">1398.2</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">101铸科</td>
+                            <td class="data-cell">583.2</td>
+                            <td class="data-cell">721.6</td>
+                            <td class="data-cell">255.9</td>
+                            <td class="data-cell">496.6</td>
+                            <td class="data-cell">656.3</td>
+                            <td class="data-cell">0</td>
+                            <td class="data-cell">489.1</td>
+                            <td class="data-cell">522.3</td>
+                            <td class="data-cell">419.9</td>
+                            <td class="data-cell">874</td>
+                            <td class="data-cell">795.1</td>
+                            <td class="data-cell">876.5</td>
+                            <td class="data-cell">945.3</td>
+                            <td class="data-cell">233.6</td>
+                            <td class="data-cell">740.4</td>
+                            <td class="data-cell">787.5</td>
+                            <td class="data-cell">790.3</td>
+                            <td class="data-cell">792</td>
+                            <td class="data-cell">747.4</td>
+                            <td class="data-cell">702</td>
+                            <td class="data-cell">234.2</td>
+                            <td class="data-cell">832.5</td>
+                            <td class="data-cell">678.9</td>
+                            <td class="data-cell">589.7</td>
+                            <td class="data-cell">634.8</td>
+                            <td class="data-cell">712.3</td>
+                            <td class="data-cell">623.4</td>
+                            <td class="data-cell">543.8</td>
+                            <td class="data-cell">598.1</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">102造粒</td>
+                            <td class="data-cell">344.5</td>
+                            <td class="data-cell">341.8</td>
+                            <td class="data-cell">151.3</td>
+                            <td class="data-cell">373.2</td>
+                            <td class="data-cell">365</td>
+                            <td class="data-cell">364.3</td>
+                            <td class="data-cell">337.6</td>
+                            <td class="data-cell">391.6</td>
+                            <td class="data-cell">392.8</td>
+                            <td class="data-cell">398.6</td>
+                            <td class="data-cell">361.9</td>
+                            <td class="data-cell">379.9</td>
+                            <td class="data-cell">351.6</td>
+                            <td class="data-cell">95.4</td>
+                            <td class="data-cell">364.1</td>
+                            <td class="data-cell">394.9</td>
+                            <td class="data-cell">391.2</td>
+                            <td class="data-cell">371</td>
+                            <td class="data-cell">391.3</td>
+                            <td class="data-cell">339.5</td>
+                            <td class="data-cell">69.2</td>
+                            <td class="data-cell">338.3</td>
+                            <td class="data-cell">356.7</td>
+                            <td class="data-cell">342.8</td>
+                            <td class="data-cell">367.9</td>
+                            <td class="data-cell">381.2</td>
+                            <td class="data-cell">374.6</td>
+                            <td class="data-cell">358.3</td>
+                            <td class="data-cell">362.1</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">102造粒环保设备</td>
+                            <td class="data-cell">207</td>
+                            <td class="data-cell">143.9</td>
+                            <td class="data-cell">117.6</td>
+                            <td class="data-cell">165.6</td>
+                            <td class="data-cell">216.5</td>
+                            <td class="data-cell">198</td>
+                            <td class="data-cell">211.2</td>
+                            <td class="data-cell">213</td>
+                            <td class="data-cell">219.8</td>
+                            <td class="data-cell">218.5</td>
+                            <td class="data-cell">217.8</td>
+                            <td class="data-cell">217.6</td>
+                            <td class="data-cell">206.6</td>
+                            <td class="data-cell">0.2</td>
+                            <td class="data-cell">262.6</td>
+                            <td class="data-cell">271.3</td>
+                            <td class="data-cell">229.6</td>
+                            <td class="data-cell">149.8</td>
+                            <td class="data-cell">208.4</td>
+                            <td class="data-cell">200.3</td>
+                            <td class="data-cell">0.2</td>
+                            <td class="data-cell">194.1</td>
+                            <td class="data-cell">198.7</td>
+                            <td class="data-cell">187.3</td>
+                            <td class="data-cell">203.4</td>
+                            <td class="data-cell">216.8</td>
+                            <td class="data-cell">195.2</td>
+                            <td class="data-cell">178.9</td>
+                            <td class="data-cell">189.6</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">103冷压</td>
+                            <td class="data-cell highlight-value">2341.1</td>
+                            <td class="data-cell">1169.9</td>
+                            <td class="data-cell">1134.2</td>
+                            <td class="data-cell highlight-value">2182.3</td>
+                            <td class="data-cell highlight-value">2249.5</td>
+                            <td class="data-cell highlight-value">2124.7</td>
+                            <td class="data-cell highlight-value">2148.1</td>
+                            <td class="data-cell highlight-value">2299.2</td>
+                            <td class="data-cell highlight-value">2281.4</td>
+                            <td class="data-cell highlight-value">2223.2</td>
+                            <td class="data-cell highlight-value">2325</td>
+                            <td class="data-cell highlight-value">2290.8</td>
+                            <td class="data-cell">1885.5</td>
+                            <td class="data-cell">35</td>
+                            <td class="data-cell highlight-value">2340.3</td>
+                            <td class="data-cell highlight-value">2212.9</td>
+                            <td class="data-cell highlight-value">2256.9</td>
+                            <td class="data-cell highlight-value">2318.9</td>
+                            <td class="data-cell highlight-value">2289.3</td>
+                            <td class="data-cell highlight-value">2107.4</td>
+                            <td class="data-cell">74</td>
+                            <td class="data-cell highlight-value">2263.2</td>
+                            <td class="data-cell highlight-value">2178.5</td>
+                            <td class="data-cell highlight-value">2089.7</td>
+                            <td class="data-cell highlight-value">2156.3</td>
+                            <td class="data-cell highlight-value">2234.8</td>
+                            <td class="data-cell highlight-value">2087.4</td>
+                            <td class="data-cell">1967.2</td>
+                            <td class="data-cell highlight-value">2045.8</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">104烧结</td>
+                            <td class="data-cell">548.6</td>
+                            <td class="data-cell">669.3</td>
+                            <td class="data-cell">329.5</td>
+                            <td class="data-cell">683.8</td>
+                            <td class="data-cell">690.7</td>
+                            <td class="data-cell">671.4</td>
+                            <td class="data-cell">550.2</td>
+                            <td class="data-cell">759.3</td>
+                            <td class="data-cell">691.4</td>
+                            <td class="data-cell">766.9</td>
+                            <td class="data-cell">676.8</td>
+                            <td class="data-cell">726.9</td>
+                            <td class="data-cell">700.8</td>
+                            <td class="data-cell">199.8</td>
+                            <td class="data-cell">683.8</td>
+                            <td class="data-cell">650.5</td>
+                            <td class="data-cell">642.3</td>
+                            <td class="data-cell">641.4</td>
+                            <td class="data-cell">644.9</td>
+                            <td class="data-cell">544.2</td>
+                            <td class="data-cell">211.2</td>
+                            <td class="data-cell">832.1</td>
+                            <td class="data-cell">698.3</td>
+                            <td class="data-cell">712.4</td>
+                            <td class="data-cell">665.8</td>
+                            <td class="data-cell">734.2</td>
+                            <td class="data-cell">678.9</td>
+                            <td class="data-cell">623.5</td>
+                            <td class="data-cell">656.7</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">105烧结</td>
+                            <td class="data-cell highlight-value">1343.7</td>
+                            <td class="data-cell">665.15</td>
+                            <td class="data-cell">763.7</td>
+                            <td class="data-cell">1197.5</td>
+                            <td class="data-cell">1174.6</td>
+                            <td class="data-cell">1074.8</td>
+                            <td class="data-cell highlight-value">1239.8</td>
+                            <td class="data-cell">1365.2</td>
+                            <td class="data-cell highlight-value">1321.7</td>
+                            <td class="data-cell highlight-value">1410.1</td>
+                            <td class="data-cell highlight-value">1405.1</td>
+                            <td class="data-cell highlight-value">1243.6</td>
+                            <td class="data-cell highlight-value">1402.9</td>
+                            <td class="data-cell">343.4</td>
+                            <td class="data-cell highlight-value">1347.7</td>
+                            <td class="data-cell highlight-value">1307.7</td>
+                            <td class="data-cell highlight-value">1319.4</td>
+                            <td class="data-cell highlight-value">1458.2</td>
+                            <td class="data-cell highlight-value">1366.8</td>
+                            <td class="data-cell highlight-value">1341.2</td>
+                            <td class="data-cell">464</td>
+                            <td class="data-cell highlight-value">1413.3</td>
+                            <td class="data-cell highlight-value">1298.4</td>
+                            <td class="data-cell highlight-value">1256.7</td>
+                            <td class="data-cell highlight-value">1321.8</td>
+                            <td class="data-cell highlight-value">1378.5</td>
+                            <td class="data-cell highlight-value">1284.3</td>
+                            <td class="data-cell">1089.6</td>
+                            <td class="data-cell highlight-value">1234.7</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">106清洗</td>
+                            <td class="data-cell highlight-value">1734.4</td>
+                            <td class="data-cell">1026.2</td>
+                            <td class="data-cell">779.9</td>
+                            <td class="data-cell">1873</td>
+                            <td class="data-cell">1814</td>
+                            <td class="data-cell">1687.7</td>
+                            <td class="data-cell">1586.6</td>
+                            <td class="data-cell">1786.1</td>
+                            <td class="data-cell">1845.1</td>
+                            <td class="data-cell">1790.9</td>
+                            <td class="data-cell">1751.1</td>
+                            <td class="data-cell">1825.3</td>
+                            <td class="data-cell">1975.8</td>
+                            <td class="data-cell">1.8</td>
+                            <td class="data-cell">2058.6</td>
+                            <td class="data-cell">1957.6</td>
+                            <td class="data-cell">1960.1</td>
+                            <td class="data-cell">1923</td>
+                            <td class="data-cell">1933.7</td>
+                            <td class="data-cell">1784.2</td>
+                            <td class="data-cell">1.7</td>
+                            <td class="data-cell">1856.6</td>
+                            <td class="data-cell">1823.4</td>
+                            <td class="data-cell">1756.8</td>
+                            <td class="data-cell">1798.2</td>
+                            <td class="data-cell">1854.3</td>
+                            <td class="data-cell">1823.7</td>
+                            <td class="data-cell">1645.9</td>
+                            <td class="data-cell">1734.6</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">114空压机</td>
+                            <td class="data-cell highlight-value">2666.1</td>
+                            <td class="data-cell">1368</td>
+                            <td class="data-cell">1133.6</td>
+                            <td class="data-cell highlight-value">2448.5</td>
+                            <td class="data-cell highlight-value">2585</td>
+                            <td class="data-cell highlight-value">2532.9</td>
+                            <td class="data-cell highlight-value">2606.9</td>
+                            <td class="data-cell highlight-value">2761.3</td>
+                            <td class="data-cell highlight-value">2771.7</td>
+                            <td class="data-cell highlight-value">2785.2</td>
+                            <td class="data-cell highlight-value">2852.4</td>
+                            <td class="data-cell highlight-value">2880.3</td>
+                            <td class="data-cell highlight-value">2923.3</td>
+                            <td class="data-cell">44.8</td>
+                            <td class="data-cell highlight-value">2840.7</td>
+                            <td class="data-cell highlight-value">2779.2</td>
+                            <td class="data-cell highlight-value">2823.9</td>
+                            <td class="data-cell highlight-value">2869.3</td>
+                            <td class="data-cell highlight-value">2896</td>
+                            <td class="data-cell highlight-value">2870.6</td>
+                            <td class="data-cell">6.7</td>
+                            <td class="data-cell highlight-value">2823.1</td>
+                            <td class="data-cell highlight-value">2745.8</td>
+                            <td class="data-cell highlight-value">2698.3</td>
+                            <td class="data-cell highlight-value">2756.4</td>
+                            <td class="data-cell highlight-value">2834.7</td>
+                            <td class="data-cell highlight-value">2789.5</td>
+                            <td class="data-cell highlight-value">2623.8</td>
+                            <td class="data-cell highlight-value">2712.9</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">食堂</td>
+                            <td class="data-cell">971.2</td>
+                            <td class="data-cell">901.9</td>
+                            <td class="data-cell">794.5</td>
+                            <td class="data-cell">954.9</td>
+                            <td class="data-cell">910.6</td>
+                            <td class="data-cell">1049.4</td>
+                            <td class="data-cell">691.8</td>
+                            <td class="data-cell">971</td>
+                            <td class="data-cell">940.4</td>
+                            <td class="data-cell">1032.8</td>
+                            <td class="data-cell">946.3</td>
+                            <td class="data-cell">1017.6</td>
+                            <td class="data-cell">981.2</td>
+                            <td class="data-cell">608.3</td>
+                            <td class="data-cell">977.4</td>
+                            <td class="data-cell">1001.2</td>
+                            <td class="data-cell">955.2</td>
+                            <td class="data-cell">926.8</td>
+                            <td class="data-cell">973.4</td>
+                            <td class="data-cell">847.3</td>
+                            <td class="data-cell">142.1</td>
+                            <td class="data-cell">913.7</td>
+                            <td class="data-cell">892.4</td>
+                            <td class="data-cell">834.6</td>
+                            <td class="data-cell">876.9</td>
+                            <td class="data-cell">923.8</td>
+                            <td class="data-cell">887.2</td>
+                            <td class="data-cell">798.5</td>
+                            <td class="data-cell">856.3</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td class="info-cell">合计</td>
+                            <td class="data-cell">41961</td>
+                            <td class="data-cell">25790.8</td>
+                            <td class="data-cell">24386.4</td>
+                            <td class="data-cell">41294.5</td>
+                            <td class="data-cell">41436</td>
+                            <td class="data-cell">40559.2</td>
+                            <td class="data-cell">39567.7</td>
+                            <td class="data-cell">42681.2</td>
+                            <td class="data-cell">44875.2</td>
+                            <td class="data-cell">45436.1</td>
+                            <td class="data-cell">45593.3</td>
+                            <td class="data-cell">44389.7</td>
+                            <td class="data-cell">43402.7</td>
+                            <td class="data-cell">4526.5</td>
+                            <td class="data-cell">45324.6</td>
+                            <td class="data-cell">44643.2</td>
+                            <td class="data-cell">44463</td>
+                            <td class="data-cell">45720.8</td>
+                            <td class="data-cell">43350.5</td>
+                            <td class="data-cell">44822.1</td>
+                            <td class="data-cell">3633.2</td>
+                            <td class="data-cell">45326.3</td>
+                            <td class="data-cell">43892.7</td>
+                            <td class="data-cell">42567.8</td>
+                            <td class="data-cell">43789.6</td>
+                            <td class="data-cell">45123.4</td>
+                            <td class="data-cell">43956.8</td>
+                            <td class="data-cell">41234.7</td>
+                            <td class="data-cell">42789.5</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 工具提示 -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 年月选择器功能
+            const yearSelect = document.getElementById('yearSelect');
+            const monthSelect = document.getElementById('monthSelect');
+
+            function updateData() {
+                const year = yearSelect.value;
+                const month = monthSelect.value;
+                console.log(`切换到 ${year}年${month}月`);
+                // 这里可以添加实际的数据加载逻辑
+            }
+
+            yearSelect.addEventListener('change', updateData);
+            monthSelect.addEventListener('change', updateData);
+
+            // 数据单元格工具提示
+            const dataCells = document.querySelectorAll('.data-cell');
+            const tooltip = document.getElementById('tooltip');
+
+            dataCells.forEach(cell => {
+                cell.addEventListener('mouseenter', function(e) {
+                    const value = this.textContent;
+                    const row = this.closest('tr');
+                    const areaName = row.querySelector('.info-cell').textContent;
+                    const colIndex = Array.from(this.parentNode.children).indexOf(this);
+                    const dayHeader = document.querySelector(`thead th:nth-child(${colIndex + 1})`);
+                    const dayText = dayHeader ? dayHeader.textContent : '';
+                    
+                    if (dayText) {
+                        tooltip.innerHTML = `
+                            <strong>${areaName}</strong><br>
+                            ${dayText}: ${value} kWh
+                        `;
+                        tooltip.style.display = 'block';
+                        tooltip.style.left = e.pageX + 10 + 'px';
+                        tooltip.style.top = e.pageY - 10 + 'px';
+                    }
+                });
+
+                cell.addEventListener('mouseleave', function() {
+                    tooltip.style.display = 'none';
+                });
+
+                cell.addEventListener('mousemove', function(e) {
+                    tooltip.style.left = e.pageX + 10 + 'px';
+                    tooltip.style.top = e.pageY - 10 + 'px';
+                });
+            });
+
+            console.log('电能监控月度数据表初始化完成 ✅');
+        });
+    </script>
+</body>
+</html>
+

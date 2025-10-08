@@ -1,0 +1,27 @@
+{
+  "id": "approval_1759800241272_8v3isywws",
+  "title": "月度能耗动态查询 - 设计文档 v4（统一MonthlyEnergy命名）",
+  "filePath": ".spec-workflow/specs/monthly-energy-dynamic/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-07T01:24:01.272Z",
+  "category": "spec",
+  "categoryName": "monthly-energy-dynamic",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"高亮样式（超过2000kWh显示黄色）\": 多添加一个超过4000kwh的显示紫色\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"多添加一个超过4000kwh的显示紫色\",\n      \"timestamp\": \"2025-10-07T01:27:15.171Z\",\n      \"selectedText\": \"高亮样式（超过2000kWh显示黄色）\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759800435171_pv8eob06i\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"高亮样式（超过2000kWh显示黄色）\\\": 多添加一个超过4000kwh的显示紫色\\n\",\n  \"timestamp\": \"2025-10-07T01:27:57.981Z\"\n}",
+  "respondedAt": "2025-10-07T01:27:58.303Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "多添加一个超过4000kwh的显示紫色",
+      "timestamp": "2025-10-07T01:27:15.171Z",
+      "selectedText": "高亮样式（超过2000kWh显示黄色）",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759800435171_pv8eob06i"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 package com.yupi.springbootinit.utils;
 
+import com.yupi.springbootinit.config.EnergyTimeConfig;
 import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
 import com.yupi.springbootinit.model.entity.TempMonitor;
@@ -140,6 +141,8 @@ public class EnergyCalculationUtils {
 
     /**
      * 🔥 通用日能耗计算方法
+     * 日能耗统计规则：根据配置，每天从 7:00:00 开始到次日 6:59:59 结束
+     * 计算方式：各设备在结束时间之后的第一条 减去 开始时间之后的第一条，然后累加
      * @param rawData 原始电表数据
      * @param startTime 开始时间
      * @param endTime 结束时间
@@ -165,20 +168,23 @@ public class EnergyCalculationUtils {
 
         log.info("{}设备分组结果: 共{}个设备", workshopName, deviceDataMap.size());
 
-        // 生成日时间点
+        // 使用配置生成日时间点（从配置的开始时间开始）
         List<Date> dailyPoints = generateDailyPoints(startTime, endTime);
         log.info("生成日时间点: 共{}天", dailyPoints.size());
 
         for (Date dayStart : dailyPoints) {
-            // 计算当天结束时间
+            // 使用配置计算当天结束时间
             Calendar cal = Calendar.getInstance();
             cal.setTime(dayStart);
-            cal.add(Calendar.DAY_OF_MONTH, 1);
+            cal.add(Calendar.DAY_OF_MONTH, EnergyTimeConfig.DAY_END_OFFSET);
+            cal.set(Calendar.HOUR_OF_DAY, EnergyTimeConfig.DAY_END_HOUR);
+            cal.set(Calendar.MINUTE, EnergyTimeConfig.DAY_END_MINUTE);
+            cal.set(Calendar.SECOND, EnergyTimeConfig.DAY_END_SECOND);
+            cal.set(Calendar.MILLISECOND, 999);
             Date dayEnd = cal.getTime();
 
-            // 所有设备的能耗汇总
-            Double totalStartEnergy = 0.0;
-            Double totalEndEnergy = 0.0;
+            // 计算所有设备的能耗并累加
+            double totalEnergyConsumption = 0.0;
             Date earliestStartTime = null;
             Date latestEndTime = null;
             boolean hasValidData = false;
@@ -188,13 +194,13 @@ public class EnergyCalculationUtils {
                         .sorted(Comparator.comparing(TempMonitor::getUpdateTime))
                         .collect(Collectors.toList());
 
-                // 找当天开始时间之后最近的记录
+                // 找开始时间之后的第一条记录
                 TempMonitor startRecord = deviceData.stream()
                         .filter(d -> d.getUpdateTime().compareTo(dayStart) >= 0)
                         .min(Comparator.comparing(TempMonitor::getUpdateTime))
                         .orElse(null);
 
-                // 找当天结束时间之后最近的记录
+                // 找结束时间之后的第一条记录
                 TempMonitor endRecord = deviceData.stream()
                         .filter(d -> d.getUpdateTime().compareTo(dayEnd) >= 0)
                         .min(Comparator.comparing(TempMonitor::getUpdateTime))
@@ -203,50 +209,48 @@ public class EnergyCalculationUtils {
                 // 如果没找到结束记录，使用当天范围内最后一条记录
                 if (endRecord == null) {
                     endRecord = deviceData.stream()
-                            .filter(d -> d.getUpdateTime().compareTo(dayStart) >= 0 && d.getUpdateTime().compareTo(dayEnd) < 0)
+                            .filter(d -> d.getUpdateTime().compareTo(dayStart) >= 0 && d.getUpdateTime().compareTo(dayEnd) <= 0)
                             .max(Comparator.comparing(TempMonitor::getUpdateTime))
                             .orElse(null);
                 }
 
-                // 累加各设备的开始能耗
-                if (startRecord != null && startRecord.getElectricEnergy() != null) {
-                    totalStartEnergy += startRecord.getElectricEnergy();
-                    if (earliestStartTime == null || startRecord.getUpdateTime().before(earliestStartTime)) {
-                        earliestStartTime = startRecord.getUpdateTime();
-                    }
-                    hasValidData = true;
-                }
+                // 计算该设备的能耗差值并累加
+                if (startRecord != null && endRecord != null &&
+                        startRecord.getElectricEnergy() != null && endRecord.getElectricEnergy() != null) {
 
-                // 累加各设备的结束能耗
-                if (endRecord != null && endRecord.getElectricEnergy() != null) {
-                    totalEndEnergy += endRecord.getElectricEnergy();
-                    if (latestEndTime == null || endRecord.getUpdateTime().after(latestEndTime)) {
-                        latestEndTime = endRecord.getUpdateTime();
+                    double deviceEnergy = endRecord.getElectricEnergy() - startRecord.getElectricEnergy();
+                    if (deviceEnergy >= 0) {
+                        totalEnergyConsumption += deviceEnergy;
+                        hasValidData = true;
+
+                        if (earliestStartTime == null || startRecord.getUpdateTime().before(earliestStartTime)) {
+                            earliestStartTime = startRecord.getUpdateTime();
+                        }
+                        if (latestEndTime == null || endRecord.getUpdateTime().after(latestEndTime)) {
+                            latestEndTime = endRecord.getUpdateTime();
+                        }
                     }
-                    hasValidData = true;
                 }
             }
 
             // 构建结果（只有有效数据才添加）
-            if (hasValidData && totalStartEnergy != null && totalEndEnergy != null &&
-                    totalStartEnergy > 0 && totalEndEnergy > 0) {
+            if (hasValidData) {
+                // 🔥 将 day 字段归零到当天 00:00:00，避免前端图表时间偏移
+                Calendar dayCalendar = Calendar.getInstance();
+                dayCalendar.setTime(dayStart);
+                dayCalendar.set(Calendar.HOUR_OF_DAY, 0);
+                dayCalendar.set(Calendar.MINUTE, 0);
+                dayCalendar.set(Calendar.SECOND, 0);
+                dayCalendar.set(Calendar.MILLISECOND, 0);
 
                 DailyEnergyConsumption consumption = new DailyEnergyConsumption();
                 consumption.setDeviceId(workshopName);
                 consumption.setName(workshopName);
                 consumption.setWorkshop(workshopName);
-                consumption.setDay(dayStart);  // 当天日期
-                consumption.setStartEnergy(totalStartEnergy);
-                consumption.setEndEnergy(totalEndEnergy);
+                consumption.setDay(dayCalendar.getTime());  // 使用归零后的日期，避免前端时间轴偏移
                 consumption.setStartTime(earliestStartTime);
                 consumption.setEndTime(latestEndTime);
-
-                // 计算能耗差值
-                if (totalEndEnergy >= totalStartEnergy) {
-                    consumption.setEnergyConsumption(totalEndEnergy - totalStartEnergy);
-                } else {
-                    consumption.setEnergyConsumption(null);
-                }
+                consumption.setEnergyConsumption(totalEnergyConsumption);
 
                 result.add(consumption);
             }
@@ -280,18 +284,23 @@ public class EnergyCalculationUtils {
     }
 
     /**
-     * 生成日时间点（按天切分）
+     * 生成日时间点（使用配置的每天统计范围）
      */
     private static List<Date> generateDailyPoints(Date startTime, Date endTime) {
         List<Date> dailyPoints = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         cal.setTime(startTime);
 
-        // 截取到当天开始（00:00:00）
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
+        // 使用配置截取到当天的开始时间（例如：7:00:00）
+        cal.set(Calendar.HOUR_OF_DAY, EnergyTimeConfig.DAY_START_HOUR);
+        cal.set(Calendar.MINUTE, EnergyTimeConfig.DAY_START_MINUTE);
+        cal.set(Calendar.SECOND, EnergyTimeConfig.DAY_START_SECOND);
         cal.set(Calendar.MILLISECOND, 0);
+
+        // 如果开始时间已经过了当天的配置开始时间，从次日开始
+        if (startTime.after(cal.getTime())) {
+            cal.add(Calendar.DAY_OF_MONTH, 1);
+        }
 
         while (cal.getTime().before(endTime)) {
             dailyPoints.add(cal.getTime());

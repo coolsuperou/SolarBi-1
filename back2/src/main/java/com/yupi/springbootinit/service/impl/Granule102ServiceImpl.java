@@ -1,6 +1,5 @@
 package com.yupi.springbootinit.service.impl;
 import com.yupi.springbootinit.mapper.sqlserver.Granule102Mapper;
-import com.yupi.springbootinit.mapper.sqlserver.Granule102Mapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
@@ -8,7 +7,6 @@ import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorQueryRequest;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
 import com.yupi.springbootinit.model.entity.TempMonitor;
-import com.yupi.springbootinit.mapper.sqlserver.Granule102Mapper;
 import com.yupi.springbootinit.service.Granule102Service;
 import com.yupi.springbootinit.utils.EnergyCalculationUtils;
 import lombok.extern.slf4j.Slf4j;

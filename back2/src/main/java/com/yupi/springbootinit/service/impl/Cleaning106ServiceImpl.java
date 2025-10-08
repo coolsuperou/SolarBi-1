@@ -8,7 +8,6 @@ import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorQueryRequest;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
 import com.yupi.springbootinit.model.entity.TempMonitor;
 import com.yupi.springbootinit.service.Cleaning106Service;
-import com.yupi.springbootinit.service.ColdPress103Service;
 import com.yupi.springbootinit.utils.EnergyCalculationUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

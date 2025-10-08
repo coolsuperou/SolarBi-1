@@ -8,6 +8,13 @@ export default [
     ],
   },
   {
+    path: '/monthly-energy',
+    name: '月度能耗统计',
+    icon: 'BarChartOutlined',
+    component: './MonthlyEnergy',
+
+  },
+  {
     path: '/airConditioning',
     name: '114_空调水机主机',
     icon: 'WalletFilled',
@@ -208,6 +215,6 @@ export default [
     ],
 
   },
-  { path: '/', redirect: '/airConditioning'},
+  { path: '/', redirect: '/monthly-energy'},
   { path: '*', layout: false, component: './404' },
 ];

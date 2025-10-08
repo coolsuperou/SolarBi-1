@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { message } from 'antd';
 import { getMonthlyEnergy } from '@/services/SolarBi-front/monthlyEnergyController';
+import { MONTHLY_ENERGY_CONFIG } from './config';
 import './styles.css';
 
 /**
@@ -40,7 +41,7 @@ const MonthlyEnergyPage: React.FC = () => {
   if (!data) {
     return (
       <div className="monthly-energy-container">
-        <div className="page-title">电能监控月度数据统计表</div>
+
         <div style={{ textAlign: 'center', padding: '60px', color: '#00d4ff' }}>
           {loading ? '加载中...' : '暂无数据'}
         </div>
@@ -51,7 +52,7 @@ const MonthlyEnergyPage: React.FC = () => {
   return (
     <>
     <div className="monthly-energy-container">
-      <div className="page-title">电能监控月度数据统计表</div>
+
 
       {/* 查询区域 */}
       <div className="query-section">
@@ -97,14 +98,22 @@ const MonthlyEnergyPage: React.FC = () => {
                 return (
                   <tr key={workshop}>
                     <td className="info-cell">{workshop}</td>
-                    {dailyData.map((value: number, index: number) => (
-                      <td
-                        key={index}
-                        className={`data-cell ${value > 2000 ? 'highlight-value' : ''}`}
-                      >
-                        {value === 0 ? '-' : value.toFixed(1)}
-                      </td>
-                    ))}
+                    {dailyData.map((value: number, index: number) => {
+                      const getDataColor = () => {
+                        if (value > MONTHLY_ENERGY_CONFIG.DATA_THRESHOLD_2) return MONTHLY_ENERGY_CONFIG.DATA_COLOR_2; // 💜 紫色
+                        if (value > MONTHLY_ENERGY_CONFIG.DATA_THRESHOLD_1) return MONTHLY_ENERGY_CONFIG.DATA_COLOR_1; // 💛 黄色
+                        return undefined; // 💚 默认颜色
+                      };
+                      return (
+                        <td
+                          key={index}
+                          className="data-cell"
+                          style={{ color: getDataColor() }}
+                        >
+                          {value === 0 ? MONTHLY_ENERGY_CONFIG.ZERO_DISPLAY : value.toFixed(1)}
+                        </td>
+                      );
+                    })}
                   </tr>
                 );
               })}
@@ -114,7 +123,7 @@ const MonthlyEnergyPage: React.FC = () => {
                 <td className="info-cell">合计</td>
                 {data.dailyTotal.map((value: number, index: number) => (
                   <td key={index} className="data-cell">
-                    {value.toFixed(1)}
+                    {value === 0 ? MONTHLY_ENERGY_CONFIG.ZERO_DISPLAY : value.toFixed(1)}
                   </td>
                 ))}
               </tr>

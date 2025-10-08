@@ -1,0 +1,12 @@
+{
+  "id": "approval_1759799068128_zzxyv34ts",
+  "title": "月度能耗动态查询 - 设计文档 v2",
+  "filePath": ".spec-workflow/specs/monthly-energy-dynamic/design.md",
+  "type": "document",
+  "status": "rejected",
+  "createdAt": "2025-10-07T01:04:28.128Z",
+  "category": "spec",
+  "categoryName": "monthly-energy-dynamic",
+  "response": "删除了月度电能统计相关代码重新审批",
+  "respondedAt": "2025-10-07T01:09:22.059Z"
+}

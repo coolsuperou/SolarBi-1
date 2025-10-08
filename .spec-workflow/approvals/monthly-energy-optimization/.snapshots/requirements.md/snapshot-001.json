@@ -1,0 +1,16 @@
+{
+  "id": "snapshot_1759825876549_ceaolortc",
+  "approvalId": "approval_1759825876525_fgts2y57y",
+  "approvalTitle": "月度能耗统计性能优化 - 需求文档",
+  "version": 1,
+  "timestamp": "2025-10-07T08:31:16.548Z",
+  "trigger": "initial",
+  "status": "pending",
+  "content": "# Requirements Document\r\n\r\n## Introduction\r\n\r\n月度能耗统计性能优化旨在显著提升月度数据查询和计算的速度。当前实现在查询一个月的数据时，需要处理28个车间、30天、数千条原始记录，计算时间较长。本优化将通过数据库查询优化、并行计算、缓存机制等手段，将查询响应时间从当前的3-5秒降低到1秒以内。\r\n\r\n## Alignment with Product Vision\r\n\r\n此优化支持能耗监控系统的核心目标：\r\n- **用户体验**：快速响应提升用户满意度\r\n- **系统可扩展性**：优化后可支持更多车间和更长时间范围\r\n- **资源效率**：减少服务器负载和数据库压力\r\n\r\n## Requirements\r\n\r\n### Requirement 1: 数据库查询优化\r\n\r\n**User Story:** 作为系统管理员，我希望数据库查询速度更快，以便快速获取月度数据。\r\n\r\n#### Acceptance Criteria\r\n\r\n1. WHEN 执行月度查询时 THEN 系统 SHALL 使用优化的SQL查询，包含适当的索引\r\n2. WHEN 查询大量数据时 THEN 系统 SHALL 只查询必要的字段，避免全字段查询\r\n3. IF 数据库支持分区表 THEN 系统 SHALL 利用按月份分区的优势\r\n4. WHEN 执行查询时 THEN 响应时间 SHALL 比优化前减少至少50%\r\n\r\n### Requirement 2: 并行计算处理\r\n\r\n**User Story:** 作为开发者，我希望系统能并行处理多个车间的能耗计算，以便充分利用多核CPU资源。\r\n\r\n#### Acceptance Criteria\r\n\r\n1. WHEN 计算各车间能耗时 THEN 系统 SHALL 使用线程池并行处理\r\n2. WHEN 并行计算时 THEN 系统 SHALL 限制线程数量，避免资源耗尽\r\n3. WHEN 所有车间计算完成后 THEN 系统 SHALL 正确汇总结果\r\n4. IF 某个车间计算失败 THEN 系统 SHALL 记录错误但不影响其他车间\r\n\r\n### Requirement 3: 缓存机制\r\n\r\n**User Story:** 作为能耗管理人员，我希望重复查询相同月份的数据时能立即返回，以便快速切换查看不同月份。\r\n\r\n#### Acceptance Criteria\r\n\r\n1. WHEN 查询某月数据后 THEN 系统 SHALL 将结果缓存到Redis\r\n2. WHEN 再次查询相同月份时 THEN 系统 SHALL 直接从缓存返回\r\n3. WHEN 缓存数据时 THEN 缓存 SHALL 设置合理的过期时间（如1小时）\r\n4. WHEN 新数据写入时 THEN 系统 SHALL 自动清除相关缓存\r\n\r\n### Requirement 4: 前端优化\r\n\r\n**User Story:** 作为用户，我希望在等待数据加载时能看到进度提示，以便了解查询进展。\r\n\r\n#### Acceptance Criteria\r\n\r\n1. WHEN 查询开始时 THEN 前端 SHALL 显示加载进度条\r\n2. WHEN 数据加载中 THEN 前端 SHALL 显示已加载的车间数量\r\n3. IF 查询超过2秒 THEN 前端 SHALL 显示预计剩余时间\r\n4. WHEN 数据加载完成后 THEN 前端 SHALL 平滑渲染表格\r\n\r\n## Non-Functional Requirements\r\n\r\n### Performance\r\n- 月度数据查询响应时间 < 1秒（当前3-5秒）\r\n- 支持查询最多50个车间\r\n- 并行线程数 ≤ 10\r\n- 缓存命中率 > 80%\r\n\r\n### Reliability\r\n- 并行计算失败不影响整体结果\r\n- 缓存失效时自动降级到数据库查询\r\n- 数据库连接池配置合理\r\n\r\n### Scalability\r\n- 支持未来车间数量增长到100+\r\n- 支持查询历史3年数据\r\n- Redis缓存容量规划合理\r\n\r\n",
+  "fileStats": {
+    "size": 3230,
+    "lines": 78,
+    "lastModified": "2025-10-07T08:31:00.596Z"
+  },
+  "comments": []
+}

@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/monthly-energy-performance/design.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-07T09:06:51.373Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759828011334_8dp0puyqf",
+      "approvalTitle": "月度能耗统计性能优化 - 设计文档（并行计算方案）"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-07T09:09:50.112Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759828011334_8dp0puyqf",
+      "approvalTitle": "月度能耗统计性能优化 - 设计文档（并行计算方案）"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+---
+description: 强制使用filesystem工具进行所有文件操作
+globs:
+alwaysApply: true
+---
+**重要规则：所有文件操作必须使用filesystem工具**
+
+无论何时进行以下操作，都必须优先使用 `mcp_filesystem_*` 工具：
+- 创建新文件：使用 `mcp_filesystem_write_file`
+- 修改文件：使用 `mcp_filesystem_update_file`
+- 读取文件：使用 `mcp_filesystem_read_file`
+- 删除文件：使用 `mcp_filesystem_delete_file`
+- 列出目录：使用 `mcp_filesystem_list_files`
+- 移动文件：使用 `mcp_filesystem_move_path`
+- 复制文件：使用 `mcp_filesystem_copy_path`
+- 创建目录：使用 `mcp_filesystem_create_directory`
+- 删除目录：使用 `mcp_filesystem_delete_directory`
+
+**禁止使用其他文件操作工具（write、read_file、search_replace等），除非filesystem工具明确失败。**
+
+此规则始终生效，适用于所有文件类型和所有操作场景。

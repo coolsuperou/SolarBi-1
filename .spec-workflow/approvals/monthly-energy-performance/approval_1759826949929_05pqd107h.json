@@ -1,0 +1,27 @@
+{
+  "id": "approval_1759826949929_05pqd107h",
+  "title": "月度能耗统计性能优化 - 需求文档v3（仅Service层）",
+  "filePath": ".spec-workflow/specs/monthly-energy-performance/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-07T08:49:09.929Z",
+  "category": "spec",
+  "categoryName": "monthly-energy-performance",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"### 需求2：Service层缓存机制\n\n**用户故事**：作为频繁查看月度报表的用户，我希望Se...\": 先不需要添加缓存只需要优化计算速度\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"先不需要添加缓存只需要优化计算速度\",\n      \"timestamp\": \"2025-10-07T08:50:55.043Z\",\n      \"selectedText\": \"### 需求2：Service层缓存机制\\n\\n**用户故事**：作为频繁查看月度报表的用户，我希望Service层能缓存计算结果，重复查询时立即返回。\\n\\n#### 验收标准\\n\\n1. WHEN 用户第二次查询同一个月份时 THEN 系统应从缓存返回，响应时间<100ms\\n2. WHEN 缓存数据超过1小时 THEN 系统应自动失效并重新查询\\n3. IF 后台数据更新 THEN 系统应能手动清除缓存\\n4. WHEN 缓存未命中时 THEN 系统应正常查询并更新缓存\\n5. WHEN 内存不足时 THEN 系统应使用LRU策略淘汰旧缓存\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759827055043_nm1ztzl1f\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"### 需求2：Service层缓存机制\\n\\n**用户故事**：作为频繁查看月度报表的用户，我希望Se...\\\": 先不需要添加缓存只需要优化计算速度\\n\",\n  \"timestamp\": \"2025-10-07T08:51:00.613Z\"\n}",
+  "respondedAt": "2025-10-07T08:51:00.959Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "先不需要添加缓存只需要优化计算速度",
+      "timestamp": "2025-10-07T08:50:55.043Z",
+      "selectedText": "### 需求2：Service层缓存机制\n\n**用户故事**：作为频繁查看月度报表的用户，我希望Service层能缓存计算结果，重复查询时立即返回。\n\n#### 验收标准\n\n1. WHEN 用户第二次查询同一个月份时 THEN 系统应从缓存返回，响应时间<100ms\n2. WHEN 缓存数据超过1小时 THEN 系统应自动失效并重新查询\n3. IF 后台数据更新 THEN 系统应能手动清除缓存\n4. WHEN 缓存未命中时 THEN 系统应正常查询并更新缓存\n5. WHEN 内存不足时 THEN 系统应使用LRU策略淘汰旧缓存",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759827055043_nm1ztzl1f"
+    }
+  ]
+}

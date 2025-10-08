@@ -1,0 +1,21 @@
+{
+  "id": "approval_1759799992671_w2b74k66r",
+  "title": "月度能耗动态查询 - 设计文档 v3（修订：controller命名）",
+  "filePath": ".spec-workflow/specs/monthly-energy-dynamic/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-07T01:19:52.671Z",
+  "category": "spec",
+  "categoryName": "monthly-energy-dynamic",
+  "response": "Feedback Summary (1 comments):\n\nGeneral Comments:\n1. 所有相关页面名称应该叫做MonthlyEnergy\n\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"general\",\n      \"comment\": \"所有相关页面名称应该叫做MonthlyEnergy\",\n      \"timestamp\": \"2025-10-07T01:21:42.141Z\",\n      \"id\": \"comment_1759800102141_7tuot5yjt\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nGeneral Comments:\\n1. 所有相关页面名称应该叫做MonthlyEnergy\\n\\n\",\n  \"timestamp\": \"2025-10-07T01:21:43.189Z\"\n}",
+  "respondedAt": "2025-10-07T01:21:43.510Z",
+  "comments": [
+    {
+      "type": "general",
+      "comment": "所有相关页面名称应该叫做MonthlyEnergy",
+      "timestamp": "2025-10-07T01:21:42.141Z",
+      "id": "comment_1759800102141_7tuot5yjt"
+    }
+  ]
+}

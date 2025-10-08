@@ -37,44 +37,40 @@ html.monthly-energy-page,
   background: linear-gradient(135deg, #0a1929 0%, #1a237e 50%, #000051 100%);
   color: #ffffff;
   min-height: 100vh;
-  padding: 0;
+  padding: 10px;
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  gap: 10px;
 }
 
 .page-title {
   text-align: center;
   color: #00d4ff;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
-  padding: 15px 20px;
+  padding: 0;
   margin: 0;
-  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: linear-gradient(135deg, #0a1929 0%, #1a237e 50%, #000051 100%);
-  box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.8), 0 0 30px rgba(0, 212, 255, 0.4);
   flex-shrink: 0;
+  letter-spacing: 2px;
 }
 
 /* 查询区域 */
 .query-section {
-  background: rgba(10, 25, 41, 0.95);
-  border-bottom: 2px solid #00d4ff;
-  padding: 15px 20px;
+  background: rgba(10, 25, 41, 0.6);
+  border: 3px solid #00d4ff;
+  border-radius: 8px;
+  padding: 12px 20px;
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 20px;
-  box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
-  position: sticky;
-  top: 63px;
-  z-index: 99;
+  gap: 30px;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.6),
+              inset 0 0 20px rgba(0, 212, 255, 0.1);
   flex-shrink: 0;
 }
 
@@ -87,19 +83,24 @@ html.monthly-energy-page,
 .query-label {
   color: #00d4ff;
   font-weight: 600;
+  font-size: 15px;
 }
 
 .query-select {
-  background: rgba(26, 35, 126, 0.8);
-  border: 1px solid #00d4ff;
-  border-radius: 4px;
+  background: rgba(10, 25, 41, 0.8);
+  border: 2px solid #00d4ff;
+  border-radius: 6px;
   color: #ffffff;
-  padding: 8px 12px;
+  padding: 10px 16px;
   outline: none;
+  font-size: 14px;
+  min-width: 100px;
+  cursor: pointer;
 }
 
 .query-select:focus {
-  box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+  border-color: #00d4ff;
 }
 
 .query-select option {
@@ -109,24 +110,25 @@ html.monthly-energy-page,
 
 /* 查询按钮 */
 .query-button {
-  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  background: #00d4ff;
   border: 2px solid #00d4ff;
   border-radius: 8px;
-  color: #fff;
+  color: #0a1929;
   font-weight: bold;
-  padding: 8px 24px;
+  padding: 10px 30px;
   cursor: pointer;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+  text-shadow: none;
   transition: all 0.3s ease;
   outline: none;
-  font-size: 14px;
+  font-size: 15px;
+  letter-spacing: 1px;
 }
 
 .query-button:hover {
-  background: linear-gradient(135deg, #0099cc 0%, #00d4ff 100%);
-  box-shadow: 0 0 30px rgba(0, 212, 255, 0.7);
-  transform: translateY(-2px);
+  background: #00b8d4;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.9);
+  transform: translateY(-1px);
 }
 
 .query-button:active {
@@ -141,16 +143,17 @@ html.monthly-energy-page,
 
 /* 表格容器 */
 .table-container {
-  background: rgba(10, 25, 41, 0.9);
-  border: 2px solid #00d4ff;
-  border-top: none;
-  border-radius: 12px;
+  background: rgba(10, 25, 41, 0.6);
+  border: 3px solid #00d4ff;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 0 25px rgba(0, 212, 255, 0.4);
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.7),
+              inset 0 0 30px rgba(0, 212, 255, 0.1);
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  max-height: 100%;
 }
 
 .table-wrapper {
@@ -160,6 +163,8 @@ html.monthly-energy-page,
   position: relative;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
+  height: 100%;
+  max-height: 100%;
 }
 
 /* 隐藏垂直滚动条但保留横向滚动条 */
@@ -169,6 +174,7 @@ html.monthly-energy-page,
 
 .data-table {
   width: 100%;
+  height: 100%;
   border-collapse: collapse;
   font-size: 13px;
   min-width: 1400px;
@@ -176,30 +182,13 @@ html.monthly-energy-page,
 
 .data-table th,
 .data-table td {
-  border: 1px solid rgba(0, 212, 255, 0.3);
-  padding: 8px;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  padding: 6px 8px;
   text-align: center;
   white-space: nowrap;
 }
 
-/* 表格四个角的圆角效果 */
-.data-table thead tr:first-child th:first-child {
-  border-top-left-radius: 10px;
-}
-
-.data-table thead tr:first-child th:last-child {
-  border-top-right-radius: 10px;
-}
-
-.data-table tbody tr:last-child td:first-child {
-  border-bottom-left-radius: 10px;
-}
-
-.data-table tbody tr:last-child td:last-child {
-  border-bottom-right-radius: 10px;
-}
-
-/* 🎯 表头固定在查询区域下方 */
+/* 🎯 表头固定在表格顶部 */
 .monthly-energy-container .data-table thead {
   position: sticky;
   top: 0;
@@ -207,54 +196,56 @@ html.monthly-energy-page,
 }
 
 .monthly-energy-container .data-table thead th {
-  background: #0a1929 !important;
+  background: rgba(10, 25, 41, 0.95) !important;
   color: #00d4ff !important;
   font-weight: 700;
   position: sticky;
   top: 0;
   z-index: 50;
-  border: 1px solid #00d4ff !important;
+  border: 1px solid rgba(0, 212, 255, 0.4) !important;
+  padding: 8px !important;
 }
 
 /* ✅ 左上角"车间"列：既固定在左侧，也固定在顶部 */
 .monthly-energy-container .data-table thead th.info-header {
-  background: #0a1929 !important;
-  border-right: 2px solid #00d4ff !important;
+  background: rgba(10, 25, 41, 1.0) !important;
+  border-right: 2px solid rgba(0, 212, 255, 0.6) !important;
   color: #00d4ff !important;
   font-weight: 700 !important;
-  text-align: left !important;
+  text-align: center !important;
   position: sticky !important;
   left: 0 !important;
   top: 0 !important;
   z-index: 60 !important;
-  min-width: 150px;
-  max-width: 150px;
-  padding: 8px 12px !important;
-  box-shadow: 2px 0 5px rgba(0, 212, 255, 0.3);
+  min-width: 120px;
+  max-width: 120px;
+  padding: 8px !important;
+  box-shadow: 2px 0 8px rgba(0, 212, 255, 0.4);
 }
 
 /* 信息列数据单元格（tbody中的"车间"列） */
 .monthly-energy-container table.data-table tbody tr td.info-cell {
-  background: #0a1929 !important;
-  border-right: 2px solid #00d4ff !important;
+  background: rgba(10, 25, 41, 1.0) !important;
+  border-right: 2px solid rgba(0, 212, 255, 0.6) !important;
   color: #00d4ff !important;
   font-weight: 600;
   text-align: left !important;
   position: sticky !important;
   left: 0 !important;
   z-index: 10 !important;
-  min-width: 150px;
-  max-width: 150px;
-  padding: 8px 12px !important;
-  box-shadow: 2px 0 5px rgba(0, 212, 255, 0.3) !important;
+  min-width: 120px;
+  max-width: 120px;
+  padding: 6px 12px !important;
+  box-shadow: 2px 0 8px rgba(0, 212, 255, 0.4) !important;
 }
 
 /* 数据单元格 */
 .data-cell {
-  background: rgba(10, 25, 41, 0.3);
+  background: rgba(10, 25, 41, 0.4);
   color: #ffffff;
-  min-width: 80px;
+  min-width: 85px;
   transition: background-color 0.2s ease;
+  font-size: 13px;
 }
 
 .data-cell:hover {
@@ -268,26 +259,35 @@ html.monthly-energy-page,
   font-weight: 600;
 }
 
-/* 合计行 */
+/* 合计行 - 绿色发光效果 */
 .total-row {
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 255, 136, 0.2)) !important;
+  background: rgba(0, 255, 102, 0.15) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 102, 0.5),
+              inset 0 0 15px rgba(0, 255, 102, 0.2) !important;
 }
 
 .total-row td {
-  color: #00ff88 !important;
+  color: #00ff66 !important;
   font-weight: 700;
-  border-top: 2px solid #00ff88;
+  border: 1px solid rgba(0, 255, 102, 0.5) !important;
+  border-top: 2px solid rgba(0, 255, 102, 0.8) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.8),
+               0 0 20px rgba(0, 255, 102, 0.4);
+  background: rgba(0, 255, 102, 0.1);
 }
 
 .monthly-energy-container table.data-table tbody tr.total-row td.info-cell {
-  background: #0a1929 !important;
-  border-right: 2px solid #00ff88 !important;
-  color: #00ff88 !important;
-  box-shadow: 2px 0 5px rgba(0, 255, 136, 0.4) !important;
+  background: rgba(0, 100, 40, 1.0) !important;
+  border-right: 2px solid rgba(0, 255, 102, 0.8) !important;
+  color: #00ff66 !important;
+  box-shadow: 2px 0 15px rgba(0, 255, 102, 0.6),
+              inset 0 0 10px rgba(0, 255, 102, 0.2) !important;
   position: sticky !important;
   left: 0 !important;
   z-index: 15 !important;
   font-weight: 700 !important;
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.8),
+               0 0 20px rgba(0, 255, 102, 0.4) !important;
 }
 
 /* 表格行悬停 */
@@ -296,36 +296,35 @@ html.monthly-energy-page,
 }
 
 /* 🔥 滚动条样式 - 只显示底部横向滚动条 */
-.table-container {
+.table-wrapper {
   scrollbar-width: thin !important;
-  scrollbar-color: #00d4ff rgba(10, 25, 41, 0.8) !important;
+  scrollbar-color: #00d4ff rgba(10, 25, 41, 0.3) !important;
 }
 
-.table-container::-webkit-scrollbar {
-  display: block !important;
-  width: 0 !important; /* 隐藏垂直滚动条 */
-  height: 12px !important; /* 保留横向滚动条 */
+.table-wrapper::-webkit-scrollbar {
+  width: 0 !important;
+  height: 14px !important;
 }
 
-.table-container::-webkit-scrollbar-track {
-  display: block !important;
-  background: rgba(10, 25, 41, 0.5) !important;
-  border-radius: 4px !important;
+.table-wrapper::-webkit-scrollbar-track {
+  background: rgba(10, 25, 41, 0.8) !important;
+  border-radius: 6px !important;
+  margin: 0 10px;
 }
 
-.table-container::-webkit-scrollbar-thumb {
-  display: block !important;
+.table-wrapper::-webkit-scrollbar-thumb {
   background: #00d4ff !important;
-  border-radius: 4px !important;
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.6) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.8),
+              inset 0 0 5px rgba(255, 255, 255, 0.2) !important;
 }
 
-.table-container::-webkit-scrollbar-thumb:hover {
-  background: #00ff88 !important;
-  box-shadow: 0 0 15px rgba(0, 255, 136, 0.8) !important;
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #00e5ff !important;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 1),
+              inset 0 0 8px rgba(255, 255, 255, 0.3) !important;
 }
 
-.table-container::-webkit-scrollbar-corner {
-  display: block !important;
-  background: rgba(10, 25, 41, 0.5) !important;
+.table-wrapper::-webkit-scrollbar-corner {
+  background: transparent !important;
 }

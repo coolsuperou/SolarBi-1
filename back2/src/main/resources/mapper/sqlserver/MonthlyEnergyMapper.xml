@@ -33,6 +33,8 @@
             Workshop
         FROM RSWS_TempMonitor_Copy
         WHERE ElectricEnergy IS NOT NULL
+          AND Workshop != '备用'
+          AND Workshop != '备用总表'
             <if test="workshop != null and workshop != ''">
                 AND Workshop = #{workshop}
             </if>

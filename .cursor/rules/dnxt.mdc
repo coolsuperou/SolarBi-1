@@ -18,4 +18,10 @@ alwaysApply: true
 
 **禁止使用其他文件操作工具（write、read_file、search_replace等），除非filesystem工具明确失败。**
 
+**禁止自动执行操作：**
+- 不要自己检查编译是否成功
+- 不要自己运行终端命令（npm start, mvn spring-boot:run, gradle build 等）
+- 不要自动执行测试或构建命令
+- 除非用户明确要求，否则不要运行任何 shell 命令
+
 此规则始终生效，适用于所有文件类型和所有操作场景。

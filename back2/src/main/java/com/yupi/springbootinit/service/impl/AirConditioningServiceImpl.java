@@ -38,7 +38,7 @@ public class AirConditioningServiceImpl implements AirConditioningService {
         long size = request.getPageSize();
 
         Page<TempMonitor> page = new Page<>(current, size);
-        String fixedWorkshop = "103冷压";
+        String fixedWorkshop = "114_空调水机主机";
 
         return airConditioningMapper.selectPageByCondition(
                 page,
@@ -64,7 +64,7 @@ public class AirConditioningServiceImpl implements AirConditioningService {
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     public TempMonitorStatistics getStatistics(String workshop, Date startTime, Date endTime) {
         // 服务层也强制限定车间
-        String fixedWorkshop = "103冷压";
+        String fixedWorkshop = "114_空调水机主机";
         TempMonitorStatistics statistics = airConditioningMapper.getStatistics(fixedWorkshop, startTime, endTime);
 
         // 如果统计结果为空，创建一个默认的统计对象
@@ -100,7 +100,7 @@ public class AirConditioningServiceImpl implements AirConditioningService {
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     public List<HourlyEnergyConsumption> getHourlyEnergyConsumptionQuery(String workshop, String deviceId, Date startTime, Date endTime) {
         // 服务层强制限定车间
-        String fixedWorkshop = "103冷压";
+        String fixedWorkshop = "114_空调水机主机";
         log.debug("优化版本：使用统一计算工具类，车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}", fixedWorkshop, deviceId, startTime, endTime);
 
         // 🔥 使用现有的非分页查询方法
@@ -117,7 +117,7 @@ public class AirConditioningServiceImpl implements AirConditioningService {
 
         // 保持原有调试日志
         if (result != null && !result.isEmpty()) {
-            log.info("=== 每小时电能消耗数据调试信息（优化版本-103冷压） ===");
+            log.info("=== 每小时电能消耗数据调试信息（优化版本-114_空调水机主机） ===");
             log.info("计算结果总数: {}", result.size());
             for (HourlyEnergyConsumption item : result) {
                 log.info("设备: {}, 小时: {}, 开始能耗: {}, 结束能耗: {}, 消耗量: {}, 开始时间: {}, 结束时间: {}",
@@ -144,7 +144,7 @@ public class AirConditioningServiceImpl implements AirConditioningService {
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     public List<DailyEnergyConsumption> getDailyEnergyConsumptionQuery(String workshop, String deviceId, Date startTime, Date endTime) {
-        String fixedWorkshop = "103冷压";
+        String fixedWorkshop = "114_空调水机主机";
         log.debug("优化版本：使用selectHourlyRawData非分页查询后Java计算日能耗，车间: {}, 设备: {}, 开始时间: {}, 结束时间: {}", fixedWorkshop, deviceId, startTime, endTime);
 
         // 🔥 复用同样的非分页查询方法
@@ -161,7 +161,7 @@ public class AirConditioningServiceImpl implements AirConditioningService {
 
         // 保持原有调试日志
         if (result != null && !result.isEmpty()) {
-            log.info("=== 每日电能消耗数据调试信息（优化版本-103冷压） ===");
+            log.info("=== 每日电能消耗数据调试信息（优化版本-114_空调水机主机） ===");
             for (DailyEnergyConsumption item : result) {
                 log.info("设备: {}, 日期: {}, 开始能耗: {}, 结束能耗: {}, 消耗量: {}, 开始时间: {}, 结束时间: {}",
                         item.getDeviceId(), item.getDay(), item.getStartEnergy(), item.getEndEnergy(),
@@ -184,7 +184,7 @@ public class AirConditioningServiceImpl implements AirConditioningService {
     @Override
     @Transactional(transactionManager = "secondaryTransactionManager", readOnly = true)
     public Double getEnergyConsumption(Date startTime, Date endTime, String mode) {
-        String fixedWorkshop = "103冷压";
+        String fixedWorkshop = "114_空调水机主机";
         log.debug("优化版本：使用Java计算总电能消耗，开始时间: {}, 结束时间: {}, 模式: {}", startTime, endTime, mode);
 
         // 🔥 复用同样的非分页查询方法

@@ -12,7 +12,12 @@ export default [
     name: '月度能耗统计',
     icon: 'BarChartOutlined',
     component: './MonthlyEnergy',
-
+  },
+  {
+    path: '/hourly-energy',
+    name: '日能耗统计',
+    icon: 'LineChartOutlined',
+    component: './HourlyEnergy',
   },
   {
     path: '/airConditioning',

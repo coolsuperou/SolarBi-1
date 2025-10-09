@@ -57,7 +57,7 @@ const MonthlyEnergyPage: React.FC = () => {
       {/* 查询区域 */}
       <div className="query-section">
         <div className="query-group">
-          <label className="query-label">年月</label>
+          <label className="query-label">年份</label>
           <select className="query-select" value={year} onChange={(e) => setYear(Number(e.target.value))}>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
@@ -86,7 +86,7 @@ const MonthlyEnergyPage: React.FC = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th className="info-header">信息</th>
+                <th className="info-header">车间</th>
                 {Array.from({ length: data.daysInMonth }, (_, i) => i + 1).map((day) => (
                   <th key={day}>{day.toString().padStart(2, '0')}日</th>
                 ))}
@@ -100,10 +100,11 @@ const MonthlyEnergyPage: React.FC = () => {
                     <td className="info-cell">{workshop}</td>
                     {dailyData.map((value: number, index: number) => {
                       const getDataColor = () => {
-                        if (value > MONTHLY_ENERGY_CONFIG.DATA_THRESHOLD_2) return MONTHLY_ENERGY_CONFIG.DATA_COLOR_2; // 💜 紫色
-                        if (value > MONTHLY_ENERGY_CONFIG.DATA_THRESHOLD_1) return MONTHLY_ENERGY_CONFIG.DATA_COLOR_1; // 💛 黄色
-                        return undefined; // 💚 默认颜色
+                        if (value > MONTHLY_ENERGY_CONFIG.DATA_THRESHOLD_2) return MONTHLY_ENERGY_CONFIG.DATA_COLOR_2;
+                        if (value > MONTHLY_ENERGY_CONFIG.DATA_THRESHOLD_1) return MONTHLY_ENERGY_CONFIG.DATA_COLOR_1;
+                        return undefined;
                       };
+                      
                       return (
                         <td
                           key={index}
@@ -121,11 +122,13 @@ const MonthlyEnergyPage: React.FC = () => {
               {/* 合计行 */}
               <tr className="total-row">
                 <td className="info-cell">合计</td>
-                {data.dailyTotal.map((value: number, index: number) => (
-                  <td key={index} className="data-cell">
-                    {value === 0 ? MONTHLY_ENERGY_CONFIG.ZERO_DISPLAY : value.toFixed(1)}
-                  </td>
-                ))}
+                {data.dailyTotal.map((value: number, index: number) => {
+                  return (
+                    <td key={index} className="data-cell">
+                      {value === 0 ? MONTHLY_ENERGY_CONFIG.ZERO_DISPLAY : value.toFixed(1)}
+                    </td>
+                  );
+                })}
               </tr>
             </tbody>
           </table>

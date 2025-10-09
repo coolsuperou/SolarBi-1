@@ -1,11 +1,11 @@
-/* 月度能耗统计表样式 - 完全复刻HTML版本 */
+/* 日能耗统计表样式 - 完全复刻HTML版本 */
 
 /* 🔥 强制覆盖所有全局样式 */
 
 /* 覆盖body/html/root */
-body.monthly-energy-page,
-html.monthly-energy-page,
-#root.monthly-energy-page {
+body.hourly-energy-page,
+html.hourly-energy-page,
+#root.hourly-energy-page {
   margin: 0 !important;
   padding: 0 !important;
   background: #0a1929 !important;
@@ -27,12 +27,12 @@ html.monthly-energy-page,
   display: none !important;
 }
 
-.monthly-energy-container,
-.monthly-energy-container * {
+.hourly-energy-container,
+.hourly-energy-container * {
   box-sizing: border-box;
 }
 
-.monthly-energy-container {
+.hourly-energy-container {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   background: linear-gradient(135deg, #0a1929 0%, #1a237e 50%, #000051 100%);
   color: #ffffff;
@@ -177,7 +177,7 @@ html.monthly-energy-page,
   height: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  min-width: 1400px;
+  min-width: 2200px;
 }
 
 .data-table th,
@@ -189,13 +189,13 @@ html.monthly-energy-page,
 }
 
 /* 🎯 表头固定在表格顶部 */
-.monthly-energy-container .data-table thead {
+.hourly-energy-container .data-table thead {
   position: sticky;
   top: 0;
   z-index: 50;
 }
 
-.monthly-energy-container .data-table thead th {
+.hourly-energy-container .data-table thead th {
   background: rgba(10, 25, 41, 0.95) !important;
   color: #00d4ff !important;
   font-weight: 700;
@@ -207,7 +207,7 @@ html.monthly-energy-page,
 }
 
 /* ✅ 左上角"车间"列：既固定在左侧，也固定在顶部 */
-.monthly-energy-container .data-table thead th.info-header {
+.hourly-energy-container .data-table thead th.info-header {
   background: rgba(10, 25, 41, 1.0) !important;
   border-right: 2px solid rgba(0, 212, 255, 0.6) !important;
   color: #00d4ff !important;
@@ -224,7 +224,7 @@ html.monthly-energy-page,
 }
 
 /* 信息列数据单元格（tbody中的"车间"列） */
-.monthly-energy-container table.data-table tbody tr td.info-cell {
+.hourly-energy-container table.data-table tbody tr td.info-cell {
   background: rgba(10, 25, 41, 1.0) !important;
   border-right: 2px solid rgba(0, 212, 255, 0.6) !important;
   color: #00d4ff !important;
@@ -244,18 +244,12 @@ html.monthly-energy-page,
   background: rgba(10, 25, 41, 0.4);
   color: #ffffff;
   min-width: 85px;
-  transition: all 0.3s ease;
+  transition: background-color 0.2s ease;
   font-size: 13px;
-  cursor: help;
 }
 
 .data-cell:hover {
-  background: rgba(0, 212, 255, 0.2);
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5),
-              inset 0 0 10px rgba(0, 212, 255, 0.2);
-  z-index: 5;
-  position: relative;
+  background: rgba(0, 212, 255, 0.1);
 }
 
 /* 高亮数值（黄色） */
@@ -263,6 +257,21 @@ html.monthly-energy-page,
   background: rgba(255, 215, 0, 0.1) !important;
   color: #ffd700 !important;
   font-weight: 600;
+}
+
+/* 高亮数值（紫色） */
+.highlight-purple {
+  background: rgba(218, 112, 214, 0.15) !important;
+  color: #da70d6 !important;
+  font-weight: 600;
+}
+
+/* 次日时间标记 */
+.next-day-mark {
+  font-size: 10px;
+  opacity: 0.7;
+  display: block;
+  margin-top: 2px;
 }
 
 /* 合计行 - 绿色发光效果 */
@@ -282,7 +291,8 @@ html.monthly-energy-page,
   background: rgba(0, 255, 102, 0.1);
 }
 
-.monthly-energy-container table.data-table tbody tr.total-row td.info-cell {
+.hourly-energy-container table.data-table tbody tr.total-row td.info-cell,
+.hourly-energy-container table.data-table tfoot tr.total-row td.info-cell {
   background: rgba(0, 100, 40, 1.0) !important;
   border-right: 2px solid rgba(0, 255, 102, 0.8) !important;
   color: #00ff66 !important;

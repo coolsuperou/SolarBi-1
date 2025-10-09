@@ -275,7 +275,15 @@ public class EnergyCalculationUtils {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
 
-        while (cal.getTime().before(endTime)) {
+        // 将 endTime 也截取到小时开始，用于比较
+        Calendar endCal = Calendar.getInstance();
+        endCal.setTime(endTime);
+        endCal.set(Calendar.MINUTE, 0);
+        endCal.set(Calendar.SECOND, 0);
+        endCal.set(Calendar.MILLISECOND, 0);
+        Date endHour = endCal.getTime();
+
+        while (cal.getTime().before(endHour)) {
             hourlyPoints.add(cal.getTime());
             cal.add(Calendar.HOUR_OF_DAY, 1);
         }

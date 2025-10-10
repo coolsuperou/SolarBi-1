@@ -1,0 +1,27 @@
+{
+  "id": "approval_1759981568180_v13ugywml",
+  "title": "Hourly Energy Backend API - Requirements (Simplified)",
+  "filePath": ".spec-workflow/specs/hourly-energy-backend-api/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-09T03:46:08.180Z",
+  "category": "spec",
+  "categoryName": "hourly-energy-backend-api",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"- 假设使用与月度统计相同的底层数据表\": 就是使用相同的数据表\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"就是使用相同的数据表\",\n      \"timestamp\": \"2025-10-09T03:47:50.085Z\",\n      \"selectedText\": \"- 假设使用与月度统计相同的底层数据表\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759981670085_wvlfsa39a\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"- 假设使用与月度统计相同的底层数据表\\\": 就是使用相同的数据表\\n\",\n  \"timestamp\": \"2025-10-09T03:48:01.221Z\"\n}",
+  "respondedAt": "2025-10-09T03:48:01.550Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "就是使用相同的数据表",
+      "timestamp": "2025-10-09T03:47:50.085Z",
+      "selectedText": "- 假设使用与月度统计相同的底层数据表",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759981670085_wvlfsa39a"
+    }
+  ]
+}

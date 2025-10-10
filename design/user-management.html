@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理系统 - SolarBi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a1929 0%, #1a237e 50%, #000051 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            color: #00d4ff;
+            font-size: 32px;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.8), 0 0 30px rgba(0, 212, 255, 0.4);
+            letter-spacing: 2px;
+        }
+
+        /* 工具栏 */
+        .toolbar {
+            background: rgba(10, 25, 41, 0.6);
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-input {
+            flex: 1;
+            background: rgba(10, 25, 41, 0.8);
+            border: 2px solid #00d4ff;
+            border-radius: 6px;
+            color: #ffffff;
+            padding: 10px 15px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-input:focus {
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+        }
+
+        .btn {
+            background: #00d4ff;
+            border: 2px solid #00d4ff;
+            border-radius: 6px;
+            color: #0a1929;
+            font-weight: bold;
+            padding: 10px 25px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+            transition: all 0.3s ease;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background: #00b8d4;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .btn-add {
+            background: #00ff66;
+            border-color: #00ff66;
+        }
+
+        .btn-add:hover {
+            background: #00cc52;
+        }
+
+        /* 用户表格 */
+        .table-container {
+            background: rgba(10, 25, 41, 0.6);
+            border: 3px solid #00d4ff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.7);
+        }
+
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .user-table th,
+        .user-table td {
+            border: 1px solid rgba(0, 212, 255, 0.25);
+            padding: 12px;
+            text-align: left;
+        }
+
+        .user-table th {
+            background: rgba(10, 25, 41, 0.95);
+            color: #00d4ff;
+            font-weight: 700;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .user-table tbody tr {
+            transition: background-color 0.3s ease;
+        }
+
+        .user-table tbody tr:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .user-table td {
+            background: rgba(10, 25, 41, 0.4);
+        }
+
+        /* 角色徽章 */
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .role-admin {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+
+        .role-user {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+            border: 1px solid #00d4ff;
+        }
+
+        /* 状态指示器 */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active {
+            background: #00ff66;
+            box-shadow: 0 0 10px #00ff66;
+        }
+
+        .status-inactive {
+            background: #999;
+        }
+
+        /* 操作按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: #00d4ff;
+            color: #0a1929;
+        }
+
+        .btn-edit:hover {
+            background: #00b8d4;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+        }
+
+        .btn-delete {
+            background: #ff6b6b;
+            color: #ffffff;
+        }
+
+        .btn-delete:hover {
+            background: #ff5252;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.8);
+        }
+
+        .btn-permission {
+            background: #ffd700;
+            color: #0a1929;
+        }
+
+        .btn-permission:hover {
+            background: #ffed4e;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #0a1929 0%, #1a237e 100%);
+            border: 3px solid #00d4ff;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(0, 212, 255, 0.8);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #00d4ff;
+        }
+
+        .modal-title {
+            color: #00d4ff;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.6);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #ff5252;
+            transform: rotate(90deg);
+        }
+
+        /* 表单 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: #00d4ff;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(10, 25, 41, 0.8);
+            border: 2px solid #00d4ff;
+            border-radius: 6px;
+            color: #ffffff;
+            padding: 10px 15px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+        }
+
+        .form-select {
+            width: 100%;
+            background: rgba(10, 25, 41, 0.8);
+            border: 2px solid #00d4ff;
+            border-radius: 6px;
+            color: #ffffff;
+            padding: 10px 15px;
+            outline: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .form-select option {
+            background: #1a237e;
+        }
+
+        /* 权限复选框列表 */
+        .permission-list {
+            background: rgba(10, 25, 41, 0.6);
+            border: 2px solid #00d4ff;
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .permission-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        .permission-item:hover {
+            background: rgba(0, 212, 255, 0.15);
+        }
+
+        .permission-checkbox {
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+            cursor: pointer;
+            accent-color: #00d4ff;
+        }
+
+        .permission-label {
+            flex: 1;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .permission-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-left: 30px;
+            margin-top: 4px;
+        }
+
+        /* 按钮组 */
+        .modal-footer {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 2px solid #00d4ff;
+            color: #00d4ff;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        /* 密码显示切换 */
+        .password-field {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #00d4ff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .password-toggle:hover {
+            color: #00b8d4;
+        }
+
+        /* 滚动条样式 */
+        .permission-list::-webkit-scrollbar,
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .permission-list::-webkit-scrollbar-track,
+        .modal-content::-webkit-scrollbar-track {
+            background: rgba(10, 25, 41, 0.8);
+            border-radius: 4px;
+        }
+
+        .permission-list::-webkit-scrollbar-thumb,
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #00d4ff;
+            border-radius: 4px;
+        }
+
+        .permission-list::-webkit-scrollbar-thumb:hover,
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #00b8d4;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .user-table {
+                font-size: 12px;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1 class="page-title">👥 用户管理系统</h1>
+        </div>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索用户名、角色...">
+                <button class="btn" onclick="searchUsers()">搜索</button>
+            </div>
+            <button class="btn btn-add" onclick="openAddUserModal()">➕ 添加用户</button>
+        </div>
+
+        <!-- 用户表格 -->
+        <div class="table-container">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户名</th>
+                        <th>角色</th>
+                        <th>密码</th>
+                        <th>状态</th>
+                        <th>创建时间</th>
+                        <th>最后登录</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    <!-- 示例数据 -->
+                    <tr>
+                        <td style="text-align: center;">1</td>
+                        <td>admin</td>
+                        <td style="text-align: center;"><span class="role-badge role-admin">管理员</span></td>
+                        <td style="text-align: center;">
+                            <span class="password-display" data-password="admin123">••••••••</span>
+                            <button class="btn-action" style="background: transparent; color: #00d4ff; margin-left: 10px;" onclick="togglePassword(this)">👁️ 显示</button>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="status-indicator status-active"></span>
+                            <span>活跃</span>
+                        </td>
+                        <td style="text-align: center;">2025-01-01</td>
+                        <td style="text-align: center;">2025-10-09 15:30</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-edit" onclick="editUser(1)">✏️ 编辑</button>
+                                <button class="btn-action btn-permission" onclick="openPermissionModal(1)">🔑 权限</button>
+                                <button class="btn-action btn-delete" onclick="deleteUser(1)">🗑️ 删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">2</td>
+                        <td>user001</td>
+                        <td style="text-align: center;"><span class="role-badge role-user">普通用户</span></td>
+                        <td style="text-align: center;">
+                            <span class="password-display" data-password="user123">••••••••</span>
+                            <button class="btn-action" style="background: transparent; color: #00d4ff; margin-left: 10px;" onclick="togglePassword(this)">👁️ 显示</button>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="status-indicator status-active"></span>
+                            <span>活跃</span>
+                        </td>
+                        <td style="text-align: center;">2025-02-15</td>
+                        <td style="text-align: center;">2025-10-08 09:20</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-edit" onclick="editUser(2)">✏️ 编辑</button>
+                                <button class="btn-action btn-permission" onclick="openPermissionModal(2)">🔑 权限</button>
+                                <button class="btn-action btn-delete" onclick="deleteUser(2)">🗑️ 删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">3</td>
+                        <td>zhangsan</td>
+                        <td style="text-align: center;"><span class="role-badge role-user">普通用户</span></td>
+                        <td style="text-align: center;">
+                            <span class="password-display" data-password="zhang123">••••••••</span>
+                            <button class="btn-action" style="background: transparent; color: #00d4ff; margin-left: 10px;" onclick="togglePassword(this)">👁️ 显示</button>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="status-indicator status-inactive"></span>
+                            <span>禁用</span>
+                        </td>
+                        <td style="text-align: center;">2025-03-20</td>
+                        <td style="text-align: center;">2025-09-30 14:15</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-edit" onclick="editUser(3)">✏️ 编辑</button>
+                                <button class="btn-action btn-permission" onclick="openPermissionModal(3)">🔑 权限</button>
+                                <button class="btn-action btn-delete" onclick="deleteUser(3)">🗑️ 删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 添加/编辑用户模态框 -->
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">添加用户</h2>
+                <button class="close-btn" onclick="closeModal('userModal')">×</button>
+            </div>
+
+            <form id="userForm">
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <input type="text" class="form-input" id="username" placeholder="请输入用户名" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <div class="password-field">
+                        <input type="password" class="form-input" id="password" placeholder="请输入密码" required>
+                        <button type="button" class="password-toggle" onclick="togglePasswordInput('password')">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">角色</label>
+                    <select class="form-select" id="role">
+                        <option value="user">普通用户</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">状态</label>
+                    <select class="form-select" id="status">
+                        <option value="active">活跃</option>
+                        <option value="inactive">禁用</option>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('userModal')">取消</button>
+                    <button type="submit" class="btn">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 权限设置模态框 -->
+    <div class="modal" id="permissionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">权限设置</h2>
+                <button class="close-btn" onclick="closeModal('permissionModal')">×</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">用户: <span id="permissionUsername" style="color: #00ff66;">admin</span></label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">页面访问权限</label>
+                <div class="permission-list">
+                    <div class="permission-item">
+                        <input type="checkbox" class="permission-checkbox" id="perm-monthly" checked>
+                        <label class="permission-label" for="perm-monthly">
+                            <div>📊 月度能耗统计</div>
+                            <div class="permission-desc">查看和管理月度能耗数据</div>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" class="permission-checkbox" id="perm-hourly" checked>
+                        <label class="permission-label" for="perm-hourly">
+                            <div>📈 日能耗统计</div>
+                            <div class="permission-desc">查看和管理小时能耗数据</div>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" class="permission-checkbox" id="perm-aircon">
+                        <label class="permission-label" for="perm-aircon">
+                            <div>❄️ 空调水机主机</div>
+                            <div class="permission-desc">查看空调水机主机数据</div>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" class="permission-checkbox" id="perm-office">
+                        <label class="permission-label" for="perm-office">
+                            <div>🏢 办公楼</div>
+                            <div class="permission-desc">查看办公楼能耗数据</div>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" class="permission-checkbox" id="perm-workshop1">
+                        <label class="permission-label" for="perm-workshop1">
+                            <div>🏭 101配料车间</div>
+                            <div class="permission-desc">查看配料车间数据</div>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" class="permission-checkbox" id="perm-workshop2">
+                        <label class="permission-label" for="perm-workshop2">
+                            <div>🏭 102造粒车间</div>
+                            <div class="permission-desc">查看造粒车间数据</div>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" class="permission-checkbox" id="perm-workshop3">
+                        <label class="permission-label" for="perm-workshop3">
+                            <div>🏭 103冷压车间</div>
+                            <div class="permission-desc">查看冷压车间数据</div>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" class="permission-checkbox" id="perm-canteen">
+                        <label class="permission-label" for="perm-canteen">
+                            <div>🍽️ 食堂</div>
+                            <div class="permission-desc">查看食堂能耗数据</div>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" class="permission-checkbox" id="perm-dorm">
+                        <label class="permission-label" for="perm-dorm">
+                            <div>🏠 宿舍楼</div>
+                            <div class="permission-desc">查看宿舍楼能耗数据</div>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" class="permission-checkbox" id="perm-user-mgmt" checked>
+                        <label class="permission-label" for="perm-user-mgmt">
+                            <div>👥 用户管理</div>
+                            <div class="permission-desc">管理系统用户和权限</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeModal('permissionModal')">取消</button>
+                <button class="btn" onclick="savePermissions()">保存权限</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 搜索用户
+        function searchUsers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#userTableBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        // 显示/隐藏密码
+        function togglePassword(btn) {
+            const passwordSpan = btn.previousElementSibling;
+            const realPassword = passwordSpan.getAttribute('data-password');
+            
+            if (passwordSpan.textContent === '••••••••') {
+                passwordSpan.textContent = realPassword;
+                btn.textContent = '👁️ 隐藏';
+            } else {
+                passwordSpan.textContent = '••••••••';
+                btn.textContent = '👁️ 显示';
+            }
+        }
+
+        // 切换密码输入框显示
+        function togglePasswordInput(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // 打开添加用户模态框
+        function openAddUserModal() {
+            document.getElementById('modalTitle').textContent = '添加用户';
+            document.getElementById('userForm').reset();
+            document.getElementById('userModal').classList.add('active');
+        }
+
+        // 编辑用户
+        function editUser(userId) {
+            document.getElementById('modalTitle').textContent = '编辑用户';
+            // 这里应该加载用户数据
+            document.getElementById('username').value = 'user' + userId;
+            document.getElementById('password').value = 'password123';
+            document.getElementById('role').value = userId === 1 ? 'admin' : 'user';
+            document.getElementById('status').value = 'active';
+            document.getElementById('userModal').classList.add('active');
+        }
+
+        // 打开权限设置模态框
+        function openPermissionModal(userId) {
+            // 这里应该加载用户权限数据
+            const username = userId === 1 ? 'admin' : 'user00' + userId;
+            document.getElementById('permissionUsername').textContent = username;
+            document.getElementById('permissionModal').classList.add('active');
+        }
+
+        // 删除用户
+        function deleteUser(userId) {
+            if (confirm('确定要删除该用户吗？此操作不可恢复！')) {
+                alert('用户已删除（这是演示）');
+                // 这里应该调用删除API
+            }
+        }
+
+        // 保存权限
+        function savePermissions() {
+            const permissions = [];
+            document.querySelectorAll('.permission-checkbox:checked').forEach(checkbox => {
+                permissions.push(checkbox.id);
+            });
+            
+            console.log('保存的权限:', permissions);
+            alert('权限保存成功！\n' + permissions.join('\n'));
+            closeModal('permissionModal');
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // 表单提交
+        document.getElementById('userForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                role: document.getElementById('role').value,
+                status: document.getElementById('status').value
+            };
+            
+            console.log('保存用户:', formData);
+            alert('用户保存成功！（这是演示）');
+            closeModal('userModal');
+        });
+
+        // 点击模态框外部关闭
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+
+        // Enter键搜索
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchUsers();
+            }
+        });
+    </script>
+</body>
+</html>

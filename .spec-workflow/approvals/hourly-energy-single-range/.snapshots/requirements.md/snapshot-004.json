@@ -1,0 +1,16 @@
+{
+  "id": "snapshot_1759911913453_rp63qjsta",
+  "approvalId": "approval_1759910974526_qwpsb0v9n",
+  "approvalTitle": "需求文档（简化版）- 修改后端数据计算逻辑",
+  "version": 4,
+  "timestamp": "2025-10-08T08:25:13.453Z",
+  "trigger": "revision_requested",
+  "status": "pending",
+  "content": "# Requirements Document\n\n## Introduction\n\n修改后端小时能耗计算逻辑，仅调整数据计算方式。\n\n当前端传入开始时间 `2024-01-01 08:00:00` 和结束时间 `2024-01-01 09:59:00` 时，后端计算逻辑修改为：返回 9:00 以后第一条数据减去 8:00 以后第一条数据的能耗差值。\n\n**核心变更**：只修改 `EnergyCalculationUtils.calculateHourlyEnergyFromRawData` 方法的内部逻辑，其它代码保持不变。\n\n## Requirements\n\n### 核心需求：修改时间范围能耗计算逻辑\n\n#### 计算规则变更\n\n1. 输入：`startTime = 2024-01-01 08:00:00`, `endTime = 2024-01-01 09:59:00`\n2. 查找开始时间电表记录：找到开始时间所在小时（8:00）之后的第一条记录\n3. 查找结束时间电表记录：找到结束时间所在小时（9:00，向下取整）之后的第一条记录\n4. 计算能耗：结束记录电量 - 开始记录电量\n5. 多设备：分别计算后累加\n6. 异常处理：结束电量 < 开始电量时，设置为 null\n\n## 实施约束\n\n- 只修改 `EnergyCalculationUtils.calculateHourlyEnergyFromRawData` 方法\n- 不添加新方法，不修改其他代码\n- 保持方法签名不变\n- 保持返回数据结构不变\n",
+  "fileStats": {
+    "size": 1219,
+    "lines": 30,
+    "lastModified": "2025-10-08T08:09:25.403Z"
+  },
+  "comments": []
+}

@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/hourly-energy-backend-api/design.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-09T03:51:09.655Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759981869632_ajzgcd37o",
+      "approvalTitle": "Hourly Energy Backend API - Design"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-09T05:06:22.786Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759981869632_ajzgcd37o",
+      "approvalTitle": "Hourly Energy Backend API - Design"
+    }
+  ]
+}

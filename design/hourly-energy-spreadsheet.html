@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电能监控小时数据表</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a1929 0%, #1a237e 50%, #000051 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 10px;
+        }
+
+        .page-title {
+            text-align: center;
+            color: #00d4ff;
+            font-size: 28px;
+            font-weight: 700;
+            padding: 0;
+            margin: 0;
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.8), 0 0 30px rgba(0, 212, 255, 0.4);
+            flex-shrink: 0;
+            letter-spacing: 2px;
+        }
+
+        /* 查询区域 */
+        .query-section {
+            background: rgba(10, 25, 41, 0.6);
+            border: 3px solid #00d4ff;
+            border-radius: 8px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.6),
+                        inset 0 0 20px rgba(0, 212, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        .query-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .query-label {
+            color: #00d4ff;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .query-select,
+        .query-input {
+            background: rgba(10, 25, 41, 0.8);
+            border: 2px solid #00d4ff;
+            border-radius: 6px;
+            color: #ffffff;
+            padding: 10px 16px;
+            outline: none;
+            font-size: 14px;
+            min-width: 100px;
+            cursor: pointer;
+        }
+
+        .query-select:focus,
+        .query-input:focus {
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+            border-color: #00d4ff;
+        }
+
+        .query-select option {
+            background: #1a237e;
+            color: #ffffff;
+        }
+
+        /* 日期输入框样式 */
+        .query-input[type="date"] {
+            color: #ffffff;
+            background: rgba(10, 25, 41, 0.8);
+        }
+
+        .query-input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        /* 查询按钮 */
+        .query-button {
+            background: #00d4ff;
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            color: #0a1929;
+            font-weight: bold;
+            padding: 10px 30px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+            text-shadow: none;
+            transition: all 0.3s ease;
+            outline: none;
+            font-size: 15px;
+            letter-spacing: 1px;
+        }
+
+        .query-button:hover {
+            background: #00b8d4;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.9);
+            transform: translateY(-1px);
+        }
+
+        .query-button:active {
+            transform: translateY(0);
+        }
+
+        .query-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 表格容器 */
+        .table-container {
+            background: rgba(10, 25, 41, 0.6);
+            border: 3px solid #00d4ff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.7),
+                        inset 0 0 30px rgba(0, 212, 255, 0.1);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            max-height: 100%;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            overflow-y: auto;
+            flex: 1;
+            position: relative;
+            height: 100%;
+            max-height: 100%;
+        }
+
+        /* 隐藏垂直滚动条但保留横向滚动条 */
+        .table-wrapper::-webkit-scrollbar {
+            display: none !important;
+        }
+
+        .data-table {
+            width: 100%;
+            height: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 2200px;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid rgba(0, 212, 255, 0.25);
+            padding: 6px 8px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* 🎯 表头固定在表格顶部 */
+        .data-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .data-table thead th {
+            background: rgba(10, 25, 41, 0.95) !important;
+            color: #00d4ff !important;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border: 1px solid rgba(0, 212, 255, 0.4) !important;
+            padding: 8px !important;
+        }
+
+        /* ✅ 左上角"车间"列：既固定在左侧，也固定在顶部 */
+        .data-table thead th.info-header {
+            background: rgba(10, 25, 41, 1.0) !important;
+            border-right: 2px solid rgba(0, 212, 255, 0.6) !important;
+            color: #00d4ff !important;
+            font-weight: 700 !important;
+            text-align: center !important;
+            position: sticky !important;
+            left: 0 !important;
+            top: 0 !important;
+            z-index: 60 !important;
+            min-width: 120px;
+            max-width: 120px;
+            padding: 8px !important;
+            box-shadow: 2px 0 8px rgba(0, 212, 255, 0.4);
+        }
+
+        /* 信息列数据单元格（tbody中的"车间"列） */
+        .data-table tbody tr td.info-cell {
+            background: rgba(10, 25, 41, 1.0) !important;
+            border-right: 2px solid rgba(0, 212, 255, 0.6) !important;
+            color: #00d4ff !important;
+            font-weight: 600;
+            text-align: left !important;
+            position: sticky !important;
+            left: 0 !important;
+            z-index: 10 !important;
+            min-width: 120px;
+            max-width: 120px;
+            padding: 6px 12px !important;
+            box-shadow: 2px 0 8px rgba(0, 212, 255, 0.4) !important;
+        }
+
+        /* 数据单元格 */
+        .data-cell {
+            background: rgba(10, 25, 41, 0.4);
+            color: #ffffff;
+            min-width: 85px;
+            transition: background-color 0.2s ease;
+            font-size: 13px;
+        }
+
+        .data-cell:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        /* 高亮数值（黄色） - 超过200kWh */
+        .highlight-yellow {
+            background: rgba(255, 215, 0, 0.1) !important;
+            color: #ffd700 !important;
+            font-weight: 600;
+        }
+
+        /* 高亮数值（紫色） - 超过300kWh */
+        .highlight-purple {
+            background: rgba(218, 112, 214, 0.15) !important;
+            color: #da70d6 !important;
+            font-weight: 600;
+        }
+
+        /* 合计行 - 绿色发光效果 */
+        .total-row {
+            background: rgba(0, 255, 102, 0.15) !important;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.5),
+                        inset 0 0 15px rgba(0, 255, 102, 0.2) !important;
+        }
+
+        .total-row td {
+            color: #00ff66 !important;
+            font-weight: 700;
+            border: 1px solid rgba(0, 255, 102, 0.5) !important;
+            border-top: 2px solid rgba(0, 255, 102, 0.8) !important;
+            text-shadow: 0 0 10px rgba(0, 255, 102, 0.8),
+                         0 0 20px rgba(0, 255, 102, 0.4);
+            background: rgba(0, 255, 102, 0.1);
+        }
+
+        .data-table tbody tr.total-row td.info-cell {
+            background: rgba(0, 100, 40, 1.0) !important;
+            border-right: 2px solid rgba(0, 255, 102, 0.8) !important;
+            color: #00ff66 !important;
+            box-shadow: 2px 0 15px rgba(0, 255, 102, 0.6),
+                        inset 0 0 10px rgba(0, 255, 102, 0.2) !important;
+            position: sticky !important;
+            left: 0 !important;
+            z-index: 15 !important;
+            font-weight: 700 !important;
+            text-shadow: 0 0 10px rgba(0, 255, 102, 0.8),
+                         0 0 20px rgba(0, 255, 102, 0.4) !important;
+        }
+
+        /* 合计行在tfoot中的固定列样式 */
+        .data-table tfoot tr.total-row td.info-cell {
+            background: rgba(0, 100, 40, 1.0) !important;
+            border-right: 2px solid rgba(0, 255, 102, 0.8) !important;
+            color: #00ff66 !important;
+            box-shadow: 2px 0 15px rgba(0, 255, 102, 0.6),
+                        inset 0 0 10px rgba(0, 255, 102, 0.2) !important;
+            position: sticky !important;
+            left: 0 !important;
+            z-index: 15 !important;
+            min-width: 120px;
+            max-width: 120px;
+            font-weight: 700 !important;
+            text-align: left !important;
+            padding: 6px 12px !important;
+            text-shadow: 0 0 10px rgba(0, 255, 102, 0.8),
+                         0 0 20px rgba(0, 255, 102, 0.4) !important;
+        }
+
+        /* 表格行悬停 */
+        .data-table tbody tr:not(.total-row):hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        /* 🔥 滚动条样式 - 只显示底部横向滚动条 */
+        .table-wrapper {
+            scrollbar-width: thin !important;
+            scrollbar-color: #00d4ff rgba(10, 25, 41, 0.3) !important;
+        }
+
+        .table-wrapper::-webkit-scrollbar {
+            width: 0 !important;
+            height: 14px !important;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track {
+            background: rgba(10, 25, 41, 0.8) !important;
+            border-radius: 6px !important;
+            margin: 0 10px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #00d4ff !important;
+            border-radius: 6px !important;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.8),
+                        inset 0 0 5px rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #00e5ff !important;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 1),
+                        inset 0 0 8px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .table-wrapper::-webkit-scrollbar-corner {
+            background: transparent !important;
+        }
+
+        /* 工具提示 */
+        .tooltip {
+            position: absolute;
+            background: rgba(10, 25, 41, 0.95);
+            color: #00d4ff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            z-index: 1000;
+            display: none;
+            pointer-events: none;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .query-section {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .data-table {
+                font-size: 12px;
+                min-width: 2000px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 4px;
+            }
+
+            .info-header,
+            .info-cell {
+                min-width: 100px;
+                max-width: 100px;
+            }
+
+            .data-cell {
+                min-width: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title">电能监控小时数据统计表</h1>
+
+        <!-- 查询条件 -->
+        <div class="query-section">
+            <div class="query-group">
+                <label class="query-label">年份</label>
+                <select class="query-select" id="yearSelect">
+                    <option value="2026">2026</option>
+                    <option value="2025" selected>2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                </select>
+            </div>
+            <div class="query-group">
+                <label class="query-label">月份</label>
+                <select class="query-select" id="monthSelect">
+                    <option value="01">01</option>
+                    <option value="02">02</option>
+                    <option value="03">03</option>
+                    <option value="04">04</option>
+                    <option value="05">05</option>
+                    <option value="06">06</option>
+                    <option value="07">07</option>
+                    <option value="08">08</option>
+                    <option value="09">09</option>
+                    <option value="10" selected>10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
+            </div>
+            <div class="query-group">
+                <label class="query-label">日期</label>
+                <select class="query-select" id="daySelect">
+                    <option value="01">01</option>
+                    <option value="02">02</option>
+                    <option value="03">03</option>
+                    <option value="04">04</option>
+                    <option value="05">05</option>
+                    <option value="06">06</option>
+                    <option value="07">07</option>
+                    <option value="08">08</option>
+                    <option value="09" selected>09</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="20">20</option>
+                    <option value="21">21</option>
+                    <option value="22">22</option>
+                    <option value="23">23</option>
+                    <option value="24">24</option>
+                    <option value="25">25</option>
+                    <option value="26">26</option>
+                    <option value="27">27</option>
+                    <option value="28">28</option>
+                    <option value="29">29</option>
+                    <option value="30">30</option>
+                    <option value="31">31</option>
+                </select>
+            </div>
+            <button class="query-button" id="queryButton" onclick="loadData()">查询</button>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="info-header">车间</th>
+                            <th>07:00-08:00</th>
+                            <th>08:00-09:00</th>
+                            <th>09:00-10:00</th>
+                            <th>10:00-11:00</th>
+                            <th>11:00-12:00</th>
+                            <th>12:00-13:00</th>
+                            <th>13:00-14:00</th>
+                            <th>14:00-15:00</th>
+                            <th>15:00-16:00</th>
+                            <th>16:00-17:00</th>
+                            <th>17:00-18:00</th>
+                            <th>18:00-19:00</th>
+                            <th>19:00-20:00</th>
+                            <th>20:00-21:00</th>
+                            <th>21:00-22:00</th>
+                            <th>22:00-23:00</th>
+                            <th>23:00-00:00</th>
+                            <th>00:00-01:00<br><small style="font-size:10px;opacity:0.7;">次日</small></th>
+                            <th>01:00-02:00<br><small style="font-size:10px;opacity:0.7;">次日</small></th>
+                            <th>02:00-03:00<br><small style="font-size:10px;opacity:0.7;">次日</small></th>
+                            <th>03:00-04:00<br><small style="font-size:10px;opacity:0.7;">次日</small></th>
+                            <th>04:00-05:00<br><small style="font-size:10px;opacity:0.7;">次日</small></th>
+                            <th>05:00-06:00<br><small style="font-size:10px;opacity:0.7;">次日</small></th>
+                            <th>06:00-07:00<br><small style="font-size:10px;opacity:0.7;">次日</small></th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <tr>
+                            <td class="info-cell">1办公楼</td>
+                            <td class="data-cell">95.7</td>
+                            <td class="data-cell">105.2</td>
+                            <td class="data-cell">112.8</td>
+                            <td class="data-cell">118.6</td>
+                            <td class="data-cell">121.3</td>
+                            <td class="data-cell">115.9</td>
+                            <td class="data-cell">108.4</td>
+                            <td class="data-cell">102.7</td>
+                            <td class="data-cell">97.5</td>
+                            <td class="data-cell">89.3</td>
+                            <td class="data-cell">86.7</td>
+                            <td class="data-cell">94.2</td>
+                            <td class="data-cell">101.5</td>
+                            <td class="data-cell">87.6</td>
+                            <td class="data-cell">73.4</td>
+                            <td class="data-cell">61.8</td>
+                            <td class="data-cell">52.3</td>
+                            <td class="data-cell">45.3</td>
+                            <td class="data-cell">42.1</td>
+                            <td class="data-cell">39.8</td>
+                            <td class="data-cell">38.2</td>
+                            <td class="data-cell">41.5</td>
+                            <td class="data-cell">58.9</td>
+                            <td class="data-cell">82.3</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">101铸科</td>
+                            <td class="data-cell">42.6</td>
+                            <td class="data-cell">56.3</td>
+                            <td class="data-cell">67.8</td>
+                            <td class="data-cell">72.4</td>
+                            <td class="data-cell">78.9</td>
+                            <td class="data-cell">65.1</td>
+                            <td class="data-cell">71.3</td>
+                            <td class="data-cell">68.7</td>
+                            <td class="data-cell">62.5</td>
+                            <td class="data-cell">59.8</td>
+                            <td class="data-cell">54.2</td>
+                            <td class="data-cell">48.9</td>
+                            <td class="data-cell">36.7</td>
+                            <td class="data-cell">29.3</td>
+                            <td class="data-cell">22.8</td>
+                            <td class="data-cell">18.4</td>
+                            <td class="data-cell">15.6</td>
+                            <td class="data-cell">12.3</td>
+                            <td class="data-cell">11.8</td>
+                            <td class="data-cell">10.9</td>
+                            <td class="data-cell">9.5</td>
+                            <td class="data-cell">8.7</td>
+                            <td class="data-cell">15.2</td>
+                            <td class="data-cell">28.9</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">102造粒</td>
+                            <td class="data-cell">25.4</td>
+                            <td class="data-cell">32.1</td>
+                            <td class="data-cell">38.9</td>
+                            <td class="data-cell">42.6</td>
+                            <td class="data-cell">45.8</td>
+                            <td class="data-cell">39.7</td>
+                            <td class="data-cell">43.2</td>
+                            <td class="data-cell">41.5</td>
+                            <td class="data-cell">37.9</td>
+                            <td class="data-cell">35.6</td>
+                            <td class="data-cell">32.8</td>
+                            <td class="data-cell">28.4</td>
+                            <td class="data-cell">21.7</td>
+                            <td class="data-cell">17.3</td>
+                            <td class="data-cell">13.9</td>
+                            <td class="data-cell">11.2</td>
+                            <td class="data-cell">9.8</td>
+                            <td class="data-cell">8.5</td>
+                            <td class="data-cell">7.9</td>
+                            <td class="data-cell">7.2</td>
+                            <td class="data-cell">6.8</td>
+                            <td class="data-cell">6.5</td>
+                            <td class="data-cell">10.3</td>
+                            <td class="data-cell">18.7</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">102造粒环保设备</td>
+                            <td class="data-cell">16.8</td>
+                            <td class="data-cell">21.4</td>
+                            <td class="data-cell">25.7</td>
+                            <td class="data-cell">28.3</td>
+                            <td class="data-cell">30.6</td>
+                            <td class="data-cell">26.4</td>
+                            <td class="data-cell">28.9</td>
+                            <td class="data-cell">27.8</td>
+                            <td class="data-cell">25.3</td>
+                            <td class="data-cell">23.7</td>
+                            <td class="data-cell">21.9</td>
+                            <td class="data-cell">18.9</td>
+                            <td class="data-cell">14.5</td>
+                            <td class="data-cell">11.6</td>
+                            <td class="data-cell">9.3</td>
+                            <td class="data-cell">7.5</td>
+                            <td class="data-cell">6.5</td>
+                            <td class="data-cell">5.2</td>
+                            <td class="data-cell">4.8</td>
+                            <td class="data-cell">4.5</td>
+                            <td class="data-cell">4.2</td>
+                            <td class="data-cell">4.1</td>
+                            <td class="data-cell">6.7</td>
+                            <td class="data-cell">12.3</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">103冷压</td>
+                            <td class="data-cell">158.3</td>
+                            <td class="data-cell highlight-yellow">203.7</td>
+                            <td class="data-cell highlight-yellow">247.9</td>
+                            <td class="data-cell highlight-yellow">268.4</td>
+                            <td class="data-cell highlight-yellow">289.5</td>
+                            <td class="data-cell highlight-yellow">256.8</td>
+                            <td class="data-cell highlight-yellow">278.3</td>
+                            <td class="data-cell highlight-yellow">267.9</td>
+                            <td class="data-cell highlight-yellow">243.6</td>
+                            <td class="data-cell highlight-yellow">228.7</td>
+                            <td class="data-cell highlight-yellow">211.4</td>
+                            <td class="data-cell">182.9</td>
+                            <td class="data-cell">139.5</td>
+                            <td class="data-cell">111.3</td>
+                            <td class="data-cell">89.7</td>
+                            <td class="data-cell">76.2</td>
+                            <td class="data-cell">71.8</td>
+                            <td class="data-cell">68.4</td>
+                            <td class="data-cell">65.7</td>
+                            <td class="data-cell">62.3</td>
+                            <td class="data-cell">58.9</td>
+                            <td class="data-cell">55.2</td>
+                            <td class="data-cell">72.8</td>
+                            <td class="data-cell">115.6</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">104烧结</td>
+                            <td class="data-cell">52.9</td>
+                            <td class="data-cell">68.3</td>
+                            <td class="data-cell">83.7</td>
+                            <td class="data-cell">91.2</td>
+                            <td class="data-cell">98.6</td>
+                            <td class="data-cell">87.4</td>
+                            <td class="data-cell">95.1</td>
+                            <td class="data-cell">91.5</td>
+                            <td class="data-cell">83.2</td>
+                            <td class="data-cell">78.1</td>
+                            <td class="data-cell">72.3</td>
+                            <td class="data-cell">62.8</td>
+                            <td class="data-cell">48.9</td>
+                            <td class="data-cell">39.1</td>
+                            <td class="data-cell">31.5</td>
+                            <td class="data-cell">26.8</td>
+                            <td class="data-cell">23.4</td>
+                            <td class="data-cell">18.9</td>
+                            <td class="data-cell">17.3</td>
+                            <td class="data-cell">15.8</td>
+                            <td class="data-cell">14.2</td>
+                            <td class="data-cell">12.9</td>
+                            <td class="data-cell">21.5</td>
+                            <td class="data-cell">38.7</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">105烧结</td>
+                            <td class="data-cell">119.6</td>
+                            <td class="data-cell">154.2</td>
+                            <td class="data-cell">189.3</td>
+                            <td class="data-cell highlight-yellow">206.7</td>
+                            <td class="data-cell highlight-yellow">223.4</td>
+                            <td class="data-cell">198.5</td>
+                            <td class="data-cell highlight-yellow">215.8</td>
+                            <td class="data-cell highlight-yellow">207.9</td>
+                            <td class="data-cell">189.1</td>
+                            <td class="data-cell">177.6</td>
+                            <td class="data-cell">164.2</td>
+                            <td class="data-cell">142.3</td>
+                            <td class="data-cell">110.8</td>
+                            <td class="data-cell">88.5</td>
+                            <td class="data-cell">71.3</td>
+                            <td class="data-cell">60.7</td>
+                            <td class="data-cell">52.9</td>
+                            <td class="data-cell">42.7</td>
+                            <td class="data-cell">39.8</td>
+                            <td class="data-cell">36.5</td>
+                            <td class="data-cell">33.2</td>
+                            <td class="data-cell">30.1</td>
+                            <td class="data-cell">48.9</td>
+                            <td class="data-cell">87.3</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">106清洗</td>
+                            <td class="data-cell">128.7</td>
+                            <td class="data-cell">165.8</td>
+                            <td class="data-cell highlight-yellow">203.4</td>
+                            <td class="data-cell highlight-yellow">222.9</td>
+                            <td class="data-cell highlight-yellow">241.3</td>
+                            <td class="data-cell highlight-yellow">214.7</td>
+                            <td class="data-cell highlight-yellow">233.6</td>
+                            <td class="data-cell highlight-yellow">225.1</td>
+                            <td class="data-cell highlight-yellow">204.8</td>
+                            <td class="data-cell">192.3</td>
+                            <td class="data-cell">178.1</td>
+                            <td class="data-cell">154.2</td>
+                            <td class="data-cell">120.5</td>
+                            <td class="data-cell">96.2</td>
+                            <td class="data-cell">77.6</td>
+                            <td class="data-cell">66.1</td>
+                            <td class="data-cell">57.8</td>
+                            <td class="data-cell">52.8</td>
+                            <td class="data-cell">49.3</td>
+                            <td class="data-cell">45.7</td>
+                            <td class="data-cell">42.1</td>
+                            <td class="data-cell">38.9</td>
+                            <td class="data-cell">58.6</td>
+                            <td class="data-cell">95.3</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">114空压机</td>
+                            <td class="data-cell">186.3</td>
+                            <td class="data-cell highlight-yellow">237.9</td>
+                            <td class="data-cell highlight-yellow">289.7</td>
+                            <td class="data-cell highlight-purple">316.8</td>
+                            <td class="data-cell highlight-purple">342.5</td>
+                            <td class="data-cell highlight-purple">304.9</td>
+                            <td class="data-cell highlight-purple">331.4</td>
+                            <td class="data-cell highlight-purple">319.2</td>
+                            <td class="data-cell highlight-yellow">290.6</td>
+                            <td class="data-cell highlight-yellow">272.8</td>
+                            <td class="data-cell highlight-yellow">252.4</td>
+                            <td class="data-cell highlight-yellow">218.7</td>
+                            <td class="data-cell">170.9</td>
+                            <td class="data-cell">136.5</td>
+                            <td class="data-cell">110.2</td>
+                            <td class="data-cell">93.8</td>
+                            <td class="data-cell">88.9</td>
+                            <td class="data-cell">85.7</td>
+                            <td class="data-cell">82.3</td>
+                            <td class="data-cell">78.9</td>
+                            <td class="data-cell">75.2</td>
+                            <td class="data-cell">71.8</td>
+                            <td class="data-cell">92.6</td>
+                            <td class="data-cell">138.7</td>
+                        </tr>
+                        <tr>
+                            <td class="info-cell">食堂</td>
+                            <td class="data-cell">52.3</td>
+                            <td class="data-cell">68.9</td>
+                            <td class="data-cell">85.7</td>
+                            <td class="data-cell">94.2</td>
+                            <td class="data-cell">102.8</td>
+                            <td class="data-cell">89.6</td>
+                            <td class="data-cell">97.3</td>
+                            <td class="data-cell">93.8</td>
+                            <td class="data-cell">85.4</td>
+                            <td class="data-cell">80.1</td>
+                            <td class="data-cell">74.2</td>
+                            <td class="data-cell">64.3</td>
+                            <td class="data-cell">50.2</td>
+                            <td class="data-cell">40.1</td>
+                            <td class="data-cell">32.3</td>
+                            <td class="data-cell">27.5</td>
+                            <td class="data-cell">24.0</td>
+                            <td class="data-cell">15.3</td>
+                            <td class="data-cell">14.2</td>
+                            <td class="data-cell">12.8</td>
+                            <td class="data-cell">11.5</td>
+                            <td class="data-cell">10.7</td>
+                            <td class="data-cell">18.9</td>
+                            <td class="data-cell">35.6</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td class="info-cell">合计</td>
+                            <td class="data-cell">878.6</td>
+                            <td class="data-cell">1113.8</td>
+                            <td class="data-cell highlight-yellow">1344.9</td>
+                            <td class="data-cell highlight-yellow">1462.1</td>
+                            <td class="data-cell highlight-yellow">1574.7</td>
+                            <td class="data-cell highlight-yellow">1399.0</td>
+                            <td class="data-cell highlight-yellow">1503.3</td>
+                            <td class="data-cell highlight-yellow">1447.1</td>
+                            <td class="data-cell highlight-yellow">1319.9</td>
+                            <td class="data-cell highlight-yellow">1238.0</td>
+                            <td class="data-cell">1142.2</td>
+                            <td class="data-cell">987.1</td>
+                            <td class="data-cell">764.2</td>
+                            <td class="data-cell">610.5</td>
+                            <td class="data-cell">492.0</td>
+                            <td class="data-cell">418.0</td>
+                            <td class="data-cell">381.0</td>
+                            <td class="data-cell">355.1</td>
+                            <td class="data-cell">335.2</td>
+                            <td class="data-cell">314.4</td>
+                            <td class="data-cell">293.8</td>
+                            <td class="data-cell">280.4</td>
+                            <td class="data-cell">404.4</td>
+                            <td class="data-cell">653.4</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 工具提示 -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // 配置阈值（与月度表格保持一致的逻辑）
+        const CONFIG = {
+            THRESHOLD_YELLOW: 200,    // 超过200kWh显示黄色
+            THRESHOLD_PURPLE: 300,    // 超过300kWh显示紫色
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化当前日期
+            initializeDate();
+
+            // 年月日选择器功能
+            const yearSelect = document.getElementById('yearSelect');
+            const monthSelect = document.getElementById('monthSelect');
+            const daySelect = document.getElementById('daySelect');
+
+            yearSelect.addEventListener('change', updateData);
+            monthSelect.addEventListener('change', updateData);
+            daySelect.addEventListener('change', updateData);
+
+            // 数据单元格工具提示
+            initializeTooltips();
+
+            console.log('电能监控小时数据表初始化完成 ✅');
+        });
+
+        // 初始化日期为当前日期
+        function initializeDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+
+            document.getElementById('yearSelect').value = year;
+            document.getElementById('monthSelect').value = month;
+            document.getElementById('daySelect').value = day;
+        }
+
+        // 加载数据
+        function loadData() {
+            const year = document.getElementById('yearSelect').value;
+            const month = document.getElementById('monthSelect').value;
+            const day = document.getElementById('daySelect').value;
+            
+            console.log(`查询日期: ${year}年${month}月${day}日`);
+            
+            // 这里可以添加实际的API调用逻辑
+            // 例如: fetch(`/api/hourly-energy?year=${year}&month=${month}&day=${day}`)
+            
+            // 模拟数据加载
+            alert(`正在查询 ${year}年${month}月${day}日 的小时数据...`);
+        }
+
+        // 更新数据（选择器变化时）
+        function updateData() {
+            const year = document.getElementById('yearSelect').value;
+            const month = document.getElementById('monthSelect').value;
+            const day = document.getElementById('daySelect').value;
+            
+            console.log(`日期已更改: ${year}年${month}月${day}日`);
+            // 这里可以添加自动查询逻辑
+        }
+
+        // 初始化工具提示
+        function initializeTooltips() {
+            const dataCells = document.querySelectorAll('.data-cell');
+            const tooltip = document.getElementById('tooltip');
+
+            dataCells.forEach(cell => {
+                cell.addEventListener('mouseenter', function(e) {
+                    const value = this.textContent;
+                    const row = this.closest('tr');
+                    const areaName = row.querySelector('.info-cell').textContent;
+                    const colIndex = Array.from(this.parentNode.children).indexOf(this);
+                    const hourHeader = document.querySelector(`thead th:nth-child(${colIndex + 1})`);
+                    const hourText = hourHeader ? hourHeader.textContent : '';
+                    
+                    if (hourText) {
+                        tooltip.innerHTML = `
+                            <strong>${areaName}</strong><br>
+                            ${hourText}: ${value} kWh
+                        `;
+                        tooltip.style.display = 'block';
+                        tooltip.style.left = e.pageX + 10 + 'px';
+                        tooltip.style.top = e.pageY - 10 + 'px';
+                    }
+                });
+
+                cell.addEventListener('mouseleave', function() {
+                    tooltip.style.display = 'none';
+                });
+
+                cell.addEventListener('mousemove', function(e) {
+                    tooltip.style.left = e.pageX + 10 + 'px';
+                    tooltip.style.top = e.pageY - 10 + 'px';
+                });
+            });
+        }
+
+        // 应用数据颜色规则（可用于动态加载的数据）
+        function applyDataColors() {
+            const dataCells = document.querySelectorAll('.data-cell:not(.total-row .data-cell)');
+            
+            dataCells.forEach(cell => {
+                const value = parseFloat(cell.textContent);
+                
+                // 移除现有的高亮类
+                cell.classList.remove('highlight-yellow', 'highlight-purple');
+                
+                // 根据阈值应用颜色
+                if (value > CONFIG.THRESHOLD_PURPLE) {
+                    cell.classList.add('highlight-purple');
+                } else if (value > CONFIG.THRESHOLD_YELLOW) {
+                    cell.classList.add('highlight-yellow');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

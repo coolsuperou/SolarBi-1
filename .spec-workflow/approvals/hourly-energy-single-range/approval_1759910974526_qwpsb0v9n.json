@@ -1,0 +1,21 @@
+{
+  "id": "approval_1759910974526_qwpsb0v9n",
+  "title": "需求文档（简化版）- 修改后端数据计算逻辑",
+  "filePath": ".spec-workflow/specs/hourly-energy-single-range/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-08T08:09:34.526Z",
+  "category": "spec",
+  "categoryName": "hourly-energy-single-range",
+  "response": "Feedback Summary (1 comments):\n\nGeneral Comments:\n1. 写上原来的计算规则\n\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"general\",\n      \"comment\": \"写上原来的计算规则\",\n      \"timestamp\": \"2025-10-08T08:24:26.621Z\",\n      \"id\": \"comment_1759911866621_im5sqzhjq\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nGeneral Comments:\\n1. 写上原来的计算规则\\n\\n\",\n  \"timestamp\": \"2025-10-08T08:25:13.141Z\"\n}",
+  "respondedAt": "2025-10-08T08:25:13.454Z",
+  "comments": [
+    {
+      "type": "general",
+      "comment": "写上原来的计算规则",
+      "timestamp": "2025-10-08T08:24:26.621Z",
+      "id": "comment_1759911866621_im5sqzhjq"
+    }
+  ]
+}

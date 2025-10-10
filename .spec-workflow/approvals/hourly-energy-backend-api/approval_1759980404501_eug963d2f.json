@@ -1,0 +1,39 @@
+{
+  "id": "approval_1759980404501_eug963d2f",
+  "title": "Hourly Energy Backend API - Requirements",
+  "filePath": ".spec-workflow/specs/hourly-energy-backend-api/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-09T03:26:44.501Z",
+  "category": "spec",
+  "categoryName": "hourly-energy-backend-api",
+  "response": "Feedback Summary (2 comments):\n\nSpecific Text Comments:\n1. \"2. WHEN 查询日期范围 THEN 系统 SHALL 只查询必要的时间范围（当天07:00到次日...\": 查询的时间范围应该多加一个小时结束时间，去让mapper层多返回一个小时的数据，这样子才能去查找结束时间以后最近的一条数据去减\n2. \"1. WHEN 执行数据库查询 THEN 系统 SHALL 使用参数化查询避免 SQL 注入\n2. ...\": 不要去使用数据库进行逻辑运算，数据只进行查询，对于数据的计算应该放在service层中\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"查询的时间范围应该多加一个小时结束时间，去让mapper层多返回一个小时的数据，这样子才能去查找结束时间以后最近的一条数据去减\",\n      \"timestamp\": \"2025-10-09T03:33:27.965Z\",\n      \"selectedText\": \"2. WHEN 查询日期范围 THEN 系统 SHALL 只查询必要的时间范围（当天07:00到次日07:00）\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759980807965_3t92zf4d8\"\n    },\n    {\n      \"type\": \"selection\",\n      \"comment\": \"不要去使用数据库进行逻辑运算，数据只进行查询，对于数据的计算应该放在service层中\",\n      \"timestamp\": \"2025-10-09T03:35:09.244Z\",\n      \"selectedText\": \"1. WHEN 执行数据库查询 THEN 系统 SHALL 使用参数化查询避免 SQL 注入\\n2. WHEN 查询日期范围 THEN 系统 SHALL 只查询必要的时间范围（当天07:00到次日07:00）\\n3. WHEN 聚合数据 THEN 系统 SHALL 优先使用数据库层面的 GROUP BY 和 SUM 函数\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759980909244_ygadgjfql\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (2 comments):\\n\\nSpecific Text Comments:\\n1. \\\"2. WHEN 查询日期范围 THEN 系统 SHALL 只查询必要的时间范围（当天07:00到次日...\\\": 查询的时间范围应该多加一个小时结束时间，去让mapper层多返回一个小时的数据，这样子才能去查找结束时间以后最近的一条数据去减\\n2. \\\"1. WHEN 执行数据库查询 THEN 系统 SHALL 使用参数化查询避免 SQL 注入\\n2. ...\\\": 不要去使用数据库进行逻辑运算，数据只进行查询，对于数据的计算应该放在service层中\\n\",\n  \"timestamp\": \"2025-10-09T03:36:03.925Z\"\n}",
+  "respondedAt": "2025-10-09T03:36:04.252Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "查询的时间范围应该多加一个小时结束时间，去让mapper层多返回一个小时的数据，这样子才能去查找结束时间以后最近的一条数据去减",
+      "timestamp": "2025-10-09T03:33:27.965Z",
+      "selectedText": "2. WHEN 查询日期范围 THEN 系统 SHALL 只查询必要的时间范围（当天07:00到次日07:00）",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759980807965_3t92zf4d8"
+    },
+    {
+      "type": "selection",
+      "comment": "不要去使用数据库进行逻辑运算，数据只进行查询，对于数据的计算应该放在service层中",
+      "timestamp": "2025-10-09T03:35:09.244Z",
+      "selectedText": "1. WHEN 执行数据库查询 THEN 系统 SHALL 使用参数化查询避免 SQL 注入\n2. WHEN 查询日期范围 THEN 系统 SHALL 只查询必要的时间范围（当天07:00到次日07:00）\n3. WHEN 聚合数据 THEN 系统 SHALL 优先使用数据库层面的 GROUP BY 和 SUM 函数",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759980909244_ygadgjfql"
+    }
+  ]
+}

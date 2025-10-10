@@ -1,0 +1,16 @@
+{
+  "id": "snapshot_1759910321817_vhyhi4v7s",
+  "approvalId": "approval_1759910321804_g2028jekz",
+  "approvalTitle": "需求文档 - 小时能耗单一时间范围计算",
+  "version": 1,
+  "timestamp": "2025-10-08T07:58:41.817Z",
+  "trigger": "initial",
+  "status": "pending",
+  "content": "# Requirements Document\n\n## Introduction\n\n本需求旨在优化后端小时能耗计算逻辑，使其支持单一时间范围的能耗计算。当前系统在给定时间范围内按小时分段计算能耗（每小时一条记录），但在某些场景下，用户需要获取整个时间范围的总能耗（只返回一条记录）。\n\n例如：当前端传入开始时间 `2024-01-01 08:00:00` 和结束时间 `2024-01-01 09:59:00` 时，后端应返回一条记录，计算 9:00 以后第一条数据减去 8:00 以后第一条数据的能耗差值。\n\n## Alignment with Product Vision\n\n该功能优化符合 SolarBi 能耗监控系统的核心目标：\n- **灵活的数据查询**：支持不同粒度的能耗统计需求\n- **精确的能耗计算**：提供更精确的时间范围能耗计算\n- **用户友好的交互**：前端可以根据业务需求选择合适的计算模式\n\n## Requirements\n\n### Requirement 1: 单一时间范围能耗计算\n\n**User Story:** 作为系统用户，我希望在查询小时能耗时，能够获取指定时间范围的总能耗，而不是按小时分段的能耗列表，以便更灵活地分析能耗数据。\n\n#### Acceptance Criteria\n\n1. WHEN 前端传入开始时间和结束时间 THEN 系统 SHALL 计算整个时间范围的能耗差值\n2. WHEN 开始时间为 `2024-01-01 08:00:00`，结束时间为 `2024-01-01 09:59:00` THEN 系统 SHALL 找到结束时间所在小时（9:00）之后的第一条电表记录，减去开始时间所在小时（8:00）之后的第一条电表记录\n3. WHEN 车间有多个设备 THEN 系统 SHALL 分别计算每个设备的能耗差值，然后累加\n4. WHEN 计算结果中结束能耗小于开始能耗 THEN 系统 SHALL 将该记录的能耗设置为 null\n\n### Requirement 2: 保持多设备累加逻辑\n\n**User Story:** 作为系统管理员，我希望系统能够正确累加车间内所有设备的能耗，以便准确反映车间总能耗。\n\n#### Acceptance Criteria\n\n1. WHEN 车间包含多个电表设备 THEN 系统 SHALL 分别计算每个设备的开始能耗和结束能耗\n2. WHEN 所有设备计算完成 THEN 系统 SHALL 将所有设备的开始能耗累加、结束能耗累加\n3. WHEN 某个设备缺少数据 THEN 系统 SHALL 跳过该设备，不影响其他设备的计算\n\n### Requirement 3: 数据查找规则\n\n**User Story:** 作为系统开发者，我希望系统按照明确的规则查找电表记录，以确保计算的一致性和准确性。\n\n#### Acceptance Criteria\n\n1. WHEN 查找开始时间的电表记录 THEN 系统 SHALL 找到开始时间所在小时（向下取整）之后的第一条记录\n2. WHEN 查找结束时间的电表记录 THEN 系统 SHALL 找到结束时间所在小时（向下取整）之后的第一条记录\n3. IF 某个时间点之后没有记录 THEN 系统 SHALL 使用该小时范围内的最后一条记录\n4. IF 某个设备完全没有记录 THEN 系统 SHALL 跳过该设备\n\n## Non-Functional Requirements\n\n### Code Architecture and Modularity\n- **单一职责原则**：能耗计算逻辑应集中在 `EnergyCalculationUtils` 工具类中\n- **模块化设计**：新增方法应与现有的 `calculateHourlyEnergyFromRawData` 方法保持一致的接口设计\n- **清晰接口**：方法参数和返回值应清晰明确，易于理解和使用\n- **代码复用**：复用现有的设备分组、数据查找等逻辑\n\n### Performance\n- 查询性能应与现有的小时能耗计算方法相当\n- 单次查询应在 2 秒内完成（假设数据量在合理范围内）\n\n### Security\n- 遵循现有的数据访问权限控制\n- SQL 注入防护（通过 MyBatis 参数绑定）\n\n### Reliability\n- 处理异常情况：数据缺失、电表回退等\n- 详细的日志记录，便于问题排查\n\n### Usability\n- 返回的数据结构应与现有的 `HourlyEnergyConsumption` 保持一致\n- 提供清晰的时间标记，便于前端展示\n",
+  "fileStats": {
+    "size": 3906,
+    "lines": 73,
+    "lastModified": "2025-10-08T07:58:33.106Z"
+  },
+  "comments": []
+}

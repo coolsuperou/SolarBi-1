@@ -1,0 +1,27 @@
+{
+  "id": "approval_1759911969245_ubhme8wd8",
+  "title": "需求文档（完整版）- 后端计算规则变更",
+  "filePath": ".spec-workflow/specs/hourly-energy-single-range/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-08T08:26:09.245Z",
+  "category": "spec",
+  "categoryName": "hourly-energy-single-range",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"#### 关键变化\n\n- 原来：生成多个小时时间点，循环计算，返回多条记录\n- 现在：只计算开始和结...\": 错了，不是改成只返回一条记录，而是把结束时间更改了，举个例子如果是8:00-11:59，则返回8:00-9:00,9:00-10:00,10:00-11:00三条数据，并且结束时间是11:00以后最近的一条数据\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"错了，不是改成只返回一条记录，而是把结束时间更改了，举个例子如果是8:00-11:59，则返回8:00-9:00,9:00-10:00,10:00-11:00三条数据，并且结束时间是11:00以后最近的一条数据\",\n      \"timestamp\": \"2025-10-08T08:43:05.846Z\",\n      \"selectedText\": \"#### 关键变化\\n\\n- 原来：生成多个小时时间点，循环计算，返回多条记录\\n- 现在：只计算开始和结束两个时间点，返回一条记录\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759912985846_h3nmeu8gj\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"#### 关键变化\\n\\n- 原来：生成多个小时时间点，循环计算，返回多条记录\\n- 现在：只计算开始和结...\\\": 错了，不是改成只返回一条记录，而是把结束时间更改了，举个例子如果是8:00-11:59，则返回8:00-9:00,9:00-10:00,10:00-11:00三条数据，并且结束时间是11:00以后最近的一条数据\\n\",\n  \"timestamp\": \"2025-10-08T08:43:27.437Z\"\n}",
+  "respondedAt": "2025-10-08T08:43:27.752Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "错了，不是改成只返回一条记录，而是把结束时间更改了，举个例子如果是8:00-11:59，则返回8:00-9:00,9:00-10:00,10:00-11:00三条数据，并且结束时间是11:00以后最近的一条数据",
+      "timestamp": "2025-10-08T08:43:05.846Z",
+      "selectedText": "#### 关键变化\n\n- 原来：生成多个小时时间点，循环计算，返回多条记录\n- 现在：只计算开始和结束两个时间点，返回一条记录",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759912985846_h3nmeu8gj"
+    }
+  ]
+}

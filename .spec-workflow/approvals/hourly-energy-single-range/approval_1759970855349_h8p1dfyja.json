@@ -1,0 +1,27 @@
+{
+  "id": "approval_1759970855349_h8p1dfyja",
+  "title": "任务文档 - 修改小时时间点生成逻辑",
+  "filePath": ".spec-workflow/specs/hourly-energy-single-range/tasks.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-09T00:47:35.349Z",
+  "category": "spec",
+  "categoryName": "hourly-energy-single-range",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"[ ] 1. 修改 generateHourlyPoints 方法\n  - File: back2/...\": 说一下每个小时的计算逻辑，是不是每个小时的结束时间以后最近的一条数据减去每个小时开始以后最近的一条数据\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"说一下每个小时的计算逻辑，是不是每个小时的结束时间以后最近的一条数据减去每个小时开始以后最近的一条数据\",\n      \"timestamp\": \"2025-10-09T00:53:24.915Z\",\n      \"selectedText\": \"[ ] 1. 修改 generateHourlyPoints 方法\\n  - File: back2/src/main/java/com/yupi/springbootinit/utils/EnergyCalculationUtils.java\\n  - 修改 generateHourlyPoints 私有方法的循环终止条件\\n  - 将 endTime 截取到小时开始，然后用于循环比较\\n  - Purpose: 使生成的小时时间点列表不包含 endTime 所在的小时\\n  - _Leverage: 现有的 Calendar API 和时间处理逻辑_\\n  - _Requirements: 核心需求 - 修改小时时间点生成逻辑_\\n  - _Prompt: \\n    ```\\n    Implement the task for spec hourly-energy-single-range, first run spec-workflow-guide to get the workflow guide then implement the task:\\n    \\n    Role: Java Backend Developer 专精于时间处理和工具类开发\\n    \\n    Task: 修改 EnergyCalculationUtils.java 中的 generateHourlyPoints 方法（约第 268-284 行），调整循环终止条件。具体修改：\\n    1. 在方法开始处，创建一个新的 Calendar 对象用于处理 endTime\\n    2. 将 endTime 截取到小时开始（设置 MINUTE=0, SECOND=0, MILLISECOND=0）\\n    3. 将截取后的时间赋值给一个新变量 endHour\\n    4. 修改 while 循环条件，从 `cal.getTime().before(endTime)` 改为 `cal.getTime().before(endHour)`\\n    \\n    参考设计文档中的\\\"修改前后对比\\\"部分的代码示例。\\n    \\n    Restrictions:\\n    - 只修改 generateHourlyPoints 方法，不修改其他方法\\n    - 不修改方法签名（参数和返回值类型）\\n    - 不修改其他任何代码\\n    - 保持代码风格与现有代码一致\\n    - 保持现有的注释和日志\\n    \\n    Success:\\n    - generateHourlyPoints 方法成功修改\\n    - 输入 8:00-11:59 返回 [8:00, 9:00, 10:00]（不包含 11:00）\\n    - 现有测试（如果有）仍然通过\\n    - 代码编译无错误\\n    \\n    Instructions:\\n    1. 首先运行 spec-workflow-guide 获取工作流指南\\n    2. 在 tasks.md 中将此任务标记为 in-progress: `- [-] 1. 修改 generateHourlyPoints 方法`\\n    3. 阅读 back2/src/main/java/com/yupi/springbootinit/utils/EnergyCalculationUtils.java 文件\\n    4. 定位到 generateHourlyPoints 方法（约第 268-284 行）\\n    5. 按照 Task 中的步骤进行修改\\n    6. 验证代码可以编译\\n    7. 在 tasks.md 中将此任务标记为 completed: `- [x] 1. 修改 generateHourlyPoints 方法`\\n    ```\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759971204915_6c0ibw02w\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"[ ] 1. 修改 generateHourlyPoints 方法\\n  - File: back2/...\\\": 说一下每个小时的计算逻辑，是不是每个小时的结束时间以后最近的一条数据减去每个小时开始以后最近的一条数据\\n\",\n  \"timestamp\": \"2025-10-09T00:53:27.138Z\"\n}",
+  "respondedAt": "2025-10-09T00:53:27.465Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "说一下每个小时的计算逻辑，是不是每个小时的结束时间以后最近的一条数据减去每个小时开始以后最近的一条数据",
+      "timestamp": "2025-10-09T00:53:24.915Z",
+      "selectedText": "[ ] 1. 修改 generateHourlyPoints 方法\n  - File: back2/src/main/java/com/yupi/springbootinit/utils/EnergyCalculationUtils.java\n  - 修改 generateHourlyPoints 私有方法的循环终止条件\n  - 将 endTime 截取到小时开始，然后用于循环比较\n  - Purpose: 使生成的小时时间点列表不包含 endTime 所在的小时\n  - _Leverage: 现有的 Calendar API 和时间处理逻辑_\n  - _Requirements: 核心需求 - 修改小时时间点生成逻辑_\n  - _Prompt: \n    ```\n    Implement the task for spec hourly-energy-single-range, first run spec-workflow-guide to get the workflow guide then implement the task:\n    \n    Role: Java Backend Developer 专精于时间处理和工具类开发\n    \n    Task: 修改 EnergyCalculationUtils.java 中的 generateHourlyPoints 方法（约第 268-284 行），调整循环终止条件。具体修改：\n    1. 在方法开始处，创建一个新的 Calendar 对象用于处理 endTime\n    2. 将 endTime 截取到小时开始（设置 MINUTE=0, SECOND=0, MILLISECOND=0）\n    3. 将截取后的时间赋值给一个新变量 endHour\n    4. 修改 while 循环条件，从 `cal.getTime().before(endTime)` 改为 `cal.getTime().before(endHour)`\n    \n    参考设计文档中的\"修改前后对比\"部分的代码示例。\n    \n    Restrictions:\n    - 只修改 generateHourlyPoints 方法，不修改其他方法\n    - 不修改方法签名（参数和返回值类型）\n    - 不修改其他任何代码\n    - 保持代码风格与现有代码一致\n    - 保持现有的注释和日志\n    \n    Success:\n    - generateHourlyPoints 方法成功修改\n    - 输入 8:00-11:59 返回 [8:00, 9:00, 10:00]（不包含 11:00）\n    - 现有测试（如果有）仍然通过\n    - 代码编译无错误\n    \n    Instructions:\n    1. 首先运行 spec-workflow-guide 获取工作流指南\n    2. 在 tasks.md 中将此任务标记为 in-progress: `- [-] 1. 修改 generateHourlyPoints 方法`\n    3. 阅读 back2/src/main/java/com/yupi/springbootinit/utils/EnergyCalculationUtils.java 文件\n    4. 定位到 generateHourlyPoints 方法（约第 268-284 行）\n    5. 按照 Task 中的步骤进行修改\n    6. 验证代码可以编译\n    7. 在 tasks.md 中将此任务标记为 completed: `- [x] 1. 修改 generateHourlyPoints 方法`\n    ```",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759971204915_6c0ibw02w"
+    }
+  ]
+}

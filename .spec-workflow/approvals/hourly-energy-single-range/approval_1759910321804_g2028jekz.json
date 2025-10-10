@@ -1,0 +1,21 @@
+{
+  "id": "approval_1759910321804_g2028jekz",
+  "title": "需求文档 - 小时能耗单一时间范围计算",
+  "filePath": ".spec-workflow/specs/hourly-energy-single-range/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-08T07:58:41.804Z",
+  "category": "spec",
+  "categoryName": "hourly-energy-single-range",
+  "response": "Feedback Summary (1 comments):\n\nGeneral Comments:\n1. 只修改现有service层逻辑不要添加多余方法\n\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"general\",\n      \"comment\": \"只修改现有service层逻辑不要添加多余方法\",\n      \"timestamp\": \"2025-10-08T08:02:30.508Z\",\n      \"id\": \"comment_1759910550508_vkgvk6mb5\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nGeneral Comments:\\n1. 只修改现有service层逻辑不要添加多余方法\\n\\n\",\n  \"timestamp\": \"2025-10-08T08:02:33.092Z\"\n}",
+  "respondedAt": "2025-10-08T08:02:33.402Z",
+  "comments": [
+    {
+      "type": "general",
+      "comment": "只修改现有service层逻辑不要添加多余方法",
+      "timestamp": "2025-10-08T08:02:30.508Z",
+      "id": "comment_1759910550508_vkgvk6mb5"
+    }
+  ]
+}

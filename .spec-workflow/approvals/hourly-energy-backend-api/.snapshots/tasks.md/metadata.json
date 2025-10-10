@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/hourly-energy-backend-api/tasks.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-09T05:09:46.169Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759986586124_fi9z9jhvi",
+      "approvalTitle": "Hourly Energy Backend API - Tasks"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-09T05:26:22.190Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759986586124_fi9z9jhvi",
+      "approvalTitle": "Hourly Energy Backend API - Tasks"
+    }
+  ]
+}

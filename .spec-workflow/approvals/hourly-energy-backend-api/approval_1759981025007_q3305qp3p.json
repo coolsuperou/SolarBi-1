@@ -1,0 +1,21 @@
+{
+  "id": "approval_1759981025007_q3305qp3p",
+  "title": "Hourly Energy Backend API - Requirements (Revised)",
+  "filePath": ".spec-workflow/specs/hourly-energy-backend-api/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-09T03:37:05.007Z",
+  "category": "spec",
+  "categoryName": "hourly-energy-backend-api",
+  "response": "Feedback Summary (1 comments):\n\nGeneral Comments:\n1. 讲一下每个小时电能计算的逻辑，参照getHourlyEnergyConsumptionQuery方法\n\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"general\",\n      \"comment\": \"讲一下每个小时电能计算的逻辑，参照getHourlyEnergyConsumptionQuery方法\",\n      \"timestamp\": \"2025-10-09T03:39:14.551Z\",\n      \"id\": \"comment_1759981154551_itzw1s0mt\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nGeneral Comments:\\n1. 讲一下每个小时电能计算的逻辑，参照getHourlyEnergyConsumptionQuery方法\\n\\n\",\n  \"timestamp\": \"2025-10-09T03:39:16.165Z\"\n}",
+  "respondedAt": "2025-10-09T03:39:16.487Z",
+  "comments": [
+    {
+      "type": "general",
+      "comment": "讲一下每个小时电能计算的逻辑，参照getHourlyEnergyConsumptionQuery方法",
+      "timestamp": "2025-10-09T03:39:14.551Z",
+      "id": "comment_1759981154551_itzw1s0mt"
+    }
+  ]
+}

@@ -57,16 +57,7 @@ const HourlyEnergyPage: React.FC = () => {
     return undefined; // 默认颜色
   };
 
-  // 获取CSS类名
-  const getDataClassName = (value: number) => {
-    if (value > HOURLY_ENERGY_CONFIG.DATA_THRESHOLD_2) {
-      return 'highlight-purple';
-    }
-    if (value > HOURLY_ENERGY_CONFIG.DATA_THRESHOLD_1) {
-      return 'highlight-value';
-    }
-    return '';
-  };
+
 
   // 获取当月天数
   const getDaysInMonth = (year: number, month: number) => {
@@ -164,7 +155,7 @@ const HourlyEnergyPage: React.FC = () => {
                       {hourlyData.map((value: number, index: number) => (
                         <td
                           key={index}
-                          className={`data-cell ${getDataClassName(value)}`}
+                          className="data-cell"
                           style={{ color: getDataColor(value) }}
                         >
                           {value === 0 

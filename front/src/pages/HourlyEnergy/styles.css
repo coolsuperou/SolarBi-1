@@ -253,18 +253,10 @@ html.hourly-energy-page,
 }
 
 /* 高亮数值（黄色） */
-.highlight-value {
-  background: rgba(255, 215, 0, 0.1) !important;
-  color: #ffd700 !important;
-  font-weight: 600;
-}
+
 
 /* 高亮数值（紫色） */
-.highlight-purple {
-  background: rgba(218, 112, 214, 0.15) !important;
-  color: #da70d6 !important;
-  font-weight: 600;
-}
+
 
 /* 次日时间标记 */
 .next-day-mark {

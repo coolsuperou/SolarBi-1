@@ -20,6 +20,12 @@ export default [
     component: './HourlyEnergy',
   },
   {
+    path: '/user-management',
+    name: '用户管理系统',
+    icon: 'UserOutlined',
+    component: './UserManagement',
+  },
+  {
     path: '/airConditioning',
     name: '114_空调水机主机',
     icon: 'WalletFilled',

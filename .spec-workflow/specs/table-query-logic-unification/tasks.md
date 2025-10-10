@@ -10,7 +10,7 @@
 
 ### Phase 1: 创建工具类基础
 
-- [ ] 1. 创建 TableQueryFilterUtils 工具类
+- [x] 1. 创建 TableQueryFilterUtils 工具类
   - **文件**: `back2/src/main/java/com/yupi/springbootinit/utils/TableQueryFilterUtils.java`
   - **任务**: 
     - 创建新的工具类文件

@@ -36,5 +36,25 @@ public class UserUpdateRequest implements Serializable {
      */
     private String userRole;
 
+    /**
+     * 用户账号（支持修改）
+     */
+    private String userAccount;
+
+    /**
+     * 用户密码（明文，支持修改）
+     */
+    private String userPassword;
+
+    /**
+     * 用户状态（active-活跃, inactive-禁用）
+     */
+    private String userStatus;
+
+    /**
+     * 页面访问权限（JSON字符串）
+     */
+    private String pagePermissions;
+
     private static final long serialVersionUID = 1L;
 }

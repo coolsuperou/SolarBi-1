@@ -59,6 +59,22 @@ public class User implements Serializable {
      */
     @TableLogic
     private Integer isDelete;
+
+    /**
+     * 用户状态（active-活跃, inactive-禁用）
+     */
+    private String userStatus;
+
+    /**
+     * 最后登录时间
+     */
+    private Date lastLoginTime;
+
+    /**
+     * 页面访问权限（JSON格式）
+     */
+    private String pagePermissions;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

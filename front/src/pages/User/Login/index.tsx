@@ -1,8 +1,9 @@
-import { userLoginUsingPost } from '@/services/SolarBi-front/userController';
+import { userLoginUsingPost, getLoginUserUsingGet } from '@/services/SolarBi-front/userController';
 import { Helmet, history } from '@umijs/max';
 import { message } from 'antd';
 import React, { useState } from 'react';
 import Settings from '../../../../config/defaultSettings';
+import { getFirstAccessibleRoute } from '../../../../config/utils';
 import './Login.css';
 import backgroundGif from './首页素材.gif';
 
@@ -28,22 +29,55 @@ const Login: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // 登录
+      // 1. 执行登录
       const res = await userLoginUsingPost({
         userAccount,
         userPassword,
       });
 
-      message.success('登录成功！');
-
-      // 获取重定向路径
-      const urlParams = new URL(window.location.href).searchParams;
-      const redirectPath = urlParams.get('redirect') || '/power_monitor';
-
-      // 登录成功后直接跳转并刷新页面，确保权限状态立即生效
-      setTimeout(() => {
-        window.location.href = redirectPath;
-      }, 500);
+      if (res.code === 0) {
+        message.success('登录成功！');
+        
+        // 2. ✅ 登录成功后，获取用户信息和权限
+        try {
+          const userInfo = await getLoginUserUsingGet();
+          
+          if (userInfo.data?.pagePermissions) {
+            const permissions = JSON.parse(userInfo.data.pagePermissions);
+            
+            // 3. 🎯 动态获取第一个可访问的路由
+            const firstRoute = getFirstAccessibleRoute(permissions);
+            
+            if (firstRoute) {
+              console.log(`✅ 登录成功，跳转到第一个可访问页面: ${firstRoute}`);
+              // 跳转到第一个有权限的页面
+              setTimeout(() => {
+                window.location.href = firstRoute;
+              }, 500);
+            } else {
+              // 没有任何权限，跳转到无权限页面
+              message.error('您没有任何页面访问权限，请联系管理员！');
+              setTimeout(() => {
+                window.location.href = '/403';
+              }, 1000);
+            }
+          } else {
+            // 权限字段为空
+            message.error('获取用户权限失败，请联系管理员！');
+            setIsLoading(false);
+          }
+        } catch (error) {
+          console.error('获取用户权限失败:', error);
+          // 降级方案：使用根路径，让重定向组件处理
+          message.warning('正在跳转...');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 500);
+        }
+      } else {
+        message.error(`登录失败，${res.message}`);
+        setIsLoading(false);
+      }
       
     } catch (error: any) {
       const errorMessage = error?.message || '登录失败，请重试';

@@ -221,6 +221,6 @@ export default [
       { icon: 'UserOutlined', path: 'user-management', component: './Admin/UserManagement', name: '用户管理' },
     ],
   },
-  { path: '/', redirect: '/dormitory'},
+  { path: '/', redirect: '/monthly-energy'},
   { path: '*', layout: false, component: './404' },
 ];

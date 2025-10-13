@@ -878,6 +878,146 @@
   z-index: 1;
 }
 
+/* ==========================================
+   科技感确认删除弹窗样式
+   ========================================== */
 
+/* Modal 遮罩层 */
+.tech-confirm-modal .ant-modal-mask {
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+}
+
+/* Modal 包装器 - 确保居中显示 */
+.tech-confirm-modal {
+  top: 0;
+}
+
+/* Modal 主容器 */
+.tech-confirm-modal .ant-modal-content {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(10, 25, 41, 0.98) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: 
+    0 0 40px rgba(0, 212, 255, 0.25),
+    0 20px 60px rgba(0, 0, 0, 0.6);
+  padding: 24px;
+  width: 380px;
+  max-width: 90vw;
+}
+
+/* Modal Body 主体区域 */
+.tech-confirm-modal .ant-modal-body {
+  padding: 0;
+}
+
+.tech-confirm-modal .ant-modal-confirm-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* 警告图标 */
+.tech-confirm-modal .ant-modal-confirm-body > .anticon,
+.tech-confirm-modal .ant-modal-confirm-body > span:first-child {
+  font-size: 24px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* 内容区域包装器 */
+.tech-confirm-modal .ant-modal-confirm-body > div {
+  flex: 1;
+}
+
+/* 标题样式 */
+.tech-confirm-modal .ant-modal-confirm-title {
+  color: #00d4ff;
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  line-height: 1.4;
+}
+
+/* 内容文字 */
+.tech-confirm-modal .ant-modal-confirm-content {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* 按钮容器 */
+.tech-confirm-modal .ant-modal-confirm-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* 取消按钮 */
+.tech-confirm-cancel-btn {
+  height: 38px;
+  padding: 0 24px;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1.5px solid rgba(0, 212, 255, 0.4) !important;
+  border-radius: 8px;
+  color: #00d4ff !important;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.tech-confirm-cancel-btn:hover {
+  background: rgba(0, 212, 255, 0.1) !important;
+  border-color: #00d4ff !important;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4) !important;
+  transform: translateY(-2px);
+  color: #00e5ff !important;
+}
+
+.tech-confirm-cancel-btn:active {
+  transform: translateY(0);
+}
+
+/* 确定按钮（危险操作） */
+.tech-confirm-ok-btn {
+  height: 38px;
+  padding: 0 24px;
+  background: linear-gradient(135deg, #ff4d4f 0%, #cf1322 100%) !important;
+  border: 1.5px solid rgba(255, 77, 79, 0.8) !important;
+  border-radius: 8px;
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 4px 20px rgba(255, 77, 79, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.tech-confirm-ok-btn:hover {
+  background: linear-gradient(135deg, #ff7875 0%, #ff4d4f 100%) !important;
+  border-color: #ff7875 !important;
+  box-shadow: 0 6px 30px rgba(255, 77, 79, 0.6) !important;
+  transform: translateY(-2px);
+}
+
+.tech-confirm-ok-btn:active {
+  transform: translateY(0);
+}
+
+/* Modal 关闭按钮 */
+.tech-confirm-modal .ant-modal-close {
+  color: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.tech-confirm-modal .ant-modal-close:hover {
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+}
 
 

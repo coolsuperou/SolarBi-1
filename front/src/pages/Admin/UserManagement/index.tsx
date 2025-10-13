@@ -34,8 +34,8 @@ const UserManagementPage: React.FC = () => {
 
   // 30个业务页面权限（与后端一致，user-management由canAdmin控制）
   const [permissions, setPermissions] = useState<Record<string, boolean>>({
-    'monthly-energy': true,
-    'hourly-energy': true,
+    'monthly-energy': false,
+    'hourly-energy': false,
     'airConditioning': false,
     'injection_workshop': false,
     'granulation_workshop': false,
@@ -180,6 +180,13 @@ const UserManagementPage: React.FC = () => {
       return;
     }
 
+    // 验证至少选择了一个页面访问权限
+    const hasPermission = Object.values(permissions).some(value => value === true);
+    if (!hasPermission) {
+      message.error('请至少选择一个页面访问权限！');
+      return;
+    }
+
     setLoading(true);
     try {
       if (currentUser) {
@@ -239,6 +246,15 @@ const UserManagementPage: React.FC = () => {
       content: '确定要删除该用户吗？此操作不可恢复！',
       okText: '确定',
       cancelText: '取消',
+      className: 'tech-confirm-modal',
+      icon: <span style={{ fontSize: '24px' }}>⚠️</span>,
+      okButtonProps: {
+        className: 'tech-confirm-ok-btn',
+        danger: true,
+      },
+      cancelButtonProps: {
+        className: 'tech-confirm-cancel-btn',
+      },
       onOk: async () => {
         try {
           const response = await deleteUserUsingPost({ id: userId });
@@ -298,6 +314,13 @@ const UserManagementPage: React.FC = () => {
   // 保存权限
   const savePermissions = async () => {
     if (!currentUser) return;
+
+    // 验证至少选择了一个页面访问权限
+    const hasPermission = Object.values(permissions).some(value => value === true);
+    if (!hasPermission) {
+      message.error('请至少选择一个页面访问权限！');
+      return;
+    }
 
     setLoading(true);
     try {

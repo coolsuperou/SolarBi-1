@@ -1,0 +1,27 @@
+{
+  "id": "approval_1760339041940_a5ytadmz1",
+  "title": "车间权限过滤 - 设计文档（精简版-无调试代码）",
+  "filePath": ".spec-workflow/specs/workshop-permissions-filter/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-13T07:04:01.940Z",
+  "category": "spec",
+  "categoryName": "workshop-permissions-filter",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"## Open Questions\n\n1. **是否需要将映射配置外部化？**\n   - 当前方案：...\": 这两个都不要\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"这两个都不要\",\n      \"timestamp\": \"2025-10-13T07:07:47.911Z\",\n      \"selectedText\": \"## Open Questions\\n\\n1. **是否需要将映射配置外部化？**\\n   - 当前方案：硬编码在工具类中\\n   - 备选方案：配置文件或数据库表\\n   - 建议：先硬编码，后续如需频繁调整再考虑外部化\\n\\n2. **是否需要缓存解析后的车间列表？**\\n   - 当前方案：每次请求都解析\\n   - 备选方案：缓存在Session或Redis中\\n   - 建议：先不缓存，观察性能后决定\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1760339267912_pcur56a8u\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"## Open Questions\\n\\n1. **是否需要将映射配置外部化？**\\n   - 当前方案：...\\\": 这两个都不要\\n\",\n  \"timestamp\": \"2025-10-13T07:07:54.575Z\"\n}",
+  "respondedAt": "2025-10-13T07:07:54.925Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "这两个都不要",
+      "timestamp": "2025-10-13T07:07:47.911Z",
+      "selectedText": "## Open Questions\n\n1. **是否需要将映射配置外部化？**\n   - 当前方案：硬编码在工具类中\n   - 备选方案：配置文件或数据库表\n   - 建议：先硬编码，后续如需频繁调整再考虑外部化\n\n2. **是否需要缓存解析后的车间列表？**\n   - 当前方案：每次请求都解析\n   - 备选方案：缓存在Session或Redis中\n   - 建议：先不缓存，观察性能后决定",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1760339267912_pcur56a8u"
+    }
+  ]
+}

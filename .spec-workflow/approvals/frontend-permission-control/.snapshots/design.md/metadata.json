@@ -1,0 +1,54 @@
+{
+  "filePath": ".spec-workflow/specs/frontend-permission-control/design.md",
+  "currentVersion": 6,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-10T06:10:01.184Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760076601129_vhphj8uql",
+      "approvalTitle": "前端权限控制系统 - Design 文档"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-10T06:23:55.964Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760076601129_vhphj8uql",
+      "approvalTitle": "前端权限控制系统 - Design 文档"
+    },
+    {
+      "version": 3,
+      "filename": "snapshot-003.json",
+      "timestamp": "2025-10-10T06:28:46.753Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760077537380_qfv7fao0n",
+      "approvalTitle": "前端权限控制系统 - Design 文档（修订版 - UserManagement子路由）"
+    },
+    {
+      "version": 4,
+      "filename": "snapshot-004.json",
+      "timestamp": "2025-10-10T06:36:22.474Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760077874413_39q795g59",
+      "approvalTitle": "前端权限控制系统 - Design 文档（修订版2 - 解析失败跳转404）"
+    },
+    {
+      "version": 5,
+      "filename": "snapshot-005.json",
+      "timestamp": "2025-10-10T06:47:38.599Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760078304983_j53un57px",
+      "approvalTitle": "前端权限控制系统 - Design 文档（修订版3 - 30个业务页面权限）"
+    },
+    {
+      "version": 6,
+      "filename": "snapshot-006.json",
+      "timestamp": "2025-10-10T06:53:21.547Z",
+      "trigger": "approved",
+      "approvalId": "approval_1760079018047_cemydqrob",
+      "approvalTitle": "前端权限控制系统 - Design 文档（修订版4 - 含后端调整）"
+    }
+  ]
+}

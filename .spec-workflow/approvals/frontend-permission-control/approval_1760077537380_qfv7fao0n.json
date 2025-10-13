@@ -1,0 +1,27 @@
+{
+  "id": "approval_1760077537380_qfv7fao0n",
+  "title": "前端权限控制系统 - Design 文档（修订版 - UserManagement子路由）",
+  "filePath": ".spec-workflow/specs/frontend-permission-control/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-10T06:25:37.380Z",
+  "category": "spec",
+  "categoryName": "frontend-permission-control",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"## Error Handling\n\n### Error Scenario 1: JSON解析失败\n...\": 解析失败直接提示404不返回默认页面\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"解析失败直接提示404不返回默认页面\",\n      \"timestamp\": \"2025-10-10T06:28:41.659Z\",\n      \"selectedText\": \"## Error Handling\\n\\n### Error Scenario 1: JSON解析失败\\n\\n**Description**: 用户的 `pagePermissions` 字段包含无效的JSON字符串\\n\\n**Handling**:\\n```typescript\\ntry {\\n  const permissions = JSON.parse(res.data.pagePermissions);\\n  initialState.pagePermissions = permissions;\\n} catch (error) {\\n  console.error('❌ 解析权限JSON失败:', error);\\n  // 使用默认权限\\n  initialState.pagePermissions = {\\n    'monthly-energy': true,\\n    'hourly-energy': true,\\n  };\\n}\\n```\\n\\n**User Impact**: 用户仍可正常登录，但仅拥有默认的2个页面权限\\n\\n---\\n\\n### Error Scenario 2: 权限字段为空\\n\\n**Description**: 用户的 `pagePermissions` 字段为 `null` 或 `undefined`\\n\\n**Handling**:\\n```typescript\\nif (res.data?.pagePermissions) {\\n  // 解析权限\\n} else {\\n  // 使用默认权限\\n  initialState.pagePermissions = {\\n    'monthly-energy': true,\\n    'hourly-energy': true,\\n  };\\n}\\n```\\n\\n**User Impact**: 用户仅拥有默认的2个页面权限\\n\\n---\\n\\n### Error Scenario 3: API调用失败\\n\\n**Description**: `getLoginUserUsingGet()` 接口调用失败（网络错误、后端异常等）\\n\\n**Handling**:\\n```typescript\\ntry {\\n  const res = await getLoginUserUsingGet();\\n  // ...\\n} catch (error: any) {\\n  // 重定向到登录页面\\n  const redirectUrl = `${loginPath}?redirect=${encodeURIComponent(location.pathname)}`;\\n  history.push(redirectUrl);\\n}\\n```\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1760077721659_ddyi9yqwu\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"## Error Handling\\n\\n### Error Scenario 1: JSON解析失败\\n...\\\": 解析失败直接提示404不返回默认页面\\n\",\n  \"timestamp\": \"2025-10-10T06:28:46.443Z\"\n}",
+  "respondedAt": "2025-10-10T06:28:46.915Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "解析失败直接提示404不返回默认页面",
+      "timestamp": "2025-10-10T06:28:41.659Z",
+      "selectedText": "## Error Handling\n\n### Error Scenario 1: JSON解析失败\n\n**Description**: 用户的 `pagePermissions` 字段包含无效的JSON字符串\n\n**Handling**:\n```typescript\ntry {\n  const permissions = JSON.parse(res.data.pagePermissions);\n  initialState.pagePermissions = permissions;\n} catch (error) {\n  console.error('❌ 解析权限JSON失败:', error);\n  // 使用默认权限\n  initialState.pagePermissions = {\n    'monthly-energy': true,\n    'hourly-energy': true,\n  };\n}\n```\n\n**User Impact**: 用户仍可正常登录，但仅拥有默认的2个页面权限\n\n---\n\n### Error Scenario 2: 权限字段为空\n\n**Description**: 用户的 `pagePermissions` 字段为 `null` 或 `undefined`\n\n**Handling**:\n```typescript\nif (res.data?.pagePermissions) {\n  // 解析权限\n} else {\n  // 使用默认权限\n  initialState.pagePermissions = {\n    'monthly-energy': true,\n    'hourly-energy': true,\n  };\n}\n```\n\n**User Impact**: 用户仅拥有默认的2个页面权限\n\n---\n\n### Error Scenario 3: API调用失败\n\n**Description**: `getLoginUserUsingGet()` 接口调用失败（网络错误、后端异常等）\n\n**Handling**:\n```typescript\ntry {\n  const res = await getLoginUserUsingGet();\n  // ...\n} catch (error: any) {\n  // 重定向到登录页面\n  const redirectUrl = `${loginPath}?redirect=${encodeURIComponent(location.pathname)}`;\n  history.push(redirectUrl);\n}\n```",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1760077721659_ddyi9yqwu"
+    }
+  ]
+}

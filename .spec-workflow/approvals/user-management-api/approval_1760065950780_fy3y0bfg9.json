@@ -1,0 +1,12 @@
+{
+  "id": "approval_1760065950780_fy3y0bfg9",
+  "title": "用户管理API - 设计文档（方案2：权限Key不带斜杠）",
+  "filePath": ".spec-workflow/specs/user-management-api/design.md",
+  "type": "document",
+  "status": "rejected",
+  "createdAt": "2025-10-10T03:12:30.780Z",
+  "category": "spec",
+  "categoryName": "user-management-api",
+  "response": "你重复创建了一个文档直接删除这个我上一个还没审批",
+  "respondedAt": "2025-10-10T03:16:04.819Z"
+}

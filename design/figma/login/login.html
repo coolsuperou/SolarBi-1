@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 工具制造电能数据平台</title>
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+  <!-- 背景容器 -->
+  <div class="background-container">
+    <img src="首页素材.gif" alt="background" class="background-gif">
+    <div class="background-overlay"></div>
+  </div>
+
+  <!-- 主容器 -->
+  <div class="main-container">
+    <!-- 登录卡片 -->
+    <div class="login-card">
+      <!-- Logo和标题区域 -->
+      <div class="header-section">
+        <h1 class="main-title">工具制造电能数据平台</h1>
+        <p class="subtitle">账户密码登录</p>
+      </div>
+
+      <!-- 表单区域 -->
+      <form class="login-form" id="loginForm">
+        <!-- 账号输入框 -->
+        <div class="form-group">
+          <div class="input-with-icon">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <input 
+              type="text" 
+              id="account" 
+              class="form-input" 
+              placeholder="请输入账号"
+              autocomplete="username"
+            />
+          </div>
+        </div>
+
+        <!-- 密码输入框 -->
+        <div class="form-group">
+          <div class="input-with-icon">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <div class="password-wrapper">
+              <input 
+                type="password" 
+                id="password" 
+                class="form-input password-input" 
+                placeholder="请输入密码"
+                autocomplete="current-password"
+              />
+              <button type="button" class="show-password-btn" id="togglePassword">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 登录按钮 -->
+        <button type="submit" class="login-btn">
+          <span class="btn-text">登 录</span>
+          <div class="btn-glow"></div>
+        </button>
+      </form>
+    </div>
+
+    <!-- 装饰性圆球 -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>

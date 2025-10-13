@@ -1,0 +1,883 @@
+/* 用户管理系统样式 - 基于HTML设计 */
+
+/* 覆盖Ant Design Pro所有容器 */
+.ant-pro-layout,
+.ant-pro-layout-content,
+.ant-pro-page-container,
+.ant-pro-page-container-children-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+/* 隐藏页头 */
+.ant-pro-page-header,
+.ant-pro-page-header-wrap {
+  display: none !important;
+}
+
+.user-management-container {
+  background: linear-gradient(135deg, #0a1929 0%, #1a237e 50%, #000051 100%);
+  color: #ffffff;
+  height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 15px;
+  box-sizing: border-box;
+}
+
+/* 页面标题 */
+.page-header {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.page-title {
+  color: #00d4ff;
+  font-size: 32px;
+  font-weight: 700;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.8), 0 0 30px rgba(0, 212, 255, 0.4);
+  letter-spacing: 2px;
+  margin: 0;
+  padding: 0;
+}
+
+/* 工具栏 */
+.toolbar {
+  background: rgba(10, 25, 41, 0.6);
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.search-box {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+
+.search-input {
+  flex: 1;
+  background: rgba(10, 25, 41, 0.8);
+  border: 2px solid #00d4ff;
+  border-radius: 6px;
+  color: #ffffff;
+  padding: 10px 15px;
+  outline: none;
+  font-size: 14px;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search-input:focus {
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+}
+
+.btn {
+  background: #00d4ff;
+  border: 2px solid #00d4ff;
+  border-radius: 6px;
+  color: #0a1929;
+  font-weight: bold;
+  padding: 10px 25px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+  transition: all 0.3s ease;
+  outline: none;
+  font-size: 14px;
+}
+
+.btn:hover {
+  background: #00b8d4;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+.btn-add {
+  background: #00ff66;
+  border-color: #00ff66;
+}
+
+.btn-add:hover {
+  background: #00cc52;
+  box-shadow: 0 0 30px rgba(0, 255, 102, 0.8);
+}
+
+/* 用户表格 */
+.table-container {
+  background: rgba(10, 25, 41, 0.6);
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-table th,
+.user-table td {
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  padding: 12px;
+  text-align: left;
+}
+
+.user-table th {
+  background: rgba(10, 25, 41, 0.95);
+  color: #00d4ff;
+  font-weight: 700;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.user-table tbody tr {
+  transition: background-color 0.3s ease;
+}
+
+.user-table tbody tr:hover {
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.user-table td {
+  background: rgba(10, 25, 41, 0.4);
+}
+
+/* 角色徽章 */
+.role-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.role-admin {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+}
+
+.role-user {
+  background: rgba(0, 212, 255, 0.2);
+  color: #00d4ff;
+  border: 1px solid #00d4ff;
+}
+
+/* 状态指示器 */
+.status-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-active {
+  background: #00ff66;
+  box-shadow: 0 0 10px #00ff66;
+}
+
+.status-inactive {
+  background: #999;
+}
+
+/* 操作按钮 */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-edit {
+  background: #00d4ff;
+  color: #0a1929;
+}
+
+.btn-edit:hover {
+  background: #00b8d4;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+}
+
+.btn-delete {
+  background: #ff6b6b;
+  color: #ffffff;
+}
+
+.btn-delete:hover {
+  background: #ff5252;
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.8);
+}
+
+.btn-permission {
+  background: #ffd700;
+  color: #0a1929;
+}
+
+.btn-permission:hover {
+  background: #ffed4e;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+}
+
+.btn-password-toggle {
+  background: transparent;
+  color: #00d4ff;
+  margin-left: 10px;
+  padding: 4px 8px;
+}
+
+.btn-password-toggle:hover {
+  background: rgba(0, 212, 255, 0.2);
+}
+
+.password-display {
+  font-family: monospace;
+  letter-spacing: 2px;
+}
+
+/* 表单样式 */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  color: #00d4ff;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.form-input {
+  width: 100%;
+  background: rgba(10, 25, 41, 0.8);
+  border: 2px solid #00d4ff;
+  border-radius: 6px;
+  color: #ffffff;
+  padding: 10px 15px;
+  outline: none;
+  font-size: 14px;
+}
+
+.form-input:focus {
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+}
+
+.form-select {
+  width: 100%;
+  background: rgba(10, 25, 41, 0.8);
+  border: 2px solid #00d4ff;
+  border-radius: 6px;
+  color: #ffffff;
+  padding: 10px 15px;
+  outline: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.form-select option {
+  background: #1a237e;
+}
+
+/* 权限复选框列表 */
+.permission-list {
+  background: rgba(10, 25, 41, 0.6);
+  border: 2px solid #00d4ff;
+  border-radius: 6px;
+  padding: 15px;
+  overflow-y: auto;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 8px;
+  background: rgba(0, 212, 255, 0.05);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.permission-item:hover {
+  background: rgba(0, 212, 255, 0.15);
+}
+
+.permission-checkbox {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+  cursor: pointer;
+  accent-color: #00d4ff;
+}
+
+.permission-label {
+  flex: 1;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.permission-desc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+}
+
+/* 滚动条样式 */
+.table-container::-webkit-scrollbar,
+.permission-list::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track,
+.permission-list::-webkit-scrollbar-track {
+  background: rgba(10, 25, 41, 0.8);
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb,
+.permission-list::-webkit-scrollbar-thumb {
+  background: #00d4ff;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+}
+
+.table-container::-webkit-scrollbar-thumb:hover,
+.permission-list::-webkit-scrollbar-thumb:hover {
+  background: #00e5ff;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 1);
+}
+
+/* Modal样式覆盖 */
+.user-modal .ant-modal-content,
+.permission-modal .ant-modal-content {
+  background: linear-gradient(135deg, #0a1929 0%, #1a237e 100%);
+  border: 3px solid #00d4ff;
+  border-radius: 12px;
+  box-shadow: 0 0 50px rgba(0, 212, 255, 0.8);
+}
+
+.user-modal .ant-modal-header,
+.permission-modal .ant-modal-header {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 212, 255, 0.08));
+  border-bottom: 2px solid #00d4ff;
+  padding: 16px 20px;
+}
+
+.user-modal .ant-modal-body,
+.permission-modal .ant-modal-body {
+  background: transparent;
+  padding: 20px;
+}
+
+.user-modal .ant-modal-footer,
+.permission-modal .ant-modal-footer {
+  background: transparent;
+  border-top: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.user-modal .ant-btn-default,
+.permission-modal .ant-btn-default {
+  background: transparent;
+  border: 2px solid #00d4ff;
+  color: #00d4ff;
+}
+
+.user-modal .ant-btn-default:hover,
+.permission-modal .ant-btn-default:hover {
+  background: rgba(0, 212, 255, 0.2);
+  border-color: #00d4ff;
+  color: #00d4ff;
+}
+
+.user-modal .ant-btn-primary,
+.permission-modal .ant-btn-primary {
+  background: #00d4ff;
+  border: 2px solid #00d4ff;
+  color: #0a1929;
+  font-weight: bold;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+}
+
+.user-modal .ant-btn-primary:hover,
+.permission-modal .ant-btn-primary:hover {
+  background: #00b8d4;
+  border-color: #00b8d4;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.9);
+}
+
+/* ============ 权限卡片网格样式 ============ */
+
+/* 快捷操作区域 */
+.permission-quick-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.permission-quick-actions > div:first-child {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.permission-quick-btn {
+  padding: 8px 14px;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 6px;
+  color: #00d4ff;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.permission-quick-btn:hover {
+  background: rgba(0, 212, 255, 0.2);
+  border-color: #00d4ff;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.permission-save-btn {
+  background: linear-gradient(135deg, #00d4ff 0%, #00a3cc 100%);
+  color: #001529;
+  border-color: #00d4ff;
+}
+
+.permission-save-btn:hover {
+  background: linear-gradient(135deg, #00e5ff 0%, #00b8e6 100%);
+  box-shadow: 0 6px 25px rgba(0, 212, 255, 0.6);
+}
+
+/* 统计区域 */
+.permission-stats {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  align-items: center;
+}
+
+.stat-item {
+  padding: 5px 12px;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 14px;
+  color: #00d4ff;
+  font-weight: bold;
+}
+
+.stat-number {
+  color: #00ff66;
+  font-size: 14px;
+  margin-left: 5px;
+}
+
+/* 权限卡片网格 */
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* 自定义滚动条 */
+.permissions-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.permissions-grid::-webkit-scrollbar-track {
+  background: rgba(0, 212, 255, 0.05);
+  border-radius: 10px;
+}
+
+.permissions-grid::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: 10px;
+  transition: background 0.3s;
+}
+
+.permissions-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.5);
+}
+
+/* 权限卡片 */
+.permission-card {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(0, 212, 255, 0.02) 100%);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  min-height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.permission-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.permission-card:hover::before {
+  left: 100%;
+}
+
+.permission-card:hover {
+  border-color: #00d4ff;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 212, 255, 0.05) 100%);
+  box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
+  transform: translateY(-3px);
+}
+
+.permission-card.active {
+  border-color: #00ff66;
+  background: linear-gradient(135deg, rgba(0, 255, 102, 0.1) 0%, rgba(0, 255, 102, 0.05) 100%);
+}
+
+.permission-card.active::after {
+  content: '✓';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  background: #00ff66;
+  color: #001529;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+  animation: checkMark 0.3s ease-out;
+}
+
+@keyframes checkMark {
+  0% { transform: scale(0) rotate(-180deg); }
+  50% { transform: scale(1.2) rotate(10deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* 分类标签 */
+.permission-category-tag {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 2px 6px;
+  background: rgba(0, 212, 255, 0.2);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 3px;
+  font-size: 9px;
+  color: #00d4ff;
+  font-weight: bold;
+  z-index: 2;
+}
+
+.permission-card.active .permission-category-tag {
+  background: rgba(0, 255, 102, 0.2);
+  border-color: rgba(0, 255, 102, 0.3);
+  color: #00ff66;
+}
+
+/* 卡片内容 */
+.permission-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.permission-icon {
+  font-size: 16px;
+  filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.5));
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.permission-card:hover .permission-icon {
+  transform: scale(1.2) rotate(5deg);
+  filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.8));
+}
+
+.permission-card.active .permission-icon {
+  filter: drop-shadow(0 0 10px rgba(0, 255, 102, 0.8));
+}
+
+.permission-label {
+  flex: 1;
+}
+
+.permission-name {
+  color: #00d4ff;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 2px;
+  transition: color 0.3s;
+  line-height: 1.3;
+}
+
+.permission-card.active .permission-name {
+  color: #00ff66;
+}
+
+.permission-desc {
+  color: #66d9ef;
+  font-size: 9px;
+  opacity: 0.7;
+  line-height: 1.2;
+}
+
+
+
+/* ============ 添加用户模态框（两列布局） ============ */
+
+.add-user-modal .ant-modal-content {
+  background: rgba(13, 31, 60, 0.95);
+  border: 2px solid rgba(0, 212, 255, 0.3);
+  border-radius: 20px;
+  box-shadow:
+    0 0 40px rgba(0, 212, 255, 0.3),
+    inset 0 0 40px rgba(0, 212, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.add-user-modal .ant-modal-header {
+  display: none; /* 隐藏标题栏 */
+}
+
+.add-user-modal .ant-modal-body {
+  padding: 0;
+  padding-top: 25px; /* 添加顶部内边距 */
+}
+
+.add-user-modal .ant-modal-footer {
+  display: none; /* 隐藏默认footer，使用自定义 */
+}
+
+/* 主体内容两列布局 */
+.add-user-modal-body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  padding: 16px;
+  min-height: 400px;
+}
+
+/* 左侧：用户基本信息表单 */
+.user-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.add-section-title {
+  color: #00d4ff;
+  font-size: 15px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.form-group .required {
+  color: #ff4d4f;
+  font-size: 16px;
+  margin-left: 2px;
+}
+
+.form-help {
+  color: #66d9ef;
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+/* 右侧：权限设置 */
+.add-permissions-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.add-permissions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.quick-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.add-permissions-title {
+  color: #00d4ff;
+  font-size: 15px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.add-permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+  align-content: start;
+}
+
+.add-permissions-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.add-permissions-grid::-webkit-scrollbar-track {
+  background: rgba(0, 212, 255, 0.05);
+  border-radius: 10px;
+}
+
+.add-permissions-grid::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: 10px;
+  transition: background 0.3s;
+}
+
+.add-permissions-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.5);
+}
+
+/* 底部操作按钮 */
+.add-modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid rgba(0, 212, 255, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 212, 255, 0.03);
+  border-radius: 0 0 18px 18px;
+}
+
+.footer-info {
+  color: #66d9ef;
+  font-size: 14px;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.footer-actions .btn {
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.footer-actions .btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.5s, height 0.5s;
+}
+
+.footer-actions .btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.footer-actions .btn-cancel {
+  background: rgba(255, 77, 79, 0.1);
+  border: 1px solid rgba(255, 77, 79, 0.3);
+  color: #ff4d4f;
+}
+
+.footer-actions .btn-cancel:hover {
+  background: rgba(255, 77, 79, 0.2);
+  border-color: #ff4d4f;
+  box-shadow: 0 0 20px rgba(255, 77, 79, 0.4);
+  transform: translateY(-2px);
+}
+
+.footer-actions .btn-save {
+  background: linear-gradient(135deg, #00d4ff 0%, #00a3cc 100%);
+  color: #001529;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+}
+
+.footer-actions .btn-save:hover {
+  background: linear-gradient(135deg, #00e5ff 0%, #00b8e6 100%);
+  box-shadow: 0 6px 25px rgba(0, 212, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+.btn-text {
+  position: relative;
+  z-index: 1;
+}
+
+
+
+

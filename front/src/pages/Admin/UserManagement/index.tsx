@@ -6,6 +6,7 @@ import {
   updateUserUsingPost,
   deleteUserUsingPost,
 } from '@/services/SolarBi-front/userController';
+import { createFullPermissions, getDefaultPermissions } from './utils';
 import './styles.css';
 
 /**
@@ -132,12 +133,8 @@ const UserManagementPage: React.FC = () => {
       userRole: 'user',
       userStatus: 'active',
     });
-    // 重置为默认权限（只有月度和日能耗）
-    const defaultPerms: Record<string, boolean> = {};
-    Object.keys(permissions).forEach(key => {
-      defaultPerms[key] = key === 'monthly-energy' || key === 'hourly-energy';
-    });
-    setPermissions(defaultPerms);
+    // 重置为默认权限（所有权限为 false）
+    setPermissions(getDefaultPermissions());
     setCurrentUser(null);
     setUserModalVisible(true);
   };
@@ -154,13 +151,17 @@ const UserManagementPage: React.FC = () => {
       userStatus: user.userStatus || 'active',
     });
 
-    // 直接解析用户的 pagePermissions JSON（必填，一定存在）
+    // ✅ 修复：解析用户权限并确保包含所有30个权限的完整对象
     try {
       const userPerms = JSON.parse(user.pagePermissions || '{}');
-      setPermissions(userPerms);
+      // 使用工具函数创建完整权限对象：未选中的权限会自动补充为 false
+      const fullPerms = createFullPermissions(userPerms);
+      setPermissions(fullPerms);
     } catch (error) {
       console.error('解析权限JSON失败:', error);
       message.error('用户权限数据损坏，请联系管理员！');
+      // 出错时使用默认权限
+      setPermissions(getDefaultPermissions());
     }
 
     setCurrentUser(user);
@@ -276,13 +277,17 @@ const UserManagementPage: React.FC = () => {
   const openPermissionModal = (user: any) => {
     setCurrentUser(user);
 
-    // 直接解析用户的 pagePermissions JSON（必填，一定存在）
+    // ✅ 修复：解析用户权限并确保包含所有30个权限的完整对象
     try {
       const userPerms = JSON.parse(user.pagePermissions || '{}');
-      setPermissions(userPerms);
+      // 使用工具函数创建完整权限对象：未选中的权限会自动补充为 false
+      const fullPerms = createFullPermissions(userPerms);
+      setPermissions(fullPerms);
     } catch (error) {
       console.error('解析权限JSON失败:', error);
       message.error('用户权限数据损坏，请联系管理员！');
+      // 出错时使用默认权限
+      setPermissions(getDefaultPermissions());
     }
 
     setPermissionModalVisible(true);

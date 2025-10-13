@@ -1,0 +1,21 @@
+{
+  "id": "approval_1760076601129_vhphj8uql",
+  "title": "前端权限控制系统 - Design 文档",
+  "filePath": ".spec-workflow/specs/frontend-permission-control/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-10T06:10:01.130Z",
+  "category": "spec",
+  "categoryName": "frontend-permission-control",
+  "response": "Feedback Summary (1 comments):\n\nGeneral Comments:\n1. 我把UserManagement 移动到admin目录下，请你做出调整\n\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"general\",\n      \"comment\": \"我把UserManagement 移动到admin目录下，请你做出调整\",\n      \"timestamp\": \"2025-10-10T06:23:53.453Z\",\n      \"id\": \"comment_1760077433453_o1m6fxmnp\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nGeneral Comments:\\n1. 我把UserManagement 移动到admin目录下，请你做出调整\\n\\n\",\n  \"timestamp\": \"2025-10-10T06:23:55.636Z\"\n}",
+  "respondedAt": "2025-10-10T06:23:56.096Z",
+  "comments": [
+    {
+      "type": "general",
+      "comment": "我把UserManagement 移动到admin目录下，请你做出调整",
+      "timestamp": "2025-10-10T06:23:53.453Z",
+      "id": "comment_1760077433453_o1m6fxmnp"
+    }
+  ]
+}

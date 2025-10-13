@@ -1,0 +1,30 @@
+{
+  "filePath": ".spec-workflow/specs/frontend-permission-control/requirements.md",
+  "currentVersion": 3,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-10T06:01:14.126Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760076074056_f84v5yzlc",
+      "approvalTitle": "前端权限控制系统 - Requirements 文档"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-10T06:04:42.386Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760076074056_f84v5yzlc",
+      "approvalTitle": "前端权限控制系统 - Requirements 文档"
+    },
+    {
+      "version": 3,
+      "filename": "snapshot-003.json",
+      "timestamp": "2025-10-10T06:07:19.386Z",
+      "trigger": "approved",
+      "approvalId": "approval_1760076353254_i5f5rbd10",
+      "approvalTitle": "前端权限控制系统 - Requirements 文档（修订版）"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "filePath": ".spec-workflow/specs/user-management-api/requirements.md",
+  "currentVersion": 4,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-10T01:41:31.305Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760060491260_l7ks2w010",
+      "approvalTitle": "用户管理后端API - Requirements"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-10T01:56:05.080Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760060491260_l7ks2w010",
+      "approvalTitle": "用户管理后端API - Requirements"
+    },
+    {
+      "version": 3,
+      "filename": "snapshot-003.json",
+      "timestamp": "2025-10-10T02:55:07.858Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760064685630_kafshjxdl",
+      "approvalTitle": "用户管理API - 需求文档（含31个页面权限设计）"
+    },
+    {
+      "version": 4,
+      "filename": "snapshot-004.json",
+      "timestamp": "2025-10-10T02:59:38.654Z",
+      "trigger": "approved",
+      "approvalId": "approval_1760065033473_3isao46mw",
+      "approvalTitle": "用户管理API - 需求文档（简化版-31个权限无分类）"
+    }
+  ]
+}

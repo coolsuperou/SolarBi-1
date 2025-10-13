@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 日能耗统计接口
@@ -25,13 +26,15 @@ public class HourlyEnergyController {
      * @param year 年份
      * @param month 月份（1-12）
      * @param day 日期（1-31）
+     * @param request HTTP请求对象
      * @return 日能耗统计数据
      */
     @GetMapping("/statistics")
     public BaseResponse<HourlyEnergyStatistics> getHourlyStatistics(
             @RequestParam Integer year,
             @RequestParam Integer month,
-            @RequestParam Integer day) {
+            @RequestParam Integer day,
+            HttpServletRequest request) {
         log.info("📊 接收日能耗统计请求: {}年{}月{}日", year, month, day);
         
         // 参数验证
@@ -51,7 +54,7 @@ public class HourlyEnergyController {
         }
         
         try {
-            HourlyEnergyStatistics statistics = hourlyEnergyService.getHourlyStatistics(year, month, day);
+            HourlyEnergyStatistics statistics = hourlyEnergyService.getHourlyStatistics(year, month, day, request);
             log.info("✅ 日能耗统计完成: {}个车间", statistics.getWorkshopList().size());
             return ResultUtils.success(statistics);
         } catch (Exception e) {

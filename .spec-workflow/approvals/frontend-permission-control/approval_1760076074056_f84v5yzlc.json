@@ -1,0 +1,27 @@
+{
+  "id": "approval_1760076074056_f84v5yzlc",
+  "title": "前端权限控制系统 - Requirements 文档",
+  "filePath": ".spec-workflow/specs/frontend-permission-control/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-10T06:01:14.056Z",
+  "category": "spec",
+  "categoryName": "frontend-permission-control",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"1. WHEN 初始化权限系统 THEN 系统 SHALL 为31个页面生成对应的权限判断函数（如 ...\": 即使是管理员也是通过后端数据去访问pagePermissions字段来获取页面权限\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"即使是管理员也是通过后端数据去访问pagePermissions字段来获取页面权限\",\n      \"timestamp\": \"2025-10-10T06:04:39.613Z\",\n      \"selectedText\": \"1. WHEN 初始化权限系统 THEN 系统 SHALL 为31个页面生成对应的权限判断函数（如 `canAccessMonthlyEnergy`）\\n2. IF 用户为管理员（`userRole === 'admin'`）THEN 系统 SHALL 自动授予所有页面的访问权限\\n3. IF 用户为普通用户 THEN 系统 SHALL 根据 `pagePermissions` 对象中的具体配置判断每个页面的访问权限\\n4. WHEN `pagePermissions['{page-key}']` 为 `true` THEN 该页面的访问权限函数 SHALL 返回 `true`\\n5. WHEN `pagePermissions['{page-key}']` 为 `false` 或 `undefined` THEN 该页面的访问权限函数 SHALL 返回 `false`\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1760076279613_2esfobpp7\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"1. WHEN 初始化权限系统 THEN 系统 SHALL 为31个页面生成对应的权限判断函数（如 ...\\\": 即使是管理员也是通过后端数据去访问pagePermissions字段来获取页面权限\\n\",\n  \"timestamp\": \"2025-10-10T06:04:42.078Z\"\n}",
+  "respondedAt": "2025-10-10T06:04:42.430Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "即使是管理员也是通过后端数据去访问pagePermissions字段来获取页面权限",
+      "timestamp": "2025-10-10T06:04:39.613Z",
+      "selectedText": "1. WHEN 初始化权限系统 THEN 系统 SHALL 为31个页面生成对应的权限判断函数（如 `canAccessMonthlyEnergy`）\n2. IF 用户为管理员（`userRole === 'admin'`）THEN 系统 SHALL 自动授予所有页面的访问权限\n3. IF 用户为普通用户 THEN 系统 SHALL 根据 `pagePermissions` 对象中的具体配置判断每个页面的访问权限\n4. WHEN `pagePermissions['{page-key}']` 为 `true` THEN 该页面的访问权限函数 SHALL 返回 `true`\n5. WHEN `pagePermissions['{page-key}']` 为 `false` 或 `undefined` THEN 该页面的访问权限函数 SHALL 返回 `false`",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1760076279613_2esfobpp7"
+    }
+  ]
+}

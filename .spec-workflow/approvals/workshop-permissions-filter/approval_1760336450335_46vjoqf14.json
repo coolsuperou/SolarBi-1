@@ -1,0 +1,27 @@
+{
+  "id": "approval_1760336450335_46vjoqf14",
+  "title": "车间权限过滤 - 设计文档（已更新-统一按pagePermissions过滤）",
+  "filePath": ".spec-workflow/specs/workshop-permissions-filter/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-13T06:20:50.335Z",
+  "category": "spec",
+  "categoryName": "workshop-permissions-filter",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"**核心方法**: 复用 `parseWorkshopsFromPermissions()` 方法（...\": 把这个方法变成工具类\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"把这个方法变成工具类\",\n      \"timestamp\": \"2025-10-13T06:30:08.269Z\",\n      \"selectedText\": \"**核心方法**: 复用 `parseWorkshopsFromPermissions()` 方法（建议提取为工具方法或抽象父类）\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1760337008269_a6op7aos8\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"**核心方法**: 复用 `parseWorkshopsFromPermissions()` 方法（...\\\": 把这个方法变成工具类\\n\",\n  \"timestamp\": \"2025-10-13T06:30:13.589Z\"\n}",
+  "respondedAt": "2025-10-13T06:30:13.936Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "把这个方法变成工具类",
+      "timestamp": "2025-10-13T06:30:08.269Z",
+      "selectedText": "**核心方法**: 复用 `parseWorkshopsFromPermissions()` 方法（建议提取为工具方法或抽象父类）",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1760337008269_a6op7aos8"
+    }
+  ]
+}

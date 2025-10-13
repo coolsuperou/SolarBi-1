@@ -1,0 +1,27 @@
+{
+  "id": "approval_1760335782953_xu0p9pyjn",
+  "title": "车间权限过滤 - 设计文档",
+  "filePath": ".spec-workflow/specs/workshop-permissions-filter/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-13T06:09:42.953Z",
+  "category": "spec",
+  "categoryName": "workshop-permissions-filter",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"### Component 4: MonthlyEnergyMapper.xml (Mapper S...\": 不需要按照普通用户和管理员来做区分，一切按照用户中pagePermissions字段的key值来\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"不需要按照普通用户和管理员来做区分，一切按照用户中pagePermissions字段的key值来\",\n      \"timestamp\": \"2025-10-13T06:18:23.160Z\",\n      \"selectedText\": \"### Component 4: MonthlyEnergyMapper.xml (Mapper SQL层)\\n\\n**Purpose**: 使用动态SQL根据车间列表过滤数据\\n\\n**修改后的SQL**:\\n```xml\\n<select id=\\\"selectMonthlyRawData\\\" resultMap=\\\"TempMonitorResultMap\\\">\\n    SELECT \\n        Id, DeviceID, Name, Tem, Hum, MAC,\\n        UpdateTime, ElectricEnergy, NodeID, Workshop\\n    FROM RSWS_TempMonitor_Copy\\n    WHERE ElectricEnergy IS NOT NULL\\n      AND Workshop != '备用'\\n      AND Workshop != '备用总表'\\n      <choose>\\n          <!-- 情况1: 有权限车间列表（普通用户有权限） -->\\n          <when test=\\\"workshopList != null and workshopList.size() > 0\\\">\\n              AND Workshop IN\\n              <foreach collection=\\\"workshopList\\\" item=\\\"workshop\\\" \\n                       open=\\\"(\\\" separator=\\\",\\\" close=\\\")\\\">\\n                  #{workshop}\\n              </foreach>\\n          </when>\\n          <!-- 情况2: 空权限列表（普通用户无权限） -->\\n          <when test=\\\"workshopList != null and workshopList.size() == 0\\\">\\n              AND 1=0\\n          </when>\\n          <!-- 情况3: workshopList == null（管理员，查所有车间）-->\\n          <!-- 不添加额外条件 -->\\n      </choose>\\n      <if test=\\\"startTime != null\\\">\\n          AND UpdateTime &gt;= #{startTime}\\n      </if>\\n      <if test=\\\"endTime != null\\\">\\n          AND UpdateTime &lt;= #{endTime}\\n      </if>\\n    ORDER BY Workshop, Name, UpdateTime ASC\\n</select>\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1760336303160_riolxi7iw\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"### Component 4: MonthlyEnergyMapper.xml (Mapper S...\\\": 不需要按照普通用户和管理员来做区分，一切按照用户中pagePermissions字段的key值来\\n\",\n  \"timestamp\": \"2025-10-13T06:18:27.776Z\"\n}",
+  "respondedAt": "2025-10-13T06:18:28.130Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "不需要按照普通用户和管理员来做区分，一切按照用户中pagePermissions字段的key值来",
+      "timestamp": "2025-10-13T06:18:23.160Z",
+      "selectedText": "### Component 4: MonthlyEnergyMapper.xml (Mapper SQL层)\n\n**Purpose**: 使用动态SQL根据车间列表过滤数据\n\n**修改后的SQL**:\n```xml\n<select id=\"selectMonthlyRawData\" resultMap=\"TempMonitorResultMap\">\n    SELECT \n        Id, DeviceID, Name, Tem, Hum, MAC,\n        UpdateTime, ElectricEnergy, NodeID, Workshop\n    FROM RSWS_TempMonitor_Copy\n    WHERE ElectricEnergy IS NOT NULL\n      AND Workshop != '备用'\n      AND Workshop != '备用总表'\n      <choose>\n          <!-- 情况1: 有权限车间列表（普通用户有权限） -->\n          <when test=\"workshopList != null and workshopList.size() > 0\">\n              AND Workshop IN\n              <foreach collection=\"workshopList\" item=\"workshop\" \n                       open=\"(\" separator=\",\" close=\")\">\n                  #{workshop}\n              </foreach>\n          </when>\n          <!-- 情况2: 空权限列表（普通用户无权限） -->\n          <when test=\"workshopList != null and workshopList.size() == 0\">\n              AND 1=0\n          </when>\n          <!-- 情况3: workshopList == null（管理员，查所有车间）-->\n          <!-- 不添加额外条件 -->\n      </choose>\n      <if test=\"startTime != null\">\n          AND UpdateTime &gt;= #{startTime}\n      </if>\n      <if test=\"endTime != null\">\n          AND UpdateTime &lt;= #{endTime}\n      </if>\n    ORDER BY Workshop, Name, UpdateTime ASC\n</select>",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1760336303160_riolxi7iw"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "approval_1760334860489_1gmqoln93",
+  "title": "车间权限过滤 - 需求文档（简化版-仅Service层）",
+  "filePath": ".spec-workflow/specs/workshop-permissions-filter/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-13T05:54:20.489Z",
+  "category": "spec",
+  "categoryName": "workshop-permissions-filter",
+  "response": "Feedback Summary (1 comments):\n\nGeneral Comments:\n1. MonthlyEnergyMapper.xml也需要修改，根据key去调整Workshop =‘\n\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"general\",\n      \"comment\": \"MonthlyEnergyMapper.xml也需要修改，根据key去调整Workshop =‘\",\n      \"timestamp\": \"2025-10-13T05:58:42.924Z\",\n      \"id\": \"comment_1760335122924_un64k2c22\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nGeneral Comments:\\n1. MonthlyEnergyMapper.xml也需要修改，根据key去调整Workshop =‘\\n\\n\",\n  \"timestamp\": \"2025-10-13T05:58:44.227Z\"\n}",
+  "respondedAt": "2025-10-13T05:58:44.560Z",
+  "comments": [
+    {
+      "type": "general",
+      "comment": "MonthlyEnergyMapper.xml也需要修改，根据key去调整Workshop =‘",
+      "timestamp": "2025-10-13T05:58:42.924Z",
+      "id": "comment_1760335122924_un64k2c22"
+    }
+  ]
+}

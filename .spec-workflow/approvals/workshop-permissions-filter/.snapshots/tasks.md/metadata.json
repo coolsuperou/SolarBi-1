@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/workshop-permissions-filter/tasks.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-13T07:41:13.520Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760341273394_hxvrv96bp",
+      "approvalTitle": "车间权限过滤 - 任务文档"
+    }
+  ]
+}

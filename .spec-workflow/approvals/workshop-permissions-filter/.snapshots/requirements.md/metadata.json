@@ -1,0 +1,46 @@
+{
+  "filePath": ".spec-workflow/specs/workshop-permissions-filter/requirements.md",
+  "currentVersion": 5,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-13T05:37:59.774Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760333879738_h58habb5q",
+      "approvalTitle": "车间权限过滤功能 - 需求文档审批"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-13T05:43:55.569Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760333879738_h58habb5q",
+      "approvalTitle": "车间权限过滤功能 - 需求文档审批"
+    },
+    {
+      "version": 3,
+      "filename": "snapshot-003.json",
+      "timestamp": "2025-10-13T05:53:25.870Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760334374074_acokr97zx",
+      "approvalTitle": "车间权限过滤功能 - 需求文档审批（已更新-仅后端）"
+    },
+    {
+      "version": 4,
+      "filename": "snapshot-004.json",
+      "timestamp": "2025-10-13T05:58:44.546Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760334860489_1gmqoln93",
+      "approvalTitle": "车间权限过滤 - 需求文档（简化版-仅Service层）"
+    },
+    {
+      "version": 5,
+      "filename": "snapshot-005.json",
+      "timestamp": "2025-10-13T06:01:52.850Z",
+      "trigger": "approved",
+      "approvalId": "approval_1760335214870_888eqjpzw",
+      "approvalTitle": "车间权限过滤 - 需求文档（包含Mapper层SQL过滤）"
+    }
+  ]
+}

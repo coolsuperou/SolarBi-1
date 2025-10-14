@@ -159,7 +159,9 @@ html.hourly-energy-page,
   overflow-x: auto;
   overflow-y: hidden;  /* 禁用垂直滚动 */
   position: relative;
-  /* 高度由内联样式动态设置 */
+  /* 高度由内联样式动性设置 */
+  scrollbar-width: thin; /* Firefox 滚动条宽度 */
+  scrollbar-color: #00d4ff rgba(10, 25, 41, 0.3); /* Firefox 滚动条颜色 */
 }
 
 .hourly-energy-container .data-table {
@@ -293,7 +295,7 @@ html.hourly-energy-page,
   background: rgba(0, 212, 255, 0.05);
 }
 
-/* 🔥 横向滚动条样式（垂直滚动条已禁用） */
+/* 🔥 滚动条样式 - 只显示底部横向滚动条 */
 .hourly-energy-container .table-wrapper::-webkit-scrollbar {
   width: 0 !important;  /* 禁用垂直滚动条 */
   height: 14px !important;  /* 保留横向滚动条 */

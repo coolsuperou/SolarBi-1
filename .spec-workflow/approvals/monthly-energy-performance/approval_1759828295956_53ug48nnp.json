@@ -3,8 +3,10 @@
   "title": "月度能耗统计性能优化 - 任务清单（6个任务）",
   "filePath": ".spec-workflow/specs/monthly-energy-performance/tasks.md",
   "type": "document",
-  "status": "pending",
+  "status": "approved",
   "createdAt": "2025-10-07T09:11:35.956Z",
   "category": "spec",
-  "categoryName": "monthly-energy-performance"
+  "categoryName": "monthly-energy-performance",
+  "response": "通过仪表板批准",
+  "respondedAt": "2025-10-08T08:49:55.902Z"
 }

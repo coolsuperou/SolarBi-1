@@ -16,14 +16,12 @@ public interface MonthlyEnergyMapper {
 
     /**
      * 查询指定时间范围内的原始监控数据
-     * @param workshop 车间名称（传null查询所有车间）
+     * @param workshopList 允许访问的车间名称列表（为空列表则不返回任何数据）
      * @param startTime 开始时间
      * @param endTime 结束时间
      * @return 原始监控数据列表
      */
-    List<TempMonitor> selectMonthlyRawData(@Param("workshop") String workshop,
+    List<TempMonitor> selectMonthlyRawData(@Param("workshopList") List<String> workshopList,
                                            @Param("startTime") Date startTime,
                                            @Param("endTime") Date endTime);
 }
-
-

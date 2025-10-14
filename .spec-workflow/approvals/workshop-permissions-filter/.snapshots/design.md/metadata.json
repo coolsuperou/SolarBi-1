@@ -1,0 +1,54 @@
+{
+  "filePath": ".spec-workflow/specs/workshop-permissions-filter/design.md",
+  "currentVersion": 6,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-13T06:09:43.223Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760335782953_xu0p9pyjn",
+      "approvalTitle": "车间权限过滤 - 设计文档"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-13T06:18:28.094Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760335782953_xu0p9pyjn",
+      "approvalTitle": "车间权限过滤 - 设计文档"
+    },
+    {
+      "version": 3,
+      "filename": "snapshot-003.json",
+      "timestamp": "2025-10-13T06:30:13.904Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760336450335_46vjoqf14",
+      "approvalTitle": "车间权限过滤 - 设计文档（已更新-统一按pagePermissions过滤）"
+    },
+    {
+      "version": 4,
+      "filename": "snapshot-004.json",
+      "timestamp": "2025-10-13T07:01:22.580Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760338368373_986l7j1zb",
+      "approvalTitle": "车间权限过滤 - 设计文档（已添加工具类）"
+    },
+    {
+      "version": 5,
+      "filename": "snapshot-005.json",
+      "timestamp": "2025-10-13T07:07:54.888Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1760339041940_a5ytadmz1",
+      "approvalTitle": "车间权限过滤 - 设计文档（精简版-无调试代码）"
+    },
+    {
+      "version": 6,
+      "filename": "snapshot-006.json",
+      "timestamp": "2025-10-13T07:39:03.234Z",
+      "trigger": "approved",
+      "approvalId": "approval_1760340044935_8pe3l2lym",
+      "approvalTitle": "车间权限过滤 - 设计文档（最终版）"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/hourly-energy-single-range/design.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-08T09:11:50.954Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759914710943_b1ryq3fqz",
+      "approvalTitle": "设计文档 - 修改小时时间点生成逻辑"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-08T09:26:14.617Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759914710943_b1ryq3fqz",
+      "approvalTitle": "设计文档 - 修改小时时间点生成逻辑"
+    }
+  ]
+}

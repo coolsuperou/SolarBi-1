@@ -1,0 +1,325 @@
+/* 日能耗统计表样式 - 完全复刻HTML版本 */
+
+/* 🔥 强制覆盖所有全局样式 */
+
+/* 覆盖body/html/root */
+body.hourly-energy-page,
+html.hourly-energy-page,
+#root.hourly-energy-page {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #0a1929 !important;
+}
+
+/* 覆盖Ant Design Pro所有容器 */
+.ant-pro-layout,
+.ant-pro-layout-content,
+.ant-pro-page-container,
+.ant-pro-page-container-children-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+/* 隐藏页头 */
+.ant-pro-page-header,
+.ant-pro-page-header-wrap {
+  display: none !important;
+}
+
+.hourly-energy-container,
+.hourly-energy-container * {
+  box-sizing: border-box;
+}
+
+.hourly-energy-container {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #0a1929 0%, #1a237e 50%, #000051 100%);
+  color: #ffffff;
+  min-height: 100vh;
+  padding: 10px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  gap: 10px;
+}
+
+.page-title {
+  text-align: center;
+  color: #00d4ff;
+  font-size: 28px;
+  font-weight: 700;
+  padding: 0;
+  margin: 0;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.8), 0 0 30px rgba(0, 212, 255, 0.4);
+  flex-shrink: 0;
+  letter-spacing: 2px;
+}
+
+/* 查询区域 */
+.hourly-energy-container .query-section {
+  background: rgba(10, 25, 41, 0.6);
+  border: 3px solid #00d4ff;
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.6),
+              inset 0 0 20px rgba(0, 212, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.hourly-energy-container .query-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hourly-energy-container .query-label {
+  color: #00d4ff;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.hourly-energy-container .query-select {
+  background: rgba(10, 25, 41, 0.8);
+  border: 2px solid #00d4ff;
+  border-radius: 6px;
+  color: #ffffff;
+  padding: 10px 16px;
+  outline: none;
+  font-size: 14px;
+  min-width: 100px;
+  cursor: pointer;
+}
+
+.hourly-energy-container .query-select:focus {
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+  border-color: #00d4ff;
+}
+
+.hourly-energy-container .query-select option {
+  background: #1a237e;
+  color: #ffffff;
+}
+
+/* 查询按钮 */
+.hourly-energy-container .query-button {
+  background: #00d4ff;
+  border: 2px solid #00d4ff;
+  border-radius: 8px;
+  color: #0a1929;
+  font-weight: bold;
+  padding: 10px 30px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+  text-shadow: none;
+  transition: all 0.3s ease;
+  outline: none;
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+
+.hourly-energy-container .query-button:hover {
+  background: #00b8d4;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.hourly-energy-container .query-button:active {
+  transform: translateY(0);
+}
+
+.hourly-energy-container .query-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 表格容器 */
+.hourly-energy-container .table-container {
+  background: rgba(10, 25, 41, 0.6);
+  border: 3px solid #00d4ff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.7),
+              inset 0 0 30px rgba(0, 212, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  /* 动态高度：通过内联样式设置 */
+  flex-shrink: 0;
+}
+
+.hourly-energy-container .table-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;  /* 禁用垂直滚动 */
+  position: relative;
+  height: 100%; /* 🔥 铺满容器 */
+  scrollbar-width: thin; /* Firefox 滚动条宽度 */
+  scrollbar-color: #00d4ff rgba(10, 25, 41, 0.3); /* Firefox 滚动条颜色 */
+}
+
+.hourly-energy-container .data-table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 2200px;
+}
+
+.hourly-energy-container .data-table th,
+.hourly-energy-container .data-table td {
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  padding: 6px 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 🎯 表头固定在表格顶部 */
+.hourly-energy-container .data-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.hourly-energy-container .data-table thead th {
+  background: rgba(10, 25, 41, 0.95) !important;
+  color: #00d4ff !important;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border: 1px solid rgba(0, 212, 255, 0.4) !important;
+  padding: 8px !important;
+}
+
+/* ✅ 左上角"车间"列：既固定在左侧，也固定在顶部 */
+.hourly-energy-container .data-table thead th.info-header {
+  background: rgba(10, 25, 41, 1.0) !important;
+  border-right: 2px solid rgba(0, 212, 255, 0.6) !important;
+  color: #00d4ff !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  position: sticky !important;
+  left: 0 !important;
+  top: 0 !important;
+  z-index: 60 !important;
+  min-width: 120px;
+  max-width: 120px;
+  padding: 8px !important;
+  box-shadow: 2px 0 8px rgba(0, 212, 255, 0.4);
+}
+
+/* 信息列数据单元格（tbody中的"车间"列） */
+.hourly-energy-container table.data-table tbody tr td.info-cell {
+  background: rgba(10, 25, 41, 1.0) !important;
+  border-right: 2px solid rgba(0, 212, 255, 0.6) !important;
+  color: #00d4ff !important;
+  font-weight: 600;
+  text-align: left !important;
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 10 !important;
+  min-width: 120px;
+  max-width: 120px;
+  padding: 6px 12px !important;
+  box-shadow: 2px 0 8px rgba(0, 212, 255, 0.4) !important;
+}
+
+/* 数据单元格 */
+.hourly-energy-container .data-cell {
+  background: rgba(10, 25, 41, 0.4);
+  color: #ffffff;
+  min-width: 85px;
+  transition: background-color 0.2s ease;
+  font-size: 13px;
+}
+
+.hourly-energy-container .data-cell:hover {
+  background: rgba(0, 212, 255, 0.1);
+}
+
+/* 高亮数值（黄色） */
+
+
+/* 高亮数值（紫色） */
+
+
+/* 次日时间标记 */
+.hourly-energy-container .next-day-mark {
+  font-size: 10px;
+  opacity: 0.7;
+  display: block;
+  margin-top: 2px;
+}
+
+/* 合计行 - 绿色发光效果 */
+.hourly-energy-container .total-row {
+  background: rgba(0, 255, 102, 0.15) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 102, 0.5),
+              inset 0 0 15px rgba(0, 255, 102, 0.2) !important;
+}
+
+.hourly-energy-container .total-row td {
+  color: #00ff66 !important;
+  font-weight: 700;
+  border: 1px solid rgba(0, 255, 102, 0.5) !important;
+  border-top: 2px solid rgba(0, 255, 102, 0.8) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.8),
+               0 0 20px rgba(0, 255, 102, 0.4);
+  background: rgba(0, 255, 102, 0.1);
+}
+
+.hourly-energy-container table.data-table tbody tr.total-row td.info-cell,
+.hourly-energy-container table.data-table tfoot tr.total-row td.info-cell {
+  background: rgba(0, 100, 40, 1.0) !important;
+  border-right: 2px solid rgba(0, 255, 102, 0.8) !important;
+  color: #00ff66 !important;
+  box-shadow: 2px 0 15px rgba(0, 255, 102, 0.6),
+              inset 0 0 10px rgba(0, 255, 102, 0.2) !important;
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 15 !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.8),
+               0 0 20px rgba(0, 255, 102, 0.4) !important;
+}
+
+/* 表格行悬停 */
+.hourly-energy-container .data-table tbody tr:not(.total-row):hover {
+  background: rgba(0, 212, 255, 0.05);
+}
+
+/* 🔥 滚动条样式 - 只显示底部横向滚动条 */
+.hourly-energy-container .table-wrapper::-webkit-scrollbar {
+  width: 0 !important;  /* 禁用垂直滚动条 */
+  height: 14px !important;  /* 保留横向滚动条 */
+}
+
+.hourly-energy-container .table-wrapper::-webkit-scrollbar-track {
+  background: rgba(10, 25, 41, 0.8) !important;
+  border-radius: 6px !important;
+  margin: 0 10px;
+}
+
+.hourly-energy-container .table-wrapper::-webkit-scrollbar-thumb {
+  background: #00d4ff !important;
+  border-radius: 6px !important;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.8),
+              inset 0 0 5px rgba(255, 255, 255, 0.2) !important;
+}
+
+.hourly-energy-container .table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #00e5ff !important;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 1),
+              inset 0 0 8px rgba(255, 255, 255, 0.3) !important;
+}
+
+.hourly-energy-container .table-wrapper::-webkit-scrollbar-corner {
+  background: transparent !important;
+}

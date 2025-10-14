@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useLayoutEffect, useRef } from 'react';
 import { message } from 'antd';
-import { getMonthlyEnergy } from '@/services/SolarBi-front/monthlyEnergyController';
 import { MONTHLY_ENERGY_CONFIG } from './config';
+import { getMonthlyEnergy } from '@/services/SolarBi-front/monthlyEnergyController';
 import './styles.css';
 
 /**
@@ -49,9 +49,8 @@ const MonthlyEnergyPage: React.FC = () => {
     
     // 等待渲染完成后测量真实行高
     requestAnimationFrame(() => {
-      const firstRow = tbodyRef.current?.querySelector('tr:not(.total-row)') as HTMLElement | null;
+      const firstRow = tbodyRef.current?.querySelector('tr') as HTMLElement | null;
       const realRowHeight = firstRow?.getBoundingClientRect().height || ROW_HEIGHT_FALLBACK;
-      // 车间行数 × 行高 + 独立的合计行高度
       const total = HEADER_HEIGHT + data.workshopList.length * realRowHeight + FOOTER_HEIGHT + PADDING;
       setContainerHeight(`${Math.round(total)}px`);
     });
@@ -80,10 +79,23 @@ const MonthlyEnergyPage: React.FC = () => {
     }
   };
 
+
+
   // 🔥 首次进入自动查询当月
   useEffect(() => {
     loadData();
   }, []);
+
+  // 获取数据单元格的颜色
+  const getDataColor = (value: number) => {
+    if (value > MONTHLY_ENERGY_CONFIG.DATA_THRESHOLD_2) {
+      return MONTHLY_ENERGY_CONFIG.DATA_COLOR_2; // 💜 紫色
+    }
+    if (value > MONTHLY_ENERGY_CONFIG.DATA_THRESHOLD_1) {
+      return MONTHLY_ENERGY_CONFIG.DATA_COLOR_1; // 💛 黄色
+    }
+    return undefined; // 默认颜色
+  };
 
   return (
     <>
@@ -154,39 +166,36 @@ const MonthlyEnergyPage: React.FC = () => {
                     return (
                       <tr key={workshop}>
                         <td className="info-cell">{workshop}</td>
-                        {dailyData.map((value: number, index: number) => {
-                          const getDataColor = () => {
-                            if (value > MONTHLY_ENERGY_CONFIG.DATA_THRESHOLD_2) return MONTHLY_ENERGY_CONFIG.DATA_COLOR_2;
-                            if (value > MONTHLY_ENERGY_CONFIG.DATA_THRESHOLD_1) return MONTHLY_ENERGY_CONFIG.DATA_COLOR_1;
-                            return undefined;
-                          };
-                          
-                          return (
-                            <td
-                              key={index}
-                              className="data-cell"
-                              style={{ color: getDataColor() }}
-                            >
-                              {value === 0 ? MONTHLY_ENERGY_CONFIG.ZERO_DISPLAY : value.toFixed(1)}
-                            </td>
-                          );
-                        })}
+                        {dailyData.map((value: number, index: number) => (
+                          <td
+                            key={index}
+                            className="data-cell"
+                            style={{ color: getDataColor(value) }}
+                          >
+                            {value === 0 
+                              ? MONTHLY_ENERGY_CONFIG.ZERO_DISPLAY 
+                              : value.toFixed(1)
+                            }
+                          </td>
+                        ))}
                       </tr>
                     );
                   })}
-
+                </tbody>
+                <tfoot>
                   {/* 合计行 */}
                   <tr className="total-row">
                     <td className="info-cell">合计</td>
-                    {data.dailyTotal.map((value: number, index: number) => {
-                      return (
-                        <td key={index} className="data-cell">
-                          {value === 0 ? MONTHLY_ENERGY_CONFIG.ZERO_DISPLAY : value.toFixed(1)}
-                        </td>
-                      );
-                    })}
+                    {data.dailyTotal.map((value: number, index: number) => (
+                      <td key={index} className="data-cell">
+                        {value === 0 
+                          ? MONTHLY_ENERGY_CONFIG.ZERO_DISPLAY 
+                          : value.toFixed(1)
+                        }
+                      </td>
+                    ))}
                   </tr>
-                </tbody>
+                </tfoot>
               </table>
             )}
           </div>

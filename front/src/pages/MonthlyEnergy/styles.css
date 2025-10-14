@@ -149,11 +149,10 @@ html.monthly-energy-page,
   overflow: hidden;
   box-shadow: 0 0 40px rgba(0, 212, 255, 0.7),
               inset 0 0 30px rgba(0, 212, 255, 0.1);
-  flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  max-height: 100%;
+  /* 动态高度：通过内联样式设置 */
+  flex-shrink: 0;
 }
 
 .monthly-energy-container .table-wrapper {
@@ -235,25 +234,26 @@ html.monthly-energy-page,
   background: rgba(10, 25, 41, 0.4);
   color: #ffffff;
   min-width: 85px;
-  transition: all 0.3s ease;
+  transition: background-color 0.2s ease;
   font-size: 13px;
-  cursor: help;
 }
 
 .monthly-energy-container .data-cell:hover {
-  background: rgba(0, 212, 255, 0.2);
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5),
-              inset 0 0 10px rgba(0, 212, 255, 0.2);
-  z-index: 5;
-  position: relative;
+  background: rgba(0, 212, 255, 0.1);
 }
 
 /* 高亮数值（黄色） */
-.monthly-energy-container .highlight-value {
-  background: rgba(255, 215, 0, 0.1) !important;
-  color: #ffd700 !important;
-  font-weight: 600;
+
+
+/* 高亮数值（紫色） */
+
+
+/* 次日时间标记 */
+.monthly-energy-container .next-day-mark {
+  font-size: 10px;
+  opacity: 0.7;
+  display: block;
+  margin-top: 2px;
 }
 
 /* 合计行 - 绿色发光效果 */
@@ -273,7 +273,8 @@ html.monthly-energy-page,
   background: rgba(0, 255, 102, 0.1);
 }
 
-.monthly-energy-container table.data-table tbody tr.total-row td.info-cell {
+.monthly-energy-container table.data-table tbody tr.total-row td.info-cell,
+.monthly-energy-container table.data-table tfoot tr.total-row td.info-cell {
   background: rgba(0, 100, 40, 1.0) !important;
   border-right: 2px solid rgba(0, 255, 102, 0.8) !important;
   color: #00ff66 !important;

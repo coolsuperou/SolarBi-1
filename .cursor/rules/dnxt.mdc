@@ -1,7 +1,5 @@
 ---
-description: 强制使用filesystem工具进行所有文件操作
-globs:
-alwaysApply: true
+alwaysApply: false
 ---
 **重要规则：所有文件操作必须使用filesystem工具**
 

@@ -198,6 +198,12 @@ declare namespace API {
     userName?: string;
     userProfile?: string;
     userRole?: string;
+    /** 用户状态（active-活跃, inactive-禁用） */
+    userStatus?: string;
+    /** 最后登录时间 */
+    lastLoginTime?: string;
+    /** 页面访问权限（JSON字符串） */
+    pagePermissions?: string;
   };
 
   type OrderItem = {
@@ -361,6 +367,12 @@ declare namespace API {
     userName?: string;
     userPassword?: string;
     userRole?: string;
+    /** 用户状态（active-活跃, inactive-禁用） */
+    userStatus?: string;
+    /** 最后登录时间 */
+    lastLoginTime?: string;
+    /** 页面访问权限（JSON字符串） */
+    pagePermissions?: string;
   };
 
   type UserAddRequest = {

@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>添加用户 - 含权限设置</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0a1628 0%, #0d1f3c 50%, #0a1628 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 背景动画效果 */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      top: -250px;
+      left: -250px;
+      animation: glow1 8s ease-in-out infinite;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(0, 255, 128, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      bottom: -200px;
+      right: -200px;
+      animation: glow2 10s ease-in-out infinite;
+    }
+
+    @keyframes glow1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(50px, 50px) scale(1.2); }
+    }
+
+    @keyframes glow2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-30px, -30px) scale(1.1); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1400px;
+    }
+
+    .add-user-modal {
+      background: rgba(13, 31, 60, 0.95);
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      border-radius: 20px;
+      padding: 0;
+      box-shadow: 
+        0 0 40px rgba(0, 212, 255, 0.3),
+        inset 0 0 40px rgba(0, 212, 255, 0.05);
+      backdrop-filter: blur(10px);
+      animation: modalFadeIn 0.5s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal-header {
+      padding: 20px 25px;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 212, 255, 0.05) 100%);
+      border-radius: 18px 18px 0 0;
+    }
+
+    .modal-title {
+      color: #00d4ff;
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-title::before {
+      content: '👤';
+      font-size: 32px;
+      filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.8));
+    }
+
+    .modal-body {
+      padding: 25px;
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 25px;
+    }
+
+    /* 左侧：用户基本信息表单 */
+    .user-info-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .section-title {
+      color: #00d4ff;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+    }
+
+    .section-title::before {
+      content: '📝';
+      font-size: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      color: #00d4ff;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .form-label .required {
+      color: #ff4d4f;
+      font-size: 16px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: rgba(10, 25, 41, 0.8);
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      border-radius: 8px;
+      color: #ffffff;
+      padding: 10px 12px;
+      outline: none;
+      font-size: 13px;
+      transition: all 0.3s ease;
+    }
+
+    .form-input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .form-input:focus {
+      border-color: #00d4ff;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+    }
+
+    .form-select {
+      width: 100%;
+      background: rgba(10, 25, 41, 0.8);
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      border-radius: 8px;
+      color: #ffffff;
+      padding: 10px 12px;
+      outline: none;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .form-select:focus {
+      border-color: #00d4ff;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+    }
+
+    .form-select option {
+      background: #0d1f3c;
+      padding: 10px;
+    }
+
+    .form-help {
+      color: #66d9ef;
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+
+    /* 右侧：权限设置 */
+    .permissions-section {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .permissions-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+    }
+
+    .permissions-title {
+      color: #00d4ff;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .permissions-title::before {
+      content: '🔐';
+      font-size: 20px;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .quick-btn {
+      padding: 8px 16px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 8px;
+      color: #00d4ff;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .quick-btn:hover {
+      background: rgba(0, 212, 255, 0.2);
+      border-color: #00d4ff;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .permission-stats {
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
+      margin-bottom: 15px;
+    }
+
+    .stat-item {
+      padding: 6px 12px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 15px;
+      color: #00d4ff;
+      font-weight: bold;
+    }
+
+    .stat-number {
+      color: #00ff66;
+      font-size: 16px;
+      margin-left: 5px;
+    }
+
+    /* 权限卡片网格 */
+    .permissions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 10px;
+      align-content: start;
+    }
+
+    /* 自定义滚动条 */
+    .permissions-grid::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .permissions-grid::-webkit-scrollbar-track {
+      background: rgba(0, 212, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    .permissions-grid::-webkit-scrollbar-thumb {
+      background: rgba(0, 212, 255, 0.3);
+      border-radius: 10px;
+      transition: background 0.3s;
+    }
+
+    .permissions-grid::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 212, 255, 0.5);
+    }
+
+    /* 权限卡片 */
+    .permission-card {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(0, 212, 255, 0.02) 100%);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 6px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .permission-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .permission-card:hover::before {
+      left: 100%;
+    }
+
+    .permission-card:hover {
+      border-color: #00d4ff;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 212, 255, 0.05) 100%);
+      box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .permission-card.active {
+      border-color: #00ff66;
+      background: linear-gradient(135deg, rgba(0, 255, 102, 0.1) 0%, rgba(0, 255, 102, 0.05) 100%);
+    }
+
+    .permission-card.active::after {
+      content: '✓';
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 18px;
+      height: 18px;
+      background: #00ff66;
+      color: #001529;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+      animation: checkMark 0.3s ease-out;
+    }
+
+    @keyframes checkMark {
+      0% { transform: scale(0) rotate(-180deg); }
+      50% { transform: scale(1.2) rotate(10deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    /* 分类标签 */
+    .permission-category-tag {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      padding: 2px 6px;
+      background: rgba(0, 212, 255, 0.2);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 3px;
+      font-size: 9px;
+      color: #00d4ff;
+      font-weight: bold;
+      z-index: 2;
+    }
+
+    .permission-card.active .permission-category-tag {
+      background: rgba(0, 255, 102, 0.2);
+      border-color: rgba(0, 255, 102, 0.3);
+      color: #00ff66;
+    }
+
+    /* 卡片内容 */
+    .permission-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .permission-icon {
+      font-size: 16px;
+      filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.5));
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .permission-card:hover .permission-icon {
+      transform: scale(1.2) rotate(5deg);
+      filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.8));
+    }
+
+    .permission-card.active .permission-icon {
+      filter: drop-shadow(0 0 10px rgba(0, 255, 102, 0.8));
+    }
+
+    .permission-label {
+      flex: 1;
+    }
+
+    .permission-name {
+      color: #00d4ff;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 2px;
+      transition: color 0.3s;
+      line-height: 1.2;
+    }
+
+    .permission-card.active .permission-name {
+      color: #00ff66;
+    }
+
+    .permission-desc {
+      color: #66d9ef;
+      font-size: 9px;
+      opacity: 0.7;
+      line-height: 1.1;
+    }
+
+    /* 底部操作按钮 */
+    .modal-footer {
+      padding: 20px 25px;
+      border-top: 1px solid rgba(0, 212, 255, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 212, 255, 0.03);
+      border-radius: 0 0 18px 18px;
+    }
+
+    .footer-info {
+      color: #66d9ef;
+      font-size: 14px;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 12px 32px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.5s, height 0.5s;
+    }
+
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn-cancel {
+      background: rgba(255, 77, 79, 0.1);
+      border: 1px solid rgba(255, 77, 79, 0.3);
+      color: #ff4d4f;
+    }
+
+    .btn-cancel:hover {
+      background: rgba(255, 77, 79, 0.2);
+      border-color: #ff4d4f;
+      box-shadow: 0 0 20px rgba(255, 77, 79, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #00d4ff 0%, #00a3cc 100%);
+      color: #001529;
+      box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+    }
+
+    .btn-save:hover {
+      background: linear-gradient(135deg, #00e5ff 0%, #00b8e6 100%);
+      box-shadow: 0 6px 25px rgba(0, 212, 255, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .btn-text {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 1200px) {
+      .modal-body {
+        grid-template-columns: 1fr;
+      }
+
+      .permissions-grid {
+        max-height: 200px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .permissions-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      }
+
+      .quick-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="add-user-modal">
+      <!-- 头部 -->
+      <div class="modal-header">
+        <div class="modal-title">添加用户</div>
+      </div>
+
+      <!-- 主体内容 -->
+      <div class="modal-body">
+        <!-- 左侧：用户基本信息 -->
+        <div class="user-info-section">
+          <div class="section-title">基本信息</div>
+
+          <div class="form-group">
+            <label class="form-label">
+              用户账号 <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              class="form-input" 
+              placeholder="请输入用户账号（用于登录）"
+              value=""
+            />
+            <div class="form-help">用于登录系统，建议使用字母和数字组合</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              用户昵称
+            </label>
+            <input 
+              type="text" 
+              class="form-input" 
+              placeholder="请输入用户昵称（可选）"
+              value=""
+            />
+            <div class="form-help">显示名称，可以使用中文</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              密码 <span class="required">*</span>
+            </label>
+            <input 
+              type="password" 
+              class="form-input" 
+              placeholder="请输入密码"
+              value=""
+            />
+            <div class="form-help">建议使用8位以上的强密码</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              确认密码 <span class="required">*</span>
+            </label>
+            <input 
+              type="password" 
+              class="form-input" 
+              placeholder="请再次输入密码"
+              value=""
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              角色 <span class="required">*</span>
+            </label>
+            <select class="form-select">
+              <option value="user" selected>普通用户</option>
+              <option value="admin">管理员</option>
+            </select>
+            <div class="form-help">管理员拥有所有权限</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              状态
+            </label>
+            <select class="form-select">
+              <option value="active" selected>活跃</option>
+              <option value="inactive">禁用</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 右侧：权限设置 -->
+        <div class="permissions-section">
+          <div class="permissions-header">
+            <div class="permissions-title">页面访问权限</div>
+            <div class="quick-actions">
+              <button class="quick-btn" onclick="selectAll()">
+                <span>✓</span> 全选
+              </button>
+              <button class="quick-btn" onclick="deselectAll()">
+                <span>✗</span> 全不选
+              </button>
+            </div>
+          </div>
+
+          <div class="permission-stats">
+            <div class="stat-item">
+              已选择 <span class="stat-number" id="selectedCount">2</span>
+            </div>
+            <div class="stat-item">
+              未选择 <span class="stat-number" id="unselectedCount">28</span>
+            </div>
+          </div>
+
+          <!-- 权限卡片网格 -->
+          <div class="permissions-grid">
+            <!-- 统计类 -->
+            <div class="permission-card active" data-key="monthly-energy" data-category="统计">
+              <span class="permission-category-tag">统计</span>
+              <div class="permission-content">
+                <span class="permission-icon">📊</span>
+                <div class="permission-label">
+                  <div class="permission-name">月度能耗统计</div>
+                  <div class="permission-desc">查看月度电能消耗数据</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card active" data-key="hourly-energy" data-category="统计">
+              <span class="permission-category-tag">统计</span>
+              <div class="permission-content">
+                <span class="permission-icon">📈</span>
+                <div class="permission-label">
+                  <div class="permission-name">日能耗统计</div>
+                  <div class="permission-desc">查看日度电能消耗数据</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 设备设施类 -->
+            <div class="permission-card" data-key="airConditioning" data-category="设施">
+              <span class="permission-category-tag">设施</span>
+              <div class="permission-content">
+                <span class="permission-icon">❄️</span>
+                <div class="permission-label">
+                  <div class="permission-name">114_空调水机主机</div>
+                  <div class="permission-desc">空调系统能耗监控</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 车间生产类 -->
+            <div class="permission-card" data-key="injection_workshop" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏭</span>
+                <div class="permission-label">
+                  <div class="permission-name">110注射环保设备</div>
+                  <div class="permission-desc">注射车间环保监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="granulation_workshop" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏭</span>
+                <div class="permission-label">
+                  <div class="permission-name">102造粒环保设备</div>
+                  <div class="permission-desc">造粒车间环保监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="office_building" data-category="建筑">
+              <span class="permission-category-tag">建筑</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏢</span>
+                <div class="permission-label">
+                  <div class="permission-name">1#办公楼</div>
+                  <div class="permission-desc">办公楼能耗监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="feeding_workshop" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏭</span>
+                <div class="permission-label">
+                  <div class="permission-name">101配料</div>
+                  <div class="permission-desc">配料车间监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="granule102" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏭</span>
+                <div class="permission-label">
+                  <div class="permission-name">102造粒</div>
+                  <div class="permission-desc">造粒工艺监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="cold-press-103" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏭</span>
+                <div class="permission-label">
+                  <div class="permission-name">103冷压</div>
+                  <div class="permission-desc">冷压工艺监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="restoration-104" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏭</span>
+                <div class="permission-label">
+                  <div class="permission-name">104还原</div>
+                  <div class="permission-desc">还原工艺监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="sintering-105" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">🔥</span>
+                <div class="permission-label">
+                  <div class="permission-name">105烧结</div>
+                  <div class="permission-desc">烧结工艺监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="cleaning-106" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏭</span>
+                <div class="permission-label">
+                  <div class="permission-name">106清洗</div>
+                  <div class="permission-desc">清洗工艺监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="beading-107" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏭</span>
+                <div class="permission-label">
+                  <div class="permission-name">107串珠</div>
+                  <div class="permission-desc">串珠工艺监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="rubber-109" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏭</span>
+                <div class="permission-label">
+                  <div class="permission-name">109炼胶</div>
+                  <div class="permission-desc">炼胶工艺监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="injection-110" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏭</span>
+                <div class="permission-label">
+                  <div class="permission-name">110注射</div>
+                  <div class="permission-desc">注射工艺监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="edging-111" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">✂️</span>
+                <div class="permission-label">
+                  <div class="permission-name">111开刃</div>
+                  <div class="permission-desc">开刃工艺监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="final-inspection-112" data-category="车间">
+              <span class="permission-category-tag">车间</span>
+              <div class="permission-content">
+                <span class="permission-icon">🔍</span>
+                <div class="permission-label">
+                  <div class="permission-name">112终检</div>
+                  <div class="permission-desc">终检工序监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="warehouse-113" data-category="仓储">
+              <span class="permission-category-tag">仓储</span>
+              <div class="permission-content">
+                <span class="permission-icon">📦</span>
+                <div class="permission-label">
+                  <div class="permission-name">113仓库</div>
+                  <div class="permission-desc">仓库能耗监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="elevator-114" data-category="设施">
+              <span class="permission-category-tag">设施</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏢</span>
+                <div class="permission-label">
+                  <div class="permission-name">114_2#厂房电梯</div>
+                  <div class="permission-desc">电梯能耗监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="office-area-114" data-category="建筑">
+              <span class="permission-category-tag">建筑</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏢</span>
+                <div class="permission-label">
+                  <div class="permission-name">114_2#楼办公区域</div>
+                  <div class="permission-desc">办公区域能耗</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="conference-room-114" data-category="建筑">
+              <span class="permission-category-tag">建筑</span>
+              <div class="permission-content">
+                <span class="permission-icon">👥</span>
+                <div class="permission-label">
+                  <div class="permission-name">114_2#楼会议室</div>
+                  <div class="permission-desc">会议室能耗监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="laboratory-114" data-category="建筑">
+              <span class="permission-category-tag">建筑</span>
+              <div class="permission-content">
+                <span class="permission-icon">🔬</span>
+                <div class="permission-label">
+                  <div class="permission-name">114_2#楼实验室</div>
+                  <div class="permission-desc">实验室能耗监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="public-114" data-category="设施">
+              <span class="permission-category-tag">设施</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏢</span>
+                <div class="permission-label">
+                  <div class="permission-name">114公共</div>
+                  <div class="permission-desc">公共区域监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="air-compressor-114" data-category="设施">
+              <span class="permission-category-tag">设施</span>
+              <div class="permission-content">
+                <span class="permission-icon">⚙️</span>
+                <div class="permission-label">
+                  <div class="permission-name">114空压机</div>
+                  <div class="permission-desc">空压机能耗监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="charging-pile" data-category="设施">
+              <span class="permission-category-tag">设施</span>
+              <div class="permission-content">
+                <span class="permission-icon">🔌</span>
+                <div class="permission-label">
+                  <div class="permission-name">充电桩</div>
+                  <div class="permission-desc">充电桩能耗监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="tool-rd-center" data-category="建筑">
+              <span class="permission-category-tag">建筑</span>
+              <div class="permission-content">
+                <span class="permission-icon">🔧</span>
+                <div class="permission-label">
+                  <div class="permission-name">工具研发中心</div>
+                  <div class="permission-desc">研发中心能耗</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="guard-room" data-category="建筑">
+              <span class="permission-category-tag">建筑</span>
+              <div class="permission-content">
+                <span class="permission-icon">🚪</span>
+                <div class="permission-label">
+                  <div class="permission-name">门卫室</div>
+                  <div class="permission-desc">门卫室能耗监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="canteen" data-category="生活">
+              <span class="permission-category-tag">生活</span>
+              <div class="permission-content">
+                <span class="permission-icon">🍽️</span>
+                <div class="permission-label">
+                  <div class="permission-name">食堂</div>
+                  <div class="permission-desc">食堂能耗监控</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="permission-card" data-key="dormitory" data-category="生活">
+              <span class="permission-category-tag">生活</span>
+              <div class="permission-content">
+                <span class="permission-icon">🏠</span>
+                <div class="permission-label">
+                  <div class="permission-name">宿舍楼</div>
+                  <div class="permission-desc">宿舍楼能耗监控</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部 -->
+      <div class="modal-footer">
+        <div class="footer-info">
+          💡 提示：请完整填写用户信息并设置合适的页面访问权限
+        </div>
+        <div class="footer-actions">
+          <button class="btn btn-cancel" onclick="closeModal()">
+            <span class="btn-text">取消</span>
+          </button>
+          <button class="btn btn-save" onclick="saveUser()">
+            <span class="btn-text">💾 创建用户</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 更新统计数字
+    function updateStats() {
+      const cards = document.querySelectorAll('.permission-card');
+      const selected = document.querySelectorAll('.permission-card.active').length;
+      const total = cards.length;
+      
+      document.getElementById('selectedCount').textContent = selected;
+      document.getElementById('unselectedCount').textContent = total - selected;
+    }
+
+    // 为所有权限卡片添加点击事件
+    document.querySelectorAll('.permission-card').forEach(card => {
+      card.addEventListener('click', function(e) {
+        this.classList.toggle('active');
+        updateStats();
+      });
+    });
+
+    // 全选
+    function selectAll() {
+      document.querySelectorAll('.permission-card').forEach(card => {
+        card.classList.add('active');
+      });
+      updateStats();
+    }
+
+    // 全不选
+    function deselectAll() {
+      document.querySelectorAll('.permission-card').forEach(card => {
+        card.classList.remove('active');
+      });
+      updateStats();
+    }
+
+    // 保存用户
+    function saveUser() {
+      const permissions = {};
+      document.querySelectorAll('.permission-card').forEach(card => {
+        const key = card.getAttribute('data-key');
+        permissions[key] = card.classList.contains('active');
+      });
+      
+      console.log('保存的用户信息和权限配置:', permissions);
+      
+      // 显示成功提示
+      const selectedCount = Object.values(permissions).filter(v => v).length;
+      alert('✅ 用户创建成功！已设置 ' + selectedCount + ' 项权限');
+    }
+
+    // 关闭模态框
+    function closeModal() {
+      if (confirm('确定要取消吗？未保存的更改将丢失。')) {
+        console.log('关闭模态框');
+      }
+    }
+
+    // 初始化统计
+    updateStats();
+  </script>
+</body>
+</html>

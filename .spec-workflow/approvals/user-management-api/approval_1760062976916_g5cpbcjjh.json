@@ -1,0 +1,27 @@
+{
+  "id": "approval_1760062976916_g5cpbcjjh",
+  "title": "用户管理API - 设计文档（最终版-复用现有接口）",
+  "filePath": ".spec-workflow/specs/user-management-api/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-10T02:22:56.917Z",
+  "category": "spec",
+  "categoryName": "user-management-api",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"### UserManagementVO (返回给前端)\n\n```java\n@Data\npublic...\": 这个不是使用LoginUserVO和UserVO旧够了吗不要增加多余文件\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"这个不是使用LoginUserVO和UserVO旧够了吗不要增加多余文件\",\n      \"timestamp\": \"2025-10-10T02:32:35.464Z\",\n      \"selectedText\": \"### UserManagementVO (返回给前端)\\n\\n```java\\n@Data\\npublic class UserManagementVO implements Serializable {\\n    private Long id;\\n    private String username;        // 对应userAccount\\n    private String password;        // 明文密码（仅管理员可见）\\n    private String userName;\\n    private String userAvatar;\\n    private String role;            // 对应userRole\\n    private String status;          // 对应userStatus\\n    \\n    @JsonFormat(pattern = \\\"yyyy-MM-dd HH:mm:ss\\\", timezone = \\\"GMT+8\\\")\\n    private Date lastLoginTime;\\n    \\n    @JsonFormat(pattern = \\\"yyyy-MM-dd\\\", timezone = \\\"GMT+8\\\")\\n    private Date createTime;\\n    \\n    // 页面权限（解析后的Map）\\n    private Map<String, Boolean> pagePermissions;\\n}\\n```\\n\\n### UserPermissionUpdateRequest\\n\\n```java\\n@Data\\npublic class UserPermissionUpdateRequest implements Serializable {\\n    private Long userId;\\n    private Map<String, Boolean> permissions;\\n}\\n```\\n\\n### UserStatusUpdateRequest\\n\\n```java\\n@Data\\npublic class UserStatusUpdateRequest implements Serializable {\\n    private Long userId;\\n    private String status; // active 或 inactive\\n}\\n```\\n\\n### UserStatusEnum\\n\\n```java\\npublic enum UserStatusEnum {\\n    ACTIVE(\\\"active\\\", \\\"活跃\\\"),\\n    INACTIVE(\\\"inactive\\\", \\\"禁用\\\");\\n    \\n    private final String value;\\n    private final String text;\\n    \\n    // ... 构造函数和getter方法\\n}\\n```\\n\\n## 权限JSON格式\\n\\n### 存储格式（数据库）\\n\\n```json\\n{\\n  \\\"perm-monthly\\\": true,\\n  \\\"perm-hourly\\\": true,\\n  \\\"perm-aircon\\\": false,\\n  \\\"perm-office\\\": false,\\n  \\\"perm-workshop1\\\": false,\\n  \\\"perm-workshop2\\\": false,\\n  \\\"perm-workshop3\\\": false,\\n  \\\"perm-canteen\\\": false,\\n  \\\"perm-dorm\\\": false,\\n  \\\"perm-user-mgmt\\\": false\\n}\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1760063555464_8bsgp1xcu\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"### UserManagementVO (返回给前端)\\n\\n```java\\n@Data\\npublic...\\\": 这个不是使用LoginUserVO和UserVO旧够了吗不要增加多余文件\\n\",\n  \"timestamp\": \"2025-10-10T02:32:45.696Z\"\n}",
+  "respondedAt": "2025-10-10T02:32:46.098Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "这个不是使用LoginUserVO和UserVO旧够了吗不要增加多余文件",
+      "timestamp": "2025-10-10T02:32:35.464Z",
+      "selectedText": "### UserManagementVO (返回给前端)\n\n```java\n@Data\npublic class UserManagementVO implements Serializable {\n    private Long id;\n    private String username;        // 对应userAccount\n    private String password;        // 明文密码（仅管理员可见）\n    private String userName;\n    private String userAvatar;\n    private String role;            // 对应userRole\n    private String status;          // 对应userStatus\n    \n    @JsonFormat(pattern = \"yyyy-MM-dd HH:mm:ss\", timezone = \"GMT+8\")\n    private Date lastLoginTime;\n    \n    @JsonFormat(pattern = \"yyyy-MM-dd\", timezone = \"GMT+8\")\n    private Date createTime;\n    \n    // 页面权限（解析后的Map）\n    private Map<String, Boolean> pagePermissions;\n}\n```\n\n### UserPermissionUpdateRequest\n\n```java\n@Data\npublic class UserPermissionUpdateRequest implements Serializable {\n    private Long userId;\n    private Map<String, Boolean> permissions;\n}\n```\n\n### UserStatusUpdateRequest\n\n```java\n@Data\npublic class UserStatusUpdateRequest implements Serializable {\n    private Long userId;\n    private String status; // active 或 inactive\n}\n```\n\n### UserStatusEnum\n\n```java\npublic enum UserStatusEnum {\n    ACTIVE(\"active\", \"活跃\"),\n    INACTIVE(\"inactive\", \"禁用\");\n    \n    private final String value;\n    private final String text;\n    \n    // ... 构造函数和getter方法\n}\n```\n\n## 权限JSON格式\n\n### 存储格式（数据库）\n\n```json\n{\n  \"perm-monthly\": true,\n  \"perm-hourly\": true,\n  \"perm-aircon\": false,\n  \"perm-office\": false,\n  \"perm-workshop1\": false,\n  \"perm-workshop2\": false,\n  \"perm-workshop3\": false,\n  \"perm-canteen\": false,\n  \"perm-dorm\": false,\n  \"perm-user-mgmt\": false\n}",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1760063555464_8bsgp1xcu"
+    }
+  ]
+}

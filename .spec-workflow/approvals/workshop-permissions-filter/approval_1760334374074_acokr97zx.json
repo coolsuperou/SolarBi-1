@@ -1,0 +1,21 @@
+{
+  "id": "approval_1760334374074_acokr97zx",
+  "title": "车间权限过滤功能 - 需求文档审批（已更新-仅后端）",
+  "filePath": ".spec-workflow/specs/workshop-permissions-filter/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-13T05:46:14.074Z",
+  "category": "spec",
+  "categoryName": "workshop-permissions-filter",
+  "response": "Feedback Summary (1 comments):\n\nGeneral Comments:\n1. 简单一些，要改动的地方只有月度电能统计和日电能统计的service层和mapper层\n\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"general\",\n      \"comment\": \"简单一些，要改动的地方只有月度电能统计和日电能统计的service层和mapper层\",\n      \"timestamp\": \"2025-10-13T05:53:22.980Z\",\n      \"id\": \"comment_1760334802980_wcc7f1b2e\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nGeneral Comments:\\n1. 简单一些，要改动的地方只有月度电能统计和日电能统计的service层和mapper层\\n\\n\",\n  \"timestamp\": \"2025-10-13T05:53:25.563Z\"\n}",
+  "respondedAt": "2025-10-13T05:53:25.885Z",
+  "comments": [
+    {
+      "type": "general",
+      "comment": "简单一些，要改动的地方只有月度电能统计和日电能统计的service层和mapper层",
+      "timestamp": "2025-10-13T05:53:22.980Z",
+      "id": "comment_1760334802980_wcc7f1b2e"
+    }
+  ]
+}

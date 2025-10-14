@@ -1,0 +1,27 @@
+{
+  "id": "approval_1760338368373_986l7j1zb",
+  "title": "车间权限过滤 - 设计文档（已添加工具类）",
+  "filePath": ".spec-workflow/specs/workshop-permissions-filter/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-13T06:52:48.374Z",
+  "category": "spec",
+  "categoryName": "workshop-permissions-filter",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"/**\n     * 获取映射表（供测试或调试使用）\n     * \n     * @return ...\": 不需要这个调试方法所有代码必须整洁干净不要多余的方法造成代码冗余\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"不需要这个调试方法所有代码必须整洁干净不要多余的方法造成代码冗余\",\n      \"timestamp\": \"2025-10-13T07:01:17.384Z\",\n      \"selectedText\": \"/**\\n     * 获取映射表（供测试或调试使用）\\n     * \\n     * @return 映射表的只读副本\\n     */\\n    public static Map<String, String> getPathToWorkshopMapping() {\\n        return new HashMap<>(PATH_TO_WORKSHOP_MAPPING);\\n    }\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1760338877384_76n4g1542\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"/**\\n     * 获取映射表（供测试或调试使用）\\n     * \\n     * @return ...\\\": 不需要这个调试方法所有代码必须整洁干净不要多余的方法造成代码冗余\\n\",\n  \"timestamp\": \"2025-10-13T07:01:22.264Z\"\n}",
+  "respondedAt": "2025-10-13T07:01:22.628Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "不需要这个调试方法所有代码必须整洁干净不要多余的方法造成代码冗余",
+      "timestamp": "2025-10-13T07:01:17.384Z",
+      "selectedText": "/**\n     * 获取映射表（供测试或调试使用）\n     * \n     * @return 映射表的只读副本\n     */\n    public static Map<String, String> getPathToWorkshopMapping() {\n        return new HashMap<>(PATH_TO_WORKSHOP_MAPPING);\n    }",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1760338877384_76n4g1542"
+    }
+  ]
+}

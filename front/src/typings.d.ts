@@ -60,4 +60,6 @@ interface BaseResponse<T> {
  */
 interface InitialState {
   currentUser?: API.LoginUserVO;
+  /** 页面访问权限对象 */
+  pagePermissions?: Record<string, boolean>;
 }

@@ -16,6 +16,7 @@ const loginPath = '/user/login';
 export async function getInitialState(): Promise<InitialState> {
   const initialState: InitialState = {
     currentUser: undefined,
+    pagePermissions: {},
   };
   // 如果不是登录页面，执行
   const { location } = history;
@@ -23,6 +24,23 @@ export async function getInitialState(): Promise<InitialState> {
     try {
       const res = await getLoginUserUsingGet();
       initialState.currentUser = res.data;
+      
+      // 🔑 解析并加载用户权限
+      if (res.data?.pagePermissions) {
+        try {
+          const permissions = JSON.parse(res.data.pagePermissions);
+          initialState.pagePermissions = permissions;
+          console.log('✅ 权限加载成功:', permissions);
+        } catch (error) {
+          console.error('❌ 解析权限JSON失败，用户权限配置异常:', error);
+          history.push('/404'); // JSON解析失败，跳转到404页面
+          return initialState; // 提前结束函数执行
+        }
+      } else {
+        console.error('❌ 用户权限字段为空');
+        history.push('/404'); // 权限字段为空，跳转到404页面
+        return initialState; // 提前结束函数执行
+      }
     } catch (error: any) {
       // 如果未登录，重定向到登录页面，并保存当前页面作为redirect参数
       const redirectUrl = `${loginPath}?redirect=${encodeURIComponent(location.pathname)}`;

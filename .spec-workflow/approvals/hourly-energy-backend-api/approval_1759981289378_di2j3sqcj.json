@@ -1,0 +1,21 @@
+{
+  "id": "approval_1759981289378_di2j3sqcj",
+  "title": "Hourly Energy Backend API - Requirements (With Calculation Logic)",
+  "filePath": ".spec-workflow/specs/hourly-energy-backend-api/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-09T03:41:29.378Z",
+  "category": "spec",
+  "categoryName": "hourly-energy-backend-api",
+  "response": "Feedback Summary (1 comments):\n\nGeneral Comments:\n1. 代码要简洁简单，不需要太多的方法\n\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"general\",\n      \"comment\": \"代码要简洁简单，不需要太多的方法\",\n      \"timestamp\": \"2025-10-09T03:43:54.998Z\",\n      \"id\": \"comment_1759981434998_f1ju9p64t\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nGeneral Comments:\\n1. 代码要简洁简单，不需要太多的方法\\n\\n\",\n  \"timestamp\": \"2025-10-09T03:44:21.149Z\"\n}",
+  "respondedAt": "2025-10-09T03:44:21.477Z",
+  "comments": [
+    {
+      "type": "general",
+      "comment": "代码要简洁简单，不需要太多的方法",
+      "timestamp": "2025-10-09T03:43:54.998Z",
+      "id": "comment_1759981434998_f1ju9p64t"
+    }
+  ]
+}

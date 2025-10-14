@@ -1,0 +1,27 @@
+{
+  "id": "approval_1760062192975_7dqxr1o4v",
+  "title": "用户管理API - 设计文档审批（已修订版）",
+  "filePath": ".spec-workflow/specs/user-management-api/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-10T02:09:52.975Z",
+  "category": "spec",
+  "categoryName": "user-management-api",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"*新增接口**：\n  ```java\n  // 1. 更新用户权限\n  POST /user/upd...\": 不需要新增接口你说的这些方法在旧方法里面都有定义重新查看一下\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"不需要新增接口你说的这些方法在旧方法里面都有定义重新查看一下\",\n      \"timestamp\": \"2025-10-10T02:18:03.504Z\",\n      \"selectedText\": \"*新增接口**：\\n  ```java\\n  // 1. 更新用户权限\\n  POST /user/update/permissions\\n  Request: UserPermissionUpdateRequest {userId, permissions}\\n  Response: BaseResponse<Boolean>\\n  \\n  // 2. 获取用户权限\\n  GET /user/permissions/{userId}\\n  Response: BaseResponse<Map<String, Boolean>>\\n  \\n  // 3. 更新用户状态\\n  POST /user/update/status\\n  Request: UserStatusUpdateRequest {userId, status}\\n  Response: BaseResponse<Boolean>\\n  \\n  // 4. 更新最后登录时间 (内部调用，登录时自动调用)\\n  // 在UserServiceImpl.userLogin()中自动调用\\n  ```\\n- **Dependencies**: UserService (扩展后的)\\n- **Reuses**: `@AuthCheck`, `BaseResponse`, `ResultUtils`, `ErrorCode`\\n\\n### Component 2: UserService (扩展现有)\\n\\n- **Purpose**: 扩展现有UserService接口，添加权限管理和状态管理方法\\n- **现有方法**（保持不变）：\\n  - `userRegister()` - 用户注册\\n  - `userLogin()` - 用户登录\\n  - `getLoginUser()` - 获取当前登录用户\\n  - `getUserVO()` - 获取脱敏用户信息\\n  - MyBatis-Plus提供的CRUD方法\\n\\n- **新增方法**：\\n  ```java\\n  // 1. 更新用户权限（JSON格式）\\n  boolean updateUserPermissions(Long userId, Map<String, Boolean> permissions);\\n  \\n  // 2. 获取用户权限（解析JSON）\\n  Map<String, Boolean> getUserPermissions(Long userId);\\n  \\n  // 3. 更新用户状态\\n  boolean updateUserStatus(Long userId, String status, Long currentUserId);\\n  \\n  // 4. 更新最后登录时间\\n  boolean updateLastLoginTime(Long userId);\\n  \\n  // 5. 生成默认权限（根据角色）- 内部工具方法\\n  Map<String, Boolean> getDefaultPermissions(String userRole);\\n  ```\\n- **Dependencies**: UserMapper (不需修改), Fastjson\\n- **Reuses**: `User Entity`, `ErrorCode`\\n\\n### Component 3: UserMapper (不需修改)\\n\\n- **Purpose**: 数据库访问操作\\n- **现有功能**: 已继承 `BaseMapper<User>`，提供全部CRUD方法\\n- **是否需要修改**: ✖️ **不需要**\\n  - MyBatis-Plus的 `updateById()` 方法已足够支持新字段更新\\n  - UserController已有 `/list/page` 支持分页查询\\n  - `getQueryWrapper()` 可以支持关键词搜索\\n- **Dependencies**: MyBatis-Plus\\n- **Reuses**: 现有 `UserMapper` 接口，无需扩展\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1760062683504_z2zmtzbcg\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"*新增接口**：\\n  ```java\\n  // 1. 更新用户权限\\n  POST /user/upd...\\\": 不需要新增接口你说的这些方法在旧方法里面都有定义重新查看一下\\n\",\n  \"timestamp\": \"2025-10-10T02:18:09.488Z\"\n}",
+  "respondedAt": "2025-10-10T02:18:09.871Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "不需要新增接口你说的这些方法在旧方法里面都有定义重新查看一下",
+      "timestamp": "2025-10-10T02:18:03.504Z",
+      "selectedText": "*新增接口**：\n  ```java\n  // 1. 更新用户权限\n  POST /user/update/permissions\n  Request: UserPermissionUpdateRequest {userId, permissions}\n  Response: BaseResponse<Boolean>\n  \n  // 2. 获取用户权限\n  GET /user/permissions/{userId}\n  Response: BaseResponse<Map<String, Boolean>>\n  \n  // 3. 更新用户状态\n  POST /user/update/status\n  Request: UserStatusUpdateRequest {userId, status}\n  Response: BaseResponse<Boolean>\n  \n  // 4. 更新最后登录时间 (内部调用，登录时自动调用)\n  // 在UserServiceImpl.userLogin()中自动调用\n  ```\n- **Dependencies**: UserService (扩展后的)\n- **Reuses**: `@AuthCheck`, `BaseResponse`, `ResultUtils`, `ErrorCode`\n\n### Component 2: UserService (扩展现有)\n\n- **Purpose**: 扩展现有UserService接口，添加权限管理和状态管理方法\n- **现有方法**（保持不变）：\n  - `userRegister()` - 用户注册\n  - `userLogin()` - 用户登录\n  - `getLoginUser()` - 获取当前登录用户\n  - `getUserVO()` - 获取脱敏用户信息\n  - MyBatis-Plus提供的CRUD方法\n\n- **新增方法**：\n  ```java\n  // 1. 更新用户权限（JSON格式）\n  boolean updateUserPermissions(Long userId, Map<String, Boolean> permissions);\n  \n  // 2. 获取用户权限（解析JSON）\n  Map<String, Boolean> getUserPermissions(Long userId);\n  \n  // 3. 更新用户状态\n  boolean updateUserStatus(Long userId, String status, Long currentUserId);\n  \n  // 4. 更新最后登录时间\n  boolean updateLastLoginTime(Long userId);\n  \n  // 5. 生成默认权限（根据角色）- 内部工具方法\n  Map<String, Boolean> getDefaultPermissions(String userRole);\n  ```\n- **Dependencies**: UserMapper (不需修改), Fastjson\n- **Reuses**: `User Entity`, `ErrorCode`\n\n### Component 3: UserMapper (不需修改)\n\n- **Purpose**: 数据库访问操作\n- **现有功能**: 已继承 `BaseMapper<User>`，提供全部CRUD方法\n- **是否需要修改**: ✖️ **不需要**\n  - MyBatis-Plus的 `updateById()` 方法已足够支持新字段更新\n  - UserController已有 `/list/page` 支持分页查询\n  - `getQueryWrapper()` 可以支持关键词搜索\n- **Dependencies**: MyBatis-Plus\n- **Reuses**: 现有 `UserMapper` 接口，无需扩展",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1760062683504_z2zmtzbcg"
+    }
+  ]
+}

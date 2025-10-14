@@ -1,0 +1,21 @@
+{
+  "id": "approval_1760078304983_j53un57px",
+  "title": "前端权限控制系统 - Design 文档（修订版3 - 30个业务页面权限）",
+  "filePath": ".spec-workflow/specs/frontend-permission-control/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-10T06:38:24.983Z",
+  "category": "spec",
+  "categoryName": "frontend-permission-control",
+  "response": "Feedback Summary (1 comments):\n\nGeneral Comments:\n1. 既然我把UserManagement 已移至 /admin 目录下，那么后端也开始需要调整\n\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"general\",\n      \"comment\": \"既然我把UserManagement 已移至 /admin 目录下，那么后端也开始需要调整\",\n      \"timestamp\": \"2025-10-10T06:47:33.718Z\",\n      \"id\": \"comment_1760078853718_ynuj7xfa9\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nGeneral Comments:\\n1. 既然我把UserManagement 已移至 /admin 目录下，那么后端也开始需要调整\\n\\n\",\n  \"timestamp\": \"2025-10-10T06:47:38.283Z\"\n}",
+  "respondedAt": "2025-10-10T06:47:38.962Z",
+  "comments": [
+    {
+      "type": "general",
+      "comment": "既然我把UserManagement 已移至 /admin 目录下，那么后端也开始需要调整",
+      "timestamp": "2025-10-10T06:47:33.718Z",
+      "id": "comment_1760078853718_ynuj7xfa9"
+    }
+  ]
+}

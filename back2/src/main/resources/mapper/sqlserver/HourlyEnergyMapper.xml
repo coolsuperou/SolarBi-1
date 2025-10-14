@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yupi.springbootinit.mapper.sqlserver.HourlyEnergyMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="TempMonitorResultMap" type="com.yupi.springbootinit.model.entity.TempMonitor">
+        <id property="id" column="Id"/>
+        <result property="deviceId" column="DeviceID"/>
+        <result property="name" column="Name"/>
+        <result property="tem" column="Tem"/>
+        <result property="hum" column="Hum"/>
+        <result property="mac" column="MAC"/>
+        <result property="updateTime" column="UpdateTime"/>
+        <result property="electricEnergy" column="ElectricEnergy"/>
+        <result property="nodeId" column="NodeID"/>
+        <result property="workshop" column="Workshop"/>
+    </resultMap>
+
+    <!-- 查询指定时间范围内有权访问车间的原始监控数据 -->
+    <select id="selectAllWorkshopsHourlyData" resultMap="TempMonitorResultMap">
+        SELECT 
+            Id,
+            DeviceID,
+            Name,
+            Tem,
+            Hum,
+            MAC,
+            UpdateTime,
+            ElectricEnergy,
+            NodeID,
+            Workshop
+        FROM RSWS_TempMonitor_Copy
+        WHERE ElectricEnergy IS NOT NULL
+          AND Workshop != '备用'
+          AND Workshop != '备用总表'
+            <!-- 动态车间过滤逻辑 -->
+            <choose>
+                <!-- 情况1: 有权限车间列表不为空，使用IN查询 -->
+                <when test="workshopList != null and workshopList.size() > 0">
+                    AND Workshop IN
+                    <foreach collection="workshopList" item="ws" open="(" separator="," close=")">
+                        #{ws}
+                    </foreach>
+                </when>
+                <!-- 情况2: 有权限车间列表为空，返回空结果 -->
+                <otherwise>
+                    AND 1=0
+                </otherwise>
+            </choose>
+          AND UpdateTime &gt;= #{startTime}
+          AND UpdateTime &lt;= #{endTime}
+        ORDER BY Workshop, Name, UpdateTime ASC
+    </select>
+
+</mapper>

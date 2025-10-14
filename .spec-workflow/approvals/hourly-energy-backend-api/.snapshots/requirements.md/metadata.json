@@ -1,0 +1,54 @@
+{
+  "filePath": ".spec-workflow/specs/hourly-energy-backend-api/requirements.md",
+  "currentVersion": 6,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-09T03:26:44.517Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759980404501_eug963d2f",
+      "approvalTitle": "Hourly Energy Backend API - Requirements"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-09T03:36:04.241Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1759980404501_eug963d2f",
+      "approvalTitle": "Hourly Energy Backend API - Requirements"
+    },
+    {
+      "version": 3,
+      "filename": "snapshot-003.json",
+      "timestamp": "2025-10-09T03:39:16.477Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1759981025007_q3305qp3p",
+      "approvalTitle": "Hourly Energy Backend API - Requirements (Revised)"
+    },
+    {
+      "version": 4,
+      "filename": "snapshot-004.json",
+      "timestamp": "2025-10-09T03:44:21.468Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1759981289378_di2j3sqcj",
+      "approvalTitle": "Hourly Energy Backend API - Requirements (With Calculation Logic)"
+    },
+    {
+      "version": 5,
+      "filename": "snapshot-005.json",
+      "timestamp": "2025-10-09T03:48:01.539Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1759981568180_v13ugywml",
+      "approvalTitle": "Hourly Energy Backend API - Requirements (Simplified)"
+    },
+    {
+      "version": 6,
+      "filename": "snapshot-006.json",
+      "timestamp": "2025-10-09T03:49:05.643Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759981720172_xxdwwqvqv",
+      "approvalTitle": "Hourly Energy Backend API - Requirements (Final)"
+    }
+  ]
+}

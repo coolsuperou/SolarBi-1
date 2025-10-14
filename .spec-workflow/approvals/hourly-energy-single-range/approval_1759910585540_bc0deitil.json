@@ -1,0 +1,27 @@
+{
+  "id": "approval_1759910585540_bc0deitil",
+  "title": "需求文档（修订版）- 小时能耗单一时间范围计算",
+  "filePath": ".spec-workflow/specs/hourly-energy-single-range/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-08T08:03:05.540Z",
+  "category": "spec",
+  "categoryName": "hourly-energy-single-range",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"**User Story:** 作为系统用户，我希望在查询小时能耗时，能够获取指定时间范围的总能耗，...\": 其它都不变只是改一下后端的数据逻辑仅此而已\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"其它都不变只是改一下后端的数据逻辑仅此而已\",\n      \"timestamp\": \"2025-10-08T08:07:36.452Z\",\n      \"selectedText\": \"**User Story:** 作为系统用户，我希望在查询小时能耗时，能够获取指定时间范围的总能耗，而不是按小时分段的能耗列表，以便更灵活地分析能耗数据。\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1759910856452_0unicbx7j\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"**User Story:** 作为系统用户，我希望在查询小时能耗时，能够获取指定时间范围的总能耗，...\\\": 其它都不变只是改一下后端的数据逻辑仅此而已\\n\",\n  \"timestamp\": \"2025-10-08T08:08:12.764Z\"\n}",
+  "respondedAt": "2025-10-08T08:08:13.070Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "其它都不变只是改一下后端的数据逻辑仅此而已",
+      "timestamp": "2025-10-08T08:07:36.452Z",
+      "selectedText": "**User Story:** 作为系统用户，我希望在查询小时能耗时，能够获取指定时间范围的总能耗，而不是按小时分段的能耗列表，以便更灵活地分析能耗数据。",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1759910856452_0unicbx7j"
+    }
+  ]
+}

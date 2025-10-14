@@ -1,0 +1,27 @@
+{
+  "id": "approval_1760077874413_39q795g59",
+  "title": "前端权限控制系统 - Design 文档（修订版2 - 解析失败跳转404）",
+  "filePath": ".spec-workflow/specs/frontend-permission-control/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-10T06:31:14.413Z",
+  "category": "spec",
+  "categoryName": "frontend-permission-control",
+  "response": "Feedback Summary (1 comments):\n\nSpecific Text Comments:\n1. \"**完整映射表**（权限Key → 路由Path → Access函数）:\n\n**注意**: Use...\": 修改这个吧根据权限key来设置\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"selection\",\n      \"comment\": \"修改这个吧根据权限key来设置\",\n      \"timestamp\": \"2025-10-10T06:36:08.723Z\",\n      \"selectedText\": \"**完整映射表**（权限Key → 路由Path → Access函数）:\\n\\n**注意**: UserManagement 已移至 `/admin` 目录下，实际路由为 `/admin/user-management`，但权限key仍为 `user-management`。\",\n      \"highlightColor\": {\n        \"bg\": \"rgba(255, 235, 59, 0.3)\",\n        \"border\": \"#FFEB3B\",\n        \"name\": \"#ffeb3b\"\n      },\n      \"id\": \"comment_1760078168723_ghj1xgnxd\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nSpecific Text Comments:\\n1. \\\"**完整映射表**（权限Key → 路由Path → Access函数）:\\n\\n**注意**: Use...\\\": 修改这个吧根据权限key来设置\\n\",\n  \"timestamp\": \"2025-10-10T06:36:22.163Z\"\n}",
+  "respondedAt": "2025-10-10T06:36:22.684Z",
+  "comments": [
+    {
+      "type": "selection",
+      "comment": "修改这个吧根据权限key来设置",
+      "timestamp": "2025-10-10T06:36:08.723Z",
+      "selectedText": "**完整映射表**（权限Key → 路由Path → Access函数）:\n\n**注意**: UserManagement 已移至 `/admin` 目录下，实际路由为 `/admin/user-management`，但权限key仍为 `user-management`。",
+      "highlightColor": {
+        "bg": "rgba(255, 235, 59, 0.3)",
+        "border": "#FFEB3B",
+        "name": "#ffeb3b"
+      },
+      "id": "comment_1760078168723_ghj1xgnxd"
+    }
+  ]
+}

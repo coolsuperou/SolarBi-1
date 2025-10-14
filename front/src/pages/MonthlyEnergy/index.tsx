@@ -17,9 +17,9 @@ const MonthlyEnergyPage: React.FC = () => {
   
   // 📊 动态计算表格容器高度
   const ROW_HEIGHT_FALLBACK = 35; // 预估行高（px）
-  const HEADER_HEIGHT = 50; // 表头高度（px）
-  const FOOTER_HEIGHT = 40; // 合计行高度（px）
-  const PADDING = 6; // 容器内边距
+  const HEADER_HEIGHT = 42; // 表头高度（px）
+  const FOOTER_HEIGHT = 35; // 合计行高度（px）
+  const PADDING = 0; // 容器内边距
   
   const tbodyRef = useRef<HTMLTableSectionElement>(null);
   const [containerHeight, setContainerHeight] = useState(
@@ -51,6 +51,7 @@ const MonthlyEnergyPage: React.FC = () => {
     requestAnimationFrame(() => {
       const firstRow = tbodyRef.current?.querySelector('tr') as HTMLElement | null;
       const realRowHeight = firstRow?.getBoundingClientRect().height || ROW_HEIGHT_FALLBACK;
+      // 🎯 精确计算：表头 + 数据行 + 合计行，滚动条不占用容器高度
       const total = HEADER_HEIGHT + data.workshopList.length * realRowHeight + FOOTER_HEIGHT + PADDING;
       setContainerHeight(`${Math.round(total)}px`);
     });

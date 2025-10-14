@@ -27,6 +27,60 @@ const HourlyEnergyPage: React.FC = () => {
     `${HEADER_HEIGHT + 2 * ROW_HEIGHT_FALLBACK + FOOTER_HEIGHT + PADDING}px`,
   );
   
+  // 📏 记录初始高度和初始缩放比例
+  const initialHeightRef = useRef<number | null>(null);
+  const initialZoomRef = useRef<number>(1);
+  const [actualHeight, setActualHeight] = useState<number>(
+    HEADER_HEIGHT + 2 * ROW_HEIGHT_FALLBACK + FOOTER_HEIGHT + PADDING
+  );
+  
+  // 🔍 获取当前浏览器缩放比例
+  const getZoomLevel = () => {
+    return window.devicePixelRatio || 1;
+  };
+  
+  // 📐 监听浏览器缩放，反向调整容器高度
+  useEffect(() => {
+    // 记录初始缩放比例
+    initialZoomRef.current = getZoomLevel();
+    
+    const handleZoom = () => {
+      if (initialHeightRef.current === null) return;
+      
+      const currentZoom = getZoomLevel();
+      const zoomRatio = currentZoom / initialZoomRef.current;
+      
+      // 反向缩放：如果浏览器放大2倍，容器高度变成原来的1/2
+      const newHeight = initialHeightRef.current / zoomRatio;
+      setActualHeight(Math.round(newHeight));
+      setContainerHeight(`${Math.round(newHeight)}px`);
+      
+      console.log('🔍 缩放检测:', {
+        初始缩放: initialZoomRef.current,
+        当前缩放: currentZoom,
+        缩放比例: zoomRatio,
+        初始高度: initialHeightRef.current,
+        新高度: Math.round(newHeight)
+      });
+    };
+    
+    // 监听窗口resize事件（缩放会触发resize）
+    window.addEventListener('resize', handleZoom);
+    
+    // 使用 matchMedia 监听缩放（更精确）
+    const mediaQuery = window.matchMedia('(resolution: 1dppx)');
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleZoom);
+    }
+    
+    return () => {
+      window.removeEventListener('resize', handleZoom);
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleZoom);
+      }
+    };
+  }, []);
+  
   // 🔥 页面类名挂载：隔离全局样式，避免与其他页面冲突
   useEffect(() => {
     const root = document.getElementById('root');
@@ -41,10 +95,15 @@ const HourlyEnergyPage: React.FC = () => {
     };
   }, []);
   
-  // 📏 测量真实行高，确保容器高度完全精确
+  // 📏 测量真实行高并记录初始高度
   useLayoutEffect(() => {
     if (!data || !data.workshopList) {
-      setContainerHeight(`${HEADER_HEIGHT + 2 * ROW_HEIGHT_FALLBACK + FOOTER_HEIGHT + PADDING}px`);
+      const fallbackHeight = HEADER_HEIGHT + 2 * ROW_HEIGHT_FALLBACK + FOOTER_HEIGHT + PADDING;
+      setActualHeight(fallbackHeight);
+      setContainerHeight(`${fallbackHeight}px`);
+      if (initialHeightRef.current === null) {
+        initialHeightRef.current = fallbackHeight;
+      }
       return;
     }
     
@@ -54,7 +113,20 @@ const HourlyEnergyPage: React.FC = () => {
       const realRowHeight = firstRow?.getBoundingClientRect().height || ROW_HEIGHT_FALLBACK;
       // 🎯 精确计算：表头 + 数据行 + 合计行，滚动条不占用容器高度
       const total = HEADER_HEIGHT + data.workshopList.length * realRowHeight + FOOTER_HEIGHT + PADDING;
-      setContainerHeight(`${Math.round(total)}px`);
+      const roundedTotal = Math.round(total);
+      
+      setActualHeight(roundedTotal);
+      setContainerHeight(`${roundedTotal}px`);
+      
+      // 🎯 只在第一次设置时记录初始高度
+      if (initialHeightRef.current === null) {
+        initialHeightRef.current = roundedTotal;
+        initialZoomRef.current = getZoomLevel();
+        console.log('📏 初始高度设置:', {
+          高度: roundedTotal,
+          缩放: initialZoomRef.current
+        });
+      }
     });
   }, [data]);
 

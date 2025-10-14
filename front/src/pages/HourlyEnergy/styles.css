@@ -159,7 +159,7 @@ html.hourly-energy-page,
   overflow-x: auto;
   overflow-y: hidden;  /* 禁用垂直滚动 */
   position: relative;
-  /* 高度由内联样式动性设置 */
+  height: 100%; /* 🔥 铺满容器 */
   scrollbar-width: thin; /* Firefox 滚动条宽度 */
   scrollbar-color: #00d4ff rgba(10, 25, 41, 0.3); /* Firefox 滚动条颜色 */
 }

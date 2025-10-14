@@ -60,7 +60,7 @@ html.monthly-energy-page,
 }
 
 /* 查询区域 */
-.query-section {
+.monthly-energy-container .query-section {
   background: rgba(10, 25, 41, 0.6);
   border: 3px solid #00d4ff;
   border-radius: 8px;
@@ -74,19 +74,19 @@ html.monthly-energy-page,
   flex-shrink: 0;
 }
 
-.query-group {
+.monthly-energy-container .query-group {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.query-label {
+.monthly-energy-container .query-label {
   color: #00d4ff;
   font-weight: 600;
   font-size: 15px;
 }
 
-.query-select {
+.monthly-energy-container .query-select {
   background: rgba(10, 25, 41, 0.8);
   border: 2px solid #00d4ff;
   border-radius: 6px;
@@ -98,18 +98,18 @@ html.monthly-energy-page,
   cursor: pointer;
 }
 
-.query-select:focus {
+.monthly-energy-container .query-select:focus {
   box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
   border-color: #00d4ff;
 }
 
-.query-select option {
+.monthly-energy-container .query-select option {
   background: #1a237e;
   color: #ffffff;
 }
 
 /* 查询按钮 */
-.query-button {
+.monthly-energy-container .query-button {
   background: #00d4ff;
   border: 2px solid #00d4ff;
   border-radius: 8px;
@@ -125,24 +125,24 @@ html.monthly-energy-page,
   letter-spacing: 1px;
 }
 
-.query-button:hover {
+.monthly-energy-container .query-button:hover {
   background: #00b8d4;
   box-shadow: 0 0 30px rgba(0, 212, 255, 0.9);
   transform: translateY(-1px);
 }
 
-.query-button:active {
+.monthly-energy-container .query-button:active {
   transform: translateY(0);
 }
 
-.query-button:disabled {
+.monthly-energy-container .query-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
 /* 表格容器 */
-.table-container {
+.monthly-energy-container .table-container {
   background: rgba(10, 25, 41, 0.6);
   border: 3px solid #00d4ff;
   border-radius: 8px;
@@ -156,23 +156,14 @@ html.monthly-energy-page,
   max-height: 100%;
 }
 
-.table-wrapper {
+.monthly-energy-container .table-wrapper {
   overflow-x: auto;
-  overflow-y: auto;
-  flex: 1;
+  overflow-y: hidden;  /* 禁用垂直滚动 */
   position: relative;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-  height: 100%;
-  max-height: 100%;
+  /* 高度由内联样式动态设置 */
 }
 
-/* 隐藏垂直滚动条但保留横向滚动条 */
-.table-wrapper::-webkit-scrollbar {
-  display: none !important;
-}
-
-.data-table {
+.monthly-energy-container .data-table {
   width: 100%;
   height: 100%;
   border-collapse: collapse;
@@ -180,8 +171,8 @@ html.monthly-energy-page,
   min-width: 1400px;
 }
 
-.data-table th,
-.data-table td {
+.monthly-energy-container .data-table th,
+.monthly-energy-container .data-table td {
   border: 1px solid rgba(0, 212, 255, 0.25);
   padding: 6px 8px;
   text-align: center;
@@ -240,7 +231,7 @@ html.monthly-energy-page,
 }
 
 /* 数据单元格 */
-.data-cell {
+.monthly-energy-container .data-cell {
   background: rgba(10, 25, 41, 0.4);
   color: #ffffff;
   min-width: 85px;
@@ -249,7 +240,7 @@ html.monthly-energy-page,
   cursor: help;
 }
 
-.data-cell:hover {
+.monthly-energy-container .data-cell:hover {
   background: rgba(0, 212, 255, 0.2);
   transform: scale(1.05);
   box-shadow: 0 0 15px rgba(0, 212, 255, 0.5),
@@ -259,20 +250,20 @@ html.monthly-energy-page,
 }
 
 /* 高亮数值（黄色） */
-.highlight-value {
+.monthly-energy-container .highlight-value {
   background: rgba(255, 215, 0, 0.1) !important;
   color: #ffd700 !important;
   font-weight: 600;
 }
 
 /* 合计行 - 绿色发光效果 */
-.total-row {
+.monthly-energy-container .total-row {
   background: rgba(0, 255, 102, 0.15) !important;
   box-shadow: 0 0 20px rgba(0, 255, 102, 0.5),
               inset 0 0 15px rgba(0, 255, 102, 0.2) !important;
 }
 
-.total-row td {
+.monthly-energy-container .total-row td {
   color: #00ff66 !important;
   font-weight: 700;
   border: 1px solid rgba(0, 255, 102, 0.5) !important;
@@ -297,40 +288,35 @@ html.monthly-energy-page,
 }
 
 /* 表格行悬停 */
-.data-table tbody tr:not(.total-row):hover {
+.monthly-energy-container .data-table tbody tr:not(.total-row):hover {
   background: rgba(0, 212, 255, 0.05);
 }
 
-/* 🔥 滚动条样式 - 只显示底部横向滚动条 */
-.table-wrapper {
-  scrollbar-width: thin !important;
-  scrollbar-color: #00d4ff rgba(10, 25, 41, 0.3) !important;
+/* 🔥 横向滚动条样式（垂直滚动条已禁用） */
+.monthly-energy-container .table-wrapper::-webkit-scrollbar {
+  width: 0 !important;  /* 禁用垂直滚动条 */
+  height: 14px !important;  /* 保留横向滚动条 */
 }
 
-.table-wrapper::-webkit-scrollbar {
-  width: 0 !important;
-  height: 14px !important;
-}
-
-.table-wrapper::-webkit-scrollbar-track {
+.monthly-energy-container .table-wrapper::-webkit-scrollbar-track {
   background: rgba(10, 25, 41, 0.8) !important;
   border-radius: 6px !important;
   margin: 0 10px;
 }
 
-.table-wrapper::-webkit-scrollbar-thumb {
+.monthly-energy-container .table-wrapper::-webkit-scrollbar-thumb {
   background: #00d4ff !important;
   border-radius: 6px !important;
   box-shadow: 0 0 15px rgba(0, 212, 255, 0.8),
               inset 0 0 5px rgba(255, 255, 255, 0.2) !important;
 }
 
-.table-wrapper::-webkit-scrollbar-thumb:hover {
+.monthly-energy-container .table-wrapper::-webkit-scrollbar-thumb:hover {
   background: #00e5ff !important;
   box-shadow: 0 0 20px rgba(0, 212, 255, 1),
               inset 0 0 8px rgba(255, 255, 255, 0.3) !important;
 }
 
-.table-wrapper::-webkit-scrollbar-corner {
+.monthly-energy-container .table-wrapper::-webkit-scrollbar-corner {
   background: transparent !important;
 }

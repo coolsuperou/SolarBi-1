@@ -17,10 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
  * 日能耗统计服务实现
+ * 🔥 所有车间都只统计 tbl_monitordevice 中 IsElectricMeter=1 的设备
+ * 🔥 优化：一次性查询所有车间的电能表设备，使用并行流加速计算
  */
 @Service
 @Slf4j
@@ -32,9 +35,37 @@ public class HourlyEnergyServiceImpl implements HourlyEnergyService {
     @Resource
     private UserService userService;
 
+    /**
+     * 🔥 一次性获取所有车间的电能表设备映射
+     * @param workshopList 车间列表
+     * @return Map<车间名称, Set<电能表设备名称>>
+     */
+    private Map<String, Set<String>> getElectricMeterMap(List<String> workshopList) {
+        long startTime = System.currentTimeMillis();
+        
+        // 批量查询所有车间的电能表设备
+        List<TempMonitor> meterList = hourlyEnergyMapper.getElectricMetersByWorkshops(workshopList);
+        
+        // 按车间分组
+        Map<String, Set<String>> meterMap = new HashMap<>();
+        for (TempMonitor meter : meterList) {
+            String workshop = meter.getWorkshop();
+            String name = meter.getName();
+            if (workshop != null && name != null) {
+                meterMap.computeIfAbsent(workshop, k -> new HashSet<>()).add(name);
+            }
+        }
+        
+        long elapsed = System.currentTimeMillis() - startTime;
+        log.info("🔥 批量查询电能表设备完成，耗时: {}ms，共{}个车间", elapsed, meterMap.size());
+        
+        return meterMap;
+    }
+
     @Override
     @Transactional(readOnly = true)
     public HourlyEnergyStatistics getHourlyStatistics(Integer year, Integer month, Integer day, HttpServletRequest request) {
+        long totalStartTime = System.currentTimeMillis();
         log.info("📊 接收日能耗统计请求: {}年{}月{}日", year, month, day);
 
         // 1. 获取当前用户并解析权限
@@ -63,18 +94,41 @@ public class HourlyEnergyServiceImpl implements HourlyEnergyService {
 
         log.info("时间范围: {} 至 {}", startTime, endTime);
 
-        // 3. 查询用户有权限的车间数据
+        // 🔥 3. 一次性查询所有车间的电能表设备映射（优化：只查一次数据库）
+        Map<String, Set<String>> electricMeterMap = getElectricMeterMap(allowedWorkshops);
+
+        // 4. 查询用户有权限的车间数据
+        long queryStartTime = System.currentTimeMillis();
         List<TempMonitor> allRawData = hourlyEnergyMapper.selectAllWorkshopsHourlyData(allowedWorkshops, startTime, endTime);
+        log.info("查询原始数据耗时: {}ms，共{}条记录", System.currentTimeMillis() - queryStartTime, 
+                allRawData != null ? allRawData.size() : 0);
 
         if (allRawData == null || allRawData.isEmpty()) {
             log.warn("{}年{}月{}日无数据", year, month, day);
             return createEmptyStatistics(year, month, day);
         }
 
-        log.info("查询到{}条原始数据", allRawData.size());
+        // 🔥 5. 过滤原始数据，只保留电能表设备的数据（优化：在分组前统一过滤）
+        long filterStartTime = System.currentTimeMillis();
+        List<TempMonitor> filteredRawData = allRawData.stream()
+                .filter(item -> {
+                    String workshop = item.getWorkshop();
+                    String name = item.getName();
+                    if (workshop == null || name == null) return false;
+                    Set<String> meterNames = electricMeterMap.get(workshop);
+                    return meterNames != null && meterNames.contains(name);
+                })
+                .collect(Collectors.toList());
+        log.info("🔥 电能表过滤完成，耗时: {}ms，原始记录: {}，过滤后: {}", 
+                System.currentTimeMillis() - filterStartTime, allRawData.size(), filteredRawData.size());
 
-        // 4. 从查询结果中提取实际返回的车间列表并按照allowedWorkshops的顺序排列
-        Set<String> workshopSet = allRawData.stream()
+        if (filteredRawData.isEmpty()) {
+            log.warn("过滤后无电能表数据");
+            return createEmptyStatistics(year, month, day);
+        }
+
+        // 6. 从过滤后的数据中提取实际返回的车间列表并按照allowedWorkshops的顺序排列
+        Set<String> workshopSet = filteredRawData.stream()
             .map(TempMonitor::getWorkshop)
             .filter(w -> w != null && !w.isEmpty())
             .collect(Collectors.toSet());
@@ -89,31 +143,32 @@ public class HourlyEnergyServiceImpl implements HourlyEnergyService {
 
         log.info("实际返回{}个车间: {}", workshops.size(), workshops);
 
-        // 5. 按车间分组数据
-        Map<String, List<TempMonitor>> dataByWorkshop = allRawData.stream()
+        // 7. 按车间分组过滤后的数据
+        Map<String, List<TempMonitor>> dataByWorkshop = filteredRawData.stream()
             .filter(d -> d.getWorkshop() != null)
             .collect(Collectors.groupingBy(TempMonitor::getWorkshop));
 
-        // 6. 计算每个车间的24小时能耗
-        Map<String, List<Double>> workshopHourlyData = new LinkedHashMap<>();
-        List<Double> hourlyTotal = new ArrayList<>(Collections.nCopies(24, 0.0));
+        // 8. 初始化数据结构（使用线程安全的Map用于并行计算）
+        Map<String, List<Double>> workshopHourlyData = new ConcurrentHashMap<>();
+        double[] hourlyTotalArray = new double[24]; // 使用数组便于并行累加
 
-        for (String workshop : workshops) {
+        // 🔥 9. 使用并行流遍历每个车间计算能耗（优化：并行计算）
+        long calcStartTime = System.currentTimeMillis();
+        final Date finalStartTime = startTime;
+        final Date finalEndTime = endTime;
+
+        workshops.parallelStream().forEach(workshop -> {
             List<TempMonitor> workshopData = dataByWorkshop.getOrDefault(workshop, Collections.emptyList());
 
             if (workshopData.isEmpty()) {
                 workshopHourlyData.put(workshop, new ArrayList<>(Collections.nCopies(24, 0.0)));
-                continue;
+                return;
             }
 
             // 调用工具类计算小时能耗
             List<HourlyEnergyConsumption> hourlyConsumptions = 
                 EnergyCalculationUtils.calculateHourlyEnergyFromRawData(
-                    workshopData, startTime, endTime, workshop);
-
-            // 🔥 输出车间计算详情
-            log.info("\n车间【{}】计算详情:", workshop);
-            log.info("--------------------------------------------------------------------------------");
+                    workshopData, finalStartTime, finalEndTime, workshop);
 
             // 转换为24小时数组
             List<Double> hourlyData = new ArrayList<>(Collections.nCopies(24, 0.0));
@@ -125,55 +180,80 @@ public class HourlyEnergyServiceImpl implements HourlyEnergyService {
                 // 计算索引：07:00对应索引0
                 int index = (hour - EnergyTimeConfig.DAY_START_HOUR + 24) % 24;
                 if (index >= 0 && index < 24) {
-                    // 🔥 防止次日07:00的数据覆盖当天07:00的数据
+                    // 防止次日07:00的数据覆盖当天07:00的数据
                     if (hourlyData.get(index) != 0.0) {
-                        log.warn("⚠️ 跳过重复的小时数据: {}:00 (index={}), 已经有值={}", 
-                            String.format("%02d", hour), index, hourlyData.get(index));
                         continue;
                     }
                     
                     Double energy = consumption.getEnergyConsumption() != null ? 
                                    consumption.getEnergyConsumption() : 0.0;
                     hourlyData.set(index, energy);
-                    hourlyTotal.set(index, hourlyTotal.get(index) + energy);
                     
-                    // 🔥 输出每个小时的详细计算数据
-                    Calendar nextHourCal = Calendar.getInstance();
-                    nextHourCal.setTime(consumption.getHour());
-                    nextHourCal.add(Calendar.HOUR_OF_DAY, 1);
-                    int nextHour = nextHourCal.get(Calendar.HOUR_OF_DAY);
-                    
-                    String startEnergyStr = consumption.getStartEnergy() != null ? String.format("%.2f", consumption.getStartEnergy()) : "N/A";
-                    String endEnergyStr = consumption.getEndEnergy() != null ? String.format("%.2f", consumption.getEndEnergy()) : "N/A";
-                    String energyStr = String.format("%.2f", energy);
-                    String startTimeStr = consumption.getStartTime() != null ? consumption.getStartTime().toString() : "N/A";
-                    String endTimeStr = consumption.getEndTime() != null ? consumption.getEndTime().toString() : "N/A";
-                    
-                    log.info("  📌 {}:00-{}:00 | 起始电能={} kWh | 结束电能={} kWh | 消耗={} kWh | 起始时间={} | 结束时间={}",
-                        String.format("%02d", hour),
-                        String.format("%02d", nextHour),
-                        startEnergyStr,
-                        endEnergyStr,
-                        energyStr,
-                        startTimeStr,
-                        endTimeStr
-                    );
+                    // 线程安全地累加到每小时总能耗
+                    synchronized (hourlyTotalArray) {
+                        hourlyTotalArray[index] += energy;
+                    }
                 }
             }
 
             workshopHourlyData.put(workshop, hourlyData);
+        });
+
+        log.info("🔥 并行计算完成，耗时: {}ms", System.currentTimeMillis() - calcStartTime);
+
+        // 🔥 特殊处理：104还原需要扣除无压烧结的数据
+        if (workshopHourlyData.containsKey("104还原") && workshopHourlyData.containsKey("无压烧结")) {
+            List<Double> restoration104Data = workshopHourlyData.get("104还原");
+            List<Double> presslessData = workshopHourlyData.get("无压烧结");
+            
+            // 按小时扣除
+            List<Double> adjustedHourlyData = new ArrayList<>();
+            for (int i = 0; i < 24; i++) {
+                double original = restoration104Data.get(i);
+                double pressless = presslessData.get(i);
+                double adjusted = Math.max(0, original - pressless);
+                adjustedHourlyData.add(adjusted);
+                
+                // 同时更新每小时总能耗
+                hourlyTotalArray[i] = hourlyTotalArray[i] - original + adjusted;
+            }
+            
+            // 更新104还原的数据
+            workshopHourlyData.put("104还原", adjustedHourlyData);
+            
+            double originalTotal = restoration104Data.stream().mapToDouble(Double::doubleValue).sum();
+            double presslessTotal = presslessData.stream().mapToDouble(Double::doubleValue).sum();
+            double adjustedTotal = adjustedHourlyData.stream().mapToDouble(Double::doubleValue).sum();
+            
+            log.info("🔥 104还原已扣除无压烧结: 原始总量={}, 无压烧结={}, 调整后={}", 
+                    String.format("%.2f", originalTotal), 
+                    String.format("%.2f", presslessTotal), 
+                    String.format("%.2f", adjustedTotal));
         }
 
-        // 7. 构建返回结果
+        // 10. 转换数组为List
+        List<Double> hourlyTotal = new ArrayList<>();
+        for (double d : hourlyTotalArray) {
+            hourlyTotal.add(d);
+        }
+
+        // 转换为有序Map（保持车间顺序）
+        Map<String, List<Double>> orderedHourlyData = new LinkedHashMap<>();
+        for (String workshop : workshops) {
+            orderedHourlyData.put(workshop, workshopHourlyData.get(workshop));
+        }
+
+        // 11. 构建返回结果
         HourlyEnergyStatistics statistics = new HourlyEnergyStatistics();
         statistics.setYear(year);
         statistics.setMonth(month);
         statistics.setDay(day);
         statistics.setWorkshopList(workshops);
-        statistics.setWorkshopHourlyData(workshopHourlyData);
+        statistics.setWorkshopHourlyData(orderedHourlyData);
         statistics.setHourlyTotal(hourlyTotal);
 
-        log.info("✅ 日能耗统计完成: {}个车间", workshops.size());
+        long totalElapsed = System.currentTimeMillis() - totalStartTime;
+        log.info("✅ 日能耗统计完成: {}个车间，总耗时: {}ms", workshops.size(), totalElapsed);
         return statistics;
     }
 

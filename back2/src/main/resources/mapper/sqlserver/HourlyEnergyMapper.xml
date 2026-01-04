@@ -54,4 +54,17 @@
         ORDER BY Workshop, Name, UpdateTime ASC
     </select>
 
+    <!-- 🔥 批量查询多个车间的电能表设备 -->
+    <select id="getElectricMetersByWorkshops" resultMap="TempMonitorResultMap">
+        SELECT Workshop, Name
+        FROM tbl_monitordevice 
+        WHERE IsElectricMeter = 1
+        <if test="workshopList != null and workshopList.size() > 0">
+            AND Workshop IN
+            <foreach collection="workshopList" item="ws" open="(" separator="," close=")">
+                #{ws}
+            </foreach>
+        </if>
+    </select>
+
 </mapper>

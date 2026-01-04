@@ -16,7 +16,7 @@ const exportToExcel = (data: any, year: number, month: number, day: number) => {
 
   try {
     const allHours = [...HOURLY_ENERGY_CONFIG.HOURS, ...HOURLY_ENERGY_CONFIG.NEXT_DAY_HOURS];
-    
+
     // XML特殊字符转义
     const escapeXml = (str: string) => {
       return str
@@ -26,14 +26,14 @@ const exportToExcel = (data: any, year: number, month: number, day: number) => {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&apos;');
     };
-    
+
     // 生成Excel XML格式
     const generateExcelXML = () => {
       let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
       xml += '<?mso-application progid="Excel.Sheet"?>\n';
       xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n';
       xml += '  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
-      
+
       // 样式定义
       xml += '<Styles>\n';
       xml += '<Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Center"/></Style>\n';
@@ -43,25 +43,26 @@ const exportToExcel = (data: any, year: number, month: number, day: number) => {
       xml += '<Style ss:ID="Data"><Font ss:Size="10"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0.00"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/></Borders></Style>\n';
       xml += '<Style ss:ID="Total"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF"/><Interior ss:Color="#ED7D31" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0.00"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>\n';
       xml += '</Styles>\n';
-      
+
       // 工作表
       xml += '<Worksheet ss:Name="日能耗统计">\n';
-      
+
       // 列宽设置
       xml += '<Table>\n';
       xml += '<Column ss:Width="120"/>\n'; // 车间列
       for (let i = 0; i < allHours.length; i++) {
         xml += '<Column ss:Width="75"/>\n'; // 小时列
       }
-      
+      xml += '<Column ss:Width="100"/>\n'; // 日合计列
+
       // 标题行
       xml += '<Row ss:Height="30">\n';
-      xml += `<Cell ss:StyleID="Title" ss:MergeAcross="${allHours.length}"><Data ss:Type="String">${year}年${month}月${day}日 日能耗统计表</Data></Cell>\n`;
+      xml += `<Cell ss:StyleID="Title" ss:MergeAcross="${allHours.length + 1}"><Data ss:Type="String">${year}年${month}月${day}日 日能耗统计表</Data></Cell>\n`;
       xml += '</Row>\n';
-      
+
       // 空行
       xml += '<Row ss:Height="15"></Row>\n';
-      
+
       // 表头行
       xml += '<Row ss:Height="25">\n';
       xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">车间</Data></Cell>\n';
@@ -71,12 +72,14 @@ const exportToExcel = (data: any, year: number, month: number, day: number) => {
       HOURLY_ENERGY_CONFIG.NEXT_DAY_HOURS.forEach((hour: string) => {
         xml += `<Cell ss:StyleID="Header"><Data ss:Type="String">${hour}(次日)</Data></Cell>\n`;
       });
+      xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">日合计(kWh)</Data></Cell>\n';
       xml += '</Row>\n';
-      
+
       // 数据行
       data.workshopList.forEach((workshop: string) => {
         const hourlyData = data.workshopHourlyData[workshop] || [];
-        
+        const dailyTotal = hourlyData.reduce((sum: number, val: number) => sum + val, 0);
+
         xml += '<Row ss:Height="22">\n';
         xml += `<Cell ss:StyleID="Workshop"><Data ss:Type="String">${escapeXml(workshop)}</Data></Cell>\n`;
         hourlyData.forEach((value: number) => {
@@ -86,10 +89,12 @@ const exportToExcel = (data: any, year: number, month: number, day: number) => {
             xml += `<Cell ss:StyleID="Data"><Data ss:Type="Number">${value.toFixed(2)}</Data></Cell>\n`;
           }
         });
+        xml += `<Cell ss:StyleID="Data"><Data ss:Type="Number">${dailyTotal.toFixed(2)}</Data></Cell>\n`;
         xml += '</Row>\n';
       });
-      
+
       // 合计行
+      const grandTotal = data.hourlyTotal.reduce((sum: number, val: number) => sum + val, 0);
       xml += '<Row ss:Height="25">\n';
       xml += '<Cell ss:StyleID="Total"><Data ss:Type="String">合计</Data></Cell>\n';
       data.hourlyTotal.forEach((value: number) => {
@@ -99,17 +104,18 @@ const exportToExcel = (data: any, year: number, month: number, day: number) => {
           xml += `<Cell ss:StyleID="Total"><Data ss:Type="Number">${value.toFixed(2)}</Data></Cell>\n`;
         }
       });
+      xml += `<Cell ss:StyleID="Total"><Data ss:Type="Number">${grandTotal.toFixed(2)}</Data></Cell>\n`;
       xml += '</Row>\n';
-      
+
       xml += '</Table>\n';
       xml += '</Worksheet>\n';
       xml += '</Workbook>';
-      
+
       return xml;
     };
-    
+
     const xmlContent = generateExcelXML();
-    
+
     // 创建下载
     const blob = new Blob([xmlContent], { type: 'application/vnd.ms-excel' });
     const url = URL.createObjectURL(blob);
@@ -281,12 +287,12 @@ const HourlyEnergyPage: React.FC = () => {
           <button className="query-button" onClick={loadData} disabled={loading}>
             {loading ? '查询中...' : '查询'}
           </button>
-          <button 
-            className="export-button" 
-            onClick={() => exportToExcel(data, year, month, day)} 
+          <button
+            className="export-button"
+            onClick={() => exportToExcel(data, year, month, day)}
             disabled={loading || !data}
           >
-            📥 导出Excel
+             导出Excel
           </button>
         </div>
 
@@ -321,11 +327,14 @@ const HourlyEnergyPage: React.FC = () => {
                         <small className="next-day-mark">次日</small>
                       </th>
                     ))}
+                    <th className="daily-total-header">日合计(kWh)</th>
                   </tr>
                 </thead>
                 <tbody ref={tbodyRef}>
                   {data.workshopList.map((workshop: string) => {
                     const hourlyData = data.workshopHourlyData[workshop] || [];
+                    // 计算该车间的日合计
+                    const dailyTotal = hourlyData.reduce((sum: number, val: number) => sum + val, 0);
                     return (
                       <tr key={workshop}>
                         <td className="info-cell">{workshop}</td>
@@ -341,6 +350,7 @@ const HourlyEnergyPage: React.FC = () => {
                             }
                           </td>
                         ))}
+                        <td className="daily-total-cell">{dailyTotal.toFixed(1)}</td>
                       </tr>
                     );
                   })}
@@ -357,6 +367,9 @@ const HourlyEnergyPage: React.FC = () => {
                         }
                       </td>
                     ))}
+                    <td className="daily-total-cell">
+                      {data.hourlyTotal.reduce((sum: number, val: number) => sum + val, 0).toFixed(1)}
+                    </td>
                   </tr>
                 </tfoot>
               </table>

@@ -339,7 +339,7 @@ html.hourly-energy-page,
   outline: none;
   font-size: 15px;
   letter-spacing: 1px;
-  margin-left: 10px;
+  margin-left: auto;
 }
 
 .hourly-energy-container .export-button:hover {
@@ -357,4 +357,34 @@ html.hourly-energy-page,
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+}
+
+/* 日合计列表头样式 */
+.hourly-energy-container .data-table thead th.daily-total-header {
+  background: rgba(255, 152, 0, 0.9) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  min-width: 100px;
+  border: 1px solid rgba(255, 152, 0, 0.8) !important;
+  text-shadow: 0 0 10px rgba(255, 152, 0, 0.8);
+}
+
+/* 日合计列数据单元格样式 */
+.hourly-energy-container .daily-total-cell {
+  background: rgba(255, 152, 0, 0.15) !important;
+  color: #ffb74d !important;
+  font-weight: 700 !important;
+  min-width: 100px;
+  border: 1px solid rgba(0, 212, 255, 0.25) !important;
+  text-shadow: 0 0 8px rgba(255, 152, 0, 0.6);
+}
+
+/* 合计行的日合计单元格 */
+.hourly-energy-container .total-row .daily-total-cell {
+  background: rgba(255, 87, 34, 0.3) !important;
+  color: #ff8a65 !important;
+  font-weight: 700 !important;
+  border: 1px solid rgba(0, 212, 255, 0.25) !important;
+  text-shadow: 0 0 10px rgba(255, 87, 34, 0.8),
+               0 0 20px rgba(255, 87, 34, 0.4) !important;
 }

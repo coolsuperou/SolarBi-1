@@ -28,4 +28,11 @@ public interface HourlyEnergyMapper {
     List<TempMonitor> selectAllWorkshopsHourlyData(@Param("workshopList") List<String> workshopList,
                                                     @Param("startTime") Date startTime,
                                                     @Param("endTime") Date endTime);
+
+    /**
+     * 🔥 批量查询多个车间的电能表设备（返回车间+设备名称）
+     * @param workshopList 车间名称列表
+     * @return 电能表设备列表（包含Workshop和Name字段）
+     */
+    List<TempMonitor> getElectricMetersByWorkshops(@Param("workshopList") List<String> workshopList);
 }

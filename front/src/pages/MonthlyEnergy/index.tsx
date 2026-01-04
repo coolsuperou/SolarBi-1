@@ -301,11 +301,13 @@ const MonthlyEnergyPage: React.FC = () => {
                     {Array.from({ length: data.daysInMonth }, (_, i) => i + 1).map((day) => (
                       <th key={day}>{day.toString().padStart(2, '0')}日</th>
                     ))}
+                    <th className="monthly-total-header">月度合计(kWh)</th>
                   </tr>
                 </thead>
                 <tbody ref={tbodyRef}>
                   {data.workshopList.map((workshop: string) => {
                     const dailyData = data.workshopDailyData[workshop] || [];
+                    const monthlyTotal = data.workshopMonthlyTotal[workshop] || 0;
                     return (
                       <tr key={workshop}>
                         <td className="info-cell">{workshop}</td>
@@ -321,6 +323,7 @@ const MonthlyEnergyPage: React.FC = () => {
                             }
                           </td>
                         ))}
+                        <td className="monthly-total-cell">{monthlyTotal.toFixed(1)}</td>
                       </tr>
                     );
                   })}
@@ -337,6 +340,7 @@ const MonthlyEnergyPage: React.FC = () => {
                         }
                       </td>
                     ))}
+                    <td className="monthly-total-cell">{data.monthlyTotal.toFixed(1)}</td>
                   </tr>
                 </tfoot>
               </table>

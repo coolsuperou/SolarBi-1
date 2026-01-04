@@ -360,3 +360,33 @@ html.monthly-energy-page,
 .monthly-energy-container .table-wrapper::-webkit-scrollbar-corner {
   background: transparent !important;
 }
+
+/* 月度合计列表头样式 */
+.monthly-energy-container .data-table thead th.monthly-total-header {
+  background: rgba(255, 152, 0, 0.9) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  min-width: 120px;
+  border: 1px solid rgba(0, 212, 255, 0.4) !important;
+  text-shadow: 0 0 10px rgba(255, 152, 0, 0.8);
+}
+
+/* 月度合计列数据单元格样式 */
+.monthly-energy-container .monthly-total-cell {
+  background: rgba(255, 152, 0, 0.15) !important;
+  color: #ffb74d !important;
+  font-weight: 700 !important;
+  min-width: 120px;
+  border: 1px solid rgba(0, 212, 255, 0.25) !important;
+  text-shadow: 0 0 8px rgba(255, 152, 0, 0.6);
+}
+
+/* 合计行的月度合计单元格 */
+.monthly-energy-container .total-row .monthly-total-cell {
+  background: rgba(255, 87, 34, 0.3) !important;
+  color: #ff8a65 !important;
+  font-weight: 700 !important;
+  border: 1px solid rgba(0, 212, 255, 0.25) !important;
+  text-shadow: 0 0 10px rgba(255, 87, 34, 0.8),
+               0 0 20px rgba(255, 87, 34, 0.4) !important;
+}

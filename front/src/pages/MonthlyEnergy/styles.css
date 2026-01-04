@@ -1,6 +1,6 @@
 /* 月度能耗统计表样式 - 完全复刻HTML版本 */
 
-/* 🔥 强制覆盖所有全局样式 */
+/*  强制覆盖所有全局样式 */
 
 /* 覆盖body/html/root */
 body.monthly-energy-page,
@@ -141,6 +141,43 @@ html.monthly-energy-page,
   transform: none;
 }
 
+/* 导出按钮 */
+.monthly-energy-container .export-button {
+  background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
+  border: 2px solid #00e676;
+  border-radius: 8px;
+  color: #0a1929;
+  font-weight: bold;
+  padding: 10px 24px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0, 230, 118, 0.6);
+  text-shadow: none;
+  transition: all 0.3s ease;
+  outline: none;
+  font-size: 15px;
+  letter-spacing: 1px;
+  margin-left: auto;
+}
+
+.monthly-energy-container .export-button:hover {
+  background: linear-gradient(135deg, #00e676 0%, #69f0ae 100%);
+  box-shadow: 0 0 30px rgba(0, 230, 118, 0.9);
+  transform: translateY(-1px);
+}
+
+.monthly-energy-container .export-button:active {
+  transform: translateY(0);
+}
+
+.monthly-energy-container .export-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  background: #666;
+  border-color: #666;
+  box-shadow: none;
+}
+
 /* 表格容器 */
 .monthly-energy-container .table-container {
   background: rgba(10, 25, 41, 0.6);
@@ -159,7 +196,7 @@ html.monthly-energy-page,
   overflow-x: auto;
   overflow-y: hidden;  /* 禁用垂直滚动 */
   position: relative;
-  height: 100%; /* 🔥 铺满容器 */
+  height: 100%; /*  铺满容器 */
   scrollbar-width: thin; /* Firefox 滚动条宽度 */
   scrollbar-color: #00d4ff rgba(10, 25, 41, 0.3); /* Firefox 滚动条颜色 */
 }
@@ -295,7 +332,7 @@ html.monthly-energy-page,
   background: rgba(0, 212, 255, 0.05);
 }
 
-/* 🔥 滚动条样式 - 只显示底部横向滚动条 */
+/*  滚动条样式 - 只显示底部横向滚动条 */
 .monthly-energy-container .table-wrapper::-webkit-scrollbar {
   width: 0 !important;  /* 禁用垂直滚动条 */
   height: 14px !important;  /* 保留横向滚动条 */

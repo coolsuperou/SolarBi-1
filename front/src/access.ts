@@ -53,5 +53,6 @@ export default function access(initialState: { currentUser?: API.LoginUserVO; pa
     canAccessGuardRoom: pagePermissions['guard-room'] === true,
     canAccessCanteen: pagePermissions['canteen'] === true,
     canAccessDormitory: pagePermissions['dormitory'] === true,
+    canAccessPresslessSintering: pagePermissions['pressless-sintering'] === true,
   };
 }

@@ -1,6 +1,6 @@
 /* 日能耗统计表样式 - 完全复刻HTML版本 */
 
-/* 🔥 强制覆盖所有全局样式 */
+/*  强制覆盖所有全局样式 */
 
 /* 覆盖body/html/root */
 body.hourly-energy-page,
@@ -295,7 +295,7 @@ html.hourly-energy-page,
   background: rgba(0, 212, 255, 0.05);
 }
 
-/* 🔥 滚动条样式 - 只显示底部横向滚动条 */
+/*  滚动条样式 - 只显示底部横向滚动条 */
 .hourly-energy-container .table-wrapper::-webkit-scrollbar {
   width: 0 !important;  /* 禁用垂直滚动条 */
   height: 14px !important;  /* 保留横向滚动条 */
@@ -322,4 +322,39 @@ html.hourly-energy-page,
 
 .hourly-energy-container .table-wrapper::-webkit-scrollbar-corner {
   background: transparent !important;
+}
+
+/* 导出按钮 */
+.hourly-energy-container .export-button {
+  background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
+  border: 2px solid #00e676;
+  border-radius: 8px;
+  color: #0a1929;
+  font-weight: bold;
+  padding: 10px 20px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0, 230, 118, 0.6);
+  text-shadow: none;
+  transition: all 0.3s ease;
+  outline: none;
+  font-size: 15px;
+  letter-spacing: 1px;
+  margin-left: 10px;
+}
+
+.hourly-energy-container .export-button:hover {
+  background: linear-gradient(135deg, #00e676 0%, #69f0ae 100%);
+  box-shadow: 0 0 30px rgba(0, 230, 118, 0.9);
+  transform: translateY(-1px);
+}
+
+.hourly-energy-container .export-button:active {
+  transform: translateY(0);
+}
+
+.hourly-energy-container .export-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }

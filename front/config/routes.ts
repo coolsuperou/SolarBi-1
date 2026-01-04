@@ -85,6 +85,13 @@ export default [
     icon: 'fire', //
     access: 'canAccessSintering105',
   },
+    {
+    path: '/pressless-sintering',
+    name: '无压烧结',
+    icon: 'FormatPainterOutlined',  // 可选择其他图标
+    component: './PresslessSintering',
+    access: 'canAccessPresslessSintering',
+  },
   {
     path: '/cleaning-106',
     name: '106清洗',
@@ -211,6 +218,7 @@ export default [
     component: './Dormitory',
     access: 'canAccessDormitory',
   },
+
   {
     path: '/admin',
     icon: 'crown',

@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Space, Typography, Button, message } from 'antd';
 import { EyeOutlined, SearchOutlined, ReloadOutlined, UpOutlined, DownOutlined, ClockCircleOutlined, CalendarOutlined, BarChartOutlined } from '@ant-design/icons';
 import moment from 'moment'; // Added import for moment
-import { TIME_FORMATS } from '../config/timeFormats'; // 🔥 引入时间格式配置
+import { TIME_FORMATS } from '../config/timeFormats'; //  引入时间格式配置
 
 type DarkThemeStyles = {
   pageContainer: React.CSSProperties;

@@ -21,7 +21,7 @@ import DailyPowerChart from './components/DailyPowerChart';
 
 import darkThemeStyles from '@/styles/darkTheme';
 import {pageBackgroundStyles, pageStylesCSS} from '@/styles/pageStyles';
-import { TIME_FORMATS } from './config/timeFormats'; // 🔥 引入时间格式配置
+import { TIME_FORMATS } from './config/timeFormats'; //  引入时间格式配置
 
 
 // 固定目标车间
@@ -110,7 +110,7 @@ const ToolRDCenterPage: React.FC = () => {
     // 核心: 更新searchParams状态，让表单显示默认值
     setSearchParams({ startTime, endTime });
 
-    // 🔥 重置表格搜索参数为空，让表格使用默认时间范围
+    //  重置表格搜索参数为空，让表格使用默认时间范围
     setTempSearchParams({});
 
     // 重置其他相关状态
@@ -119,7 +119,7 @@ const ToolRDCenterPage: React.FC = () => {
     setIsDefaultTimeRange(true);
     loadStatistics(undefined, startTime, endTime);
 
-    // 🔥 刷新表格数据（稍微延迟确保状态更新完成）
+    //  刷新表格数据（稍微延迟确保状态更新完成）
     setTimeout(() => {
       actionRef.current?.reload();
     }, 100);
@@ -258,7 +258,7 @@ const ToolRDCenterPage: React.FC = () => {
   };
   // 处理搜索
   const handleSearch = (values: any) => {
-    // 🔥 分离显示参数和查询参数
+    //  分离显示参数和查询参数
 
     // 显示参数：保持用户的原始选择（选择框显示用）
     const displayParams: API.TempMonitorQueryRequest = {
@@ -308,7 +308,7 @@ const ToolRDCenterPage: React.FC = () => {
       }
     }
 
-    // 🔥 关键修复：显示参数用于选择框显示（保持用户选择）
+    //  关键修复：显示参数用于选择框显示（保持用户选择）
     setSearchParams(displayParams);
     setSelectedWorkshop(values.workshop || '');
 
@@ -358,7 +358,7 @@ const ToolRDCenterPage: React.FC = () => {
     setCurrentMode(mode); // 触发useEffect
     message.success(`已切换到${mode === 'hour' ? '小时' : '日'}模式`);
 
-    // 🔥 模式切换时也刷新表格，使用新模式的默认时间范围
+    //  模式切换时也刷新表格，使用新模式的默认时间范围
     setTimeout(() => {
       actionRef.current?.reload();
     }, 100); // 稍微延迟确保currentMode状态已更新
@@ -373,7 +373,7 @@ const ToolRDCenterPage: React.FC = () => {
         pageSize: params.pageSize,
       };
 
-      // 🔥 关键修改：确保表格查询总是有明确的时间范围（与图表逻辑完全一致）
+      //  关键修改：确保表格查询总是有明确的时间范围（与图表逻辑完全一致）
       if (!requestParams.startTime || !requestParams.endTime) {
         // 没有搜索时间范围，使用默认时间范围（与loadDefaults函数一致）
         const now = moment();
@@ -395,7 +395,7 @@ const ToolRDCenterPage: React.FC = () => {
         });
       } else {
         // 有搜索时间范围，直接使用已格式化的时间（遵循TIME_FORMATS配置）
-        // 🔥 不再重新格式化，保持TIME_FORMATS配置的完整性
+        //  不再重新格式化，保持TIME_FORMATS配置的完整性
 
         console.log('🔍 表格查询使用搜索时间范围:', {
           startTime: requestParams.startTime,
@@ -447,8 +447,8 @@ const ToolRDCenterPage: React.FC = () => {
       const requestParams: any = {
         workshop: targetWorkshop,
         deviceId: undefined,
-        startTime: rawStartTime,  // 🔥 直接使用已格式化的时间（遵循TIME_FORMATS配置）
-        endTime: rawEndTime,      // 🔥 直接使用已格式化的时间（遵循TIME_FORMATS配置）
+        startTime: rawStartTime,  //  直接使用已格式化的时间（遵循TIME_FORMATS配置）
+        endTime: rawEndTime,      //  直接使用已格式化的时间（遵循TIME_FORMATS配置）
       };
 
       console.log('请求每日电能消耗数据参数:', requestParams);
@@ -852,8 +852,8 @@ const ToolRDCenterPage: React.FC = () => {
       const requestParams: any = {
         workshop: targetWorkshop,
         deviceId: undefined,
-        startTime: rawStartTime,  // 🔥 直接使用已格式化的时间（遵循TIME_FORMATS配置）
-        endTime: rawEndTime,      // 🔥 直接使用已格式化的时间（遵循TIME_FORMATS配置）
+        startTime: rawStartTime,  //  直接使用已格式化的时间（遵循TIME_FORMATS配置）
+        endTime: rawEndTime,      //  直接使用已格式化的时间（遵循TIME_FORMATS配置）
       };
 
       console.log('请求每小时电能消耗数据参数:', requestParams);

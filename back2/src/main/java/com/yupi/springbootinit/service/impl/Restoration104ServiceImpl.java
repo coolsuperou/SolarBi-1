@@ -1,6 +1,7 @@
 package com.yupi.springbootinit.service.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yupi.springbootinit.mapper.sqlserver.PresslessSinteringMapper;
 import com.yupi.springbootinit.mapper.sqlserver.Restoration104Mapper;
 import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
@@ -20,6 +21,7 @@ import java.util.List;
 /**
  * 104还原车间温湿电能监控数据服务实现
  * 使用SQL Server数据源 + MyBatis
+ * 注意：104还原的电能数据需要扣除无压烧结的部分
  * 
  * @author yupi
  */
@@ -29,6 +31,9 @@ public class Restoration104ServiceImpl implements Restoration104Service {
 
     @Autowired
     private Restoration104Mapper restoration104Mapper;
+
+    @Autowired
+    private PresslessSinteringMapper presslessSinteringMapper;
 
 
 
@@ -64,7 +69,7 @@ public class Restoration104ServiceImpl implements Restoration104Service {
 
 
     /**
-     * 总电能查询
+     * 总电能查询（扣除无压烧结）
      * @param workshop
      * @param startTime
      * @param endTime
@@ -83,6 +88,16 @@ public class Restoration104ServiceImpl implements Restoration104Service {
             statistics.setTotalElectricEnergy(0.0);
         }
 
+        // 🔥 扣除无压烧结的总电能
+        TempMonitorStatistics presslessStats = presslessSinteringMapper.getStatistics("无压烧结", startTime, endTime);
+        if (presslessStats != null && presslessStats.getTotalElectricEnergy() != null) {
+            double originalEnergy = statistics.getTotalElectricEnergy() != null ? statistics.getTotalElectricEnergy() : 0.0;
+            double presslessEnergy = presslessStats.getTotalElectricEnergy();
+            double adjustedEnergy = Math.max(0, originalEnergy - presslessEnergy);
+            statistics.setTotalElectricEnergy(adjustedEnergy);
+            log.info("总电能扣除无压烧结: 原始={}, 无压烧结={}, 调整后={}", originalEnergy, presslessEnergy, adjustedEnergy);
+        }
+
         // 为保持API完整性，设置其他字段的默认值（统计卡片不需要，但保持兼容性）
         if (statistics.getAvgTemperature() == null) statistics.setAvgTemperature(0.0);
         if (statistics.getMinTemperature() == null) statistics.setMinTemperature(0.0);
@@ -98,8 +113,7 @@ public class Restoration104ServiceImpl implements Restoration104Service {
 
 
     /**
-     *
-     * 小时查询
+     * 小时查询（扣除无压烧结）
      * @param workshop
      * @param deviceId
      * @param startTime
@@ -125,9 +139,34 @@ public class Restoration104ServiceImpl implements Restoration104Service {
                 rawData, startTime, endTime, fixedWorkshop
         );
 
+        // 🔥 扣除无压烧结的小时能耗
+        List<TempMonitor> presslessRawData = presslessSinteringMapper.selectHourlyRawData("无压烧结", startTime, endTime);
+        List<HourlyEnergyConsumption> presslessResult = EnergyCalculationUtils.calculateHourlyEnergyFromRawData(
+                presslessRawData, startTime, endTime, "无压烧结"
+        );
+        
+        // 按小时扣除无压烧结的能耗
+        if (presslessResult != null && !presslessResult.isEmpty()) {
+            for (HourlyEnergyConsumption item : result) {
+                for (HourlyEnergyConsumption presslessItem : presslessResult) {
+                    // 匹配相同小时的数据
+                    if (item.getHour() != null && item.getHour().equals(presslessItem.getHour())) {
+                        Double originalConsumption = item.getEnergyConsumption() != null ? item.getEnergyConsumption() : 0.0;
+                        Double presslessConsumption = presslessItem.getEnergyConsumption() != null ? presslessItem.getEnergyConsumption() : 0.0;
+                        Double adjustedConsumption = Math.max(0, originalConsumption - presslessConsumption);
+                        item.setEnergyConsumption(adjustedConsumption);
+                        log.debug("小时 {} 扣除无压烧结: 原始={}, 无压烧结={}, 调整后={}", 
+                                item.getHour(), originalConsumption, presslessConsumption, adjustedConsumption);
+                        break;
+                    }
+                }
+            }
+            log.info("已扣除无压烧结的小时能耗数据，无压烧结数据点数: {}", presslessResult.size());
+        }
+
         // 保持原有调试日志
         if (result != null && !result.isEmpty()) {
-            log.info("=== 每小时电能消耗数据调试信息（优化版本-104还原） ===");
+            log.info("=== 每小时电能消耗数据调试信息（优化版本-104还原，已扣除无压烧结） ===");
             log.info("计算结果总数: {}", result.size());
             for (HourlyEnergyConsumption item : result) {
                 log.info("设备: {}, 小时: {}, 开始能耗: {}, 结束能耗: {}, 消耗量: {}, 开始时间: {}, 结束时间: {}",
@@ -144,7 +183,7 @@ public class Restoration104ServiceImpl implements Restoration104Service {
 
 
     /**
-     * 日模式查询
+     * 日模式查询（扣除无压烧结）
      * @param workshop
      * @param deviceId
      * @param startTime
@@ -169,9 +208,34 @@ public class Restoration104ServiceImpl implements Restoration104Service {
                 rawData, startTime, endTime, fixedWorkshop
         );
 
+        // 🔥 扣除无压烧结的日能耗
+        List<TempMonitor> presslessRawData = presslessSinteringMapper.selectHourlyRawData("无压烧结", startTime, endTime);
+        List<DailyEnergyConsumption> presslessResult = EnergyCalculationUtils.calculateDailyEnergyFromRawData(
+                presslessRawData, startTime, endTime, "无压烧结"
+        );
+        
+        // 按日期扣除无压烧结的能耗
+        if (presslessResult != null && !presslessResult.isEmpty()) {
+            for (DailyEnergyConsumption item : result) {
+                for (DailyEnergyConsumption presslessItem : presslessResult) {
+                    // 匹配相同日期的数据
+                    if (item.getDay() != null && item.getDay().equals(presslessItem.getDay())) {
+                        Double originalConsumption = item.getEnergyConsumption() != null ? item.getEnergyConsumption() : 0.0;
+                        Double presslessConsumption = presslessItem.getEnergyConsumption() != null ? presslessItem.getEnergyConsumption() : 0.0;
+                        Double adjustedConsumption = Math.max(0, originalConsumption - presslessConsumption);
+                        item.setEnergyConsumption(adjustedConsumption);
+                        log.debug("日期 {} 扣除无压烧结: 原始={}, 无压烧结={}, 调整后={}", 
+                                item.getDay(), originalConsumption, presslessConsumption, adjustedConsumption);
+                        break;
+                    }
+                }
+            }
+            log.info("已扣除无压烧结的日能耗数据，无压烧结数据点数: {}", presslessResult.size());
+        }
+
         // 保持原有调试日志
         if (result != null && !result.isEmpty()) {
-            log.info("=== 每日电能消耗数据调试信息（优化版本-104还原） ===");
+            log.info("=== 每日电能消耗数据调试信息（优化版本-104还原，已扣除无压烧结） ===");
             for (DailyEnergyConsumption item : result) {
                 log.info("设备: {}, 日期: {}, 开始能耗: {}, 结束能耗: {}, 消耗量: {}, 开始时间: {}, 结束时间: {}",
                         item.getDeviceId(), item.getDay(), item.getStartEnergy(), item.getEndEnergy(),
@@ -185,7 +249,7 @@ public class Restoration104ServiceImpl implements Restoration104Service {
 
 
     /**
-     * 电能消耗卡片计算
+     * 电能消耗卡片计算（扣除无压烧结）
      * @param startTime
      * @param endTime
      * @param mode
@@ -204,8 +268,12 @@ public class Restoration104ServiceImpl implements Restoration104Service {
 
         log.info("从非分页查询获取原始数据记录数: {}", rawData.size());
 
+        // 🔥 获取无压烧结的原始数据
+        List<TempMonitor> presslessRawData = presslessSinteringMapper.selectHourlyRawData("无压烧结", startTime, endTime);
+
         // 🔥 根据模式计算总消耗
         Double totalConsumption = 0.0;
+        Double presslessConsumption = 0.0;
 
         if ("day".equals(mode)) {
             // 日模式：先计算日能耗，再求总和
@@ -218,7 +286,16 @@ public class Restoration104ServiceImpl implements Restoration104Service {
                     .mapToDouble(DailyEnergyConsumption::getEnergyConsumption)
                     .sum();
 
-            log.info("日模式计算: {}天数据，总消耗: {} kWh", dailyResults.size(), totalConsumption);
+            // 计算无压烧结的日能耗总和
+            List<DailyEnergyConsumption> presslessDailyResults = EnergyCalculationUtils.calculateDailyEnergyFromRawData(
+                    presslessRawData, startTime, endTime, "无压烧结"
+            );
+            presslessConsumption = presslessDailyResults.stream()
+                    .filter(item -> item.getEnergyConsumption() != null)
+                    .mapToDouble(DailyEnergyConsumption::getEnergyConsumption)
+                    .sum();
+
+            log.info("日模式计算: {}天数据，原始总消耗: {} kWh, 无压烧结: {} kWh", dailyResults.size(), totalConsumption, presslessConsumption);
 
         } else {
             // 小时模式：先计算小时能耗，再求总和
@@ -231,10 +308,21 @@ public class Restoration104ServiceImpl implements Restoration104Service {
                     .mapToDouble(HourlyEnergyConsumption::getEnergyConsumption)
                     .sum();
 
-            log.info("小时模式计算: {}小时数据，总消耗: {} kWh", hourlyResults.size(), totalConsumption);
+            // 计算无压烧结的小时能耗总和
+            List<HourlyEnergyConsumption> presslessHourlyResults = EnergyCalculationUtils.calculateHourlyEnergyFromRawData(
+                    presslessRawData, startTime, endTime, "无压烧结"
+            );
+            presslessConsumption = presslessHourlyResults.stream()
+                    .filter(item -> item.getEnergyConsumption() != null)
+                    .mapToDouble(HourlyEnergyConsumption::getEnergyConsumption)
+                    .sum();
+
+            log.info("小时模式计算: {}小时数据，原始总消耗: {} kWh, 无压烧结: {} kWh", hourlyResults.size(), totalConsumption, presslessConsumption);
         }
 
-        log.info("计算得到总电能消耗: {} kWh, 模式: {}", totalConsumption, mode);
-        return totalConsumption != null ? totalConsumption : 0.0;
+        // 🔥 扣除无压烧结的消耗
+        Double adjustedConsumption = Math.max(0, totalConsumption - presslessConsumption);
+        log.info("计算得到总电能消耗: {} kWh (已扣除无压烧结 {} kWh), 模式: {}", adjustedConsumption, presslessConsumption, mode);
+        return adjustedConsumption;
     }
 }

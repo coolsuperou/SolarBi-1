@@ -43,9 +43,9 @@ const exportToExcel = (data: any, year: number, month: number) => {
 
       // 列宽设置
       xml += '<Table>\n';
-      xml += '<Column ss:Width="120"/>\n'; // 车间列
+      xml += '<Column ss:Width="90"/>\n'; // 车间列
       for (let i = 0; i < data.daysInMonth; i++) {
-        xml += '<Column ss:Width="55"/>\n'; // 日期列
+        xml += '<Column ss:Width="45"/>\n'; // 日期列
       }
       xml += '<Column ss:Width="100"/>\n'; // 月度合计列
 
@@ -234,7 +234,7 @@ const MonthlyEnergyPage: React.FC = () => {
   };
 
   return (
-    <>
+    <div className="monthly-energy-page">
       <div className="monthly-energy-container">
         {/* 查询区域 */}
         <div className="query-section">
@@ -348,7 +348,7 @@ const MonthlyEnergyPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

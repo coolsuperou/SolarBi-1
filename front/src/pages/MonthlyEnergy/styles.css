@@ -12,18 +12,18 @@ html.monthly-energy-page,
 }
 
 /* 覆盖Ant Design Pro所有容器 */
-.ant-pro-layout,
-.ant-pro-layout-content,
-.ant-pro-page-container,
-.ant-pro-page-container-children-content {
+.monthly-energy-page .ant-pro-layout,
+.monthly-energy-page .ant-pro-layout-content,
+.monthly-energy-page .ant-pro-page-container,
+.monthly-energy-page .ant-pro-page-container-children-content {
   padding: 0 !important;
   margin: 0 !important;
   background: transparent !important;
 }
 
 /* 隐藏页头 */
-.ant-pro-page-header,
-.ant-pro-page-header-wrap {
+.monthly-energy-page .ant-pro-page-header,
+.monthly-energy-page .ant-pro-page-header-wrap {
   display: none !important;
 }
 
@@ -194,7 +194,7 @@ html.monthly-energy-page,
 
 .monthly-energy-container .table-wrapper {
   overflow-x: auto;
-  overflow-y: hidden;  /* 禁用垂直滚动 */
+  overflow-y: auto;  /* 启用垂直滚动 */
   position: relative;
   height: 100%; /*  铺满容器 */
   scrollbar-width: thin; /* Firefox 滚动条宽度 */
@@ -206,7 +206,7 @@ html.monthly-energy-page,
   height: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  min-width: 1400px;
+  min-width: 2900px;  /* 车间120px + 31天*85px + 月度合计120px ≈ 2900px */
 }
 
 .monthly-energy-container .data-table th,
@@ -332,9 +332,9 @@ html.monthly-energy-page,
   background: rgba(0, 212, 255, 0.05);
 }
 
-/*  滚动条样式 - 只显示底部横向滚动条 */
+/*  滚动条样式 - 显示横向和垂直滚动条 */
 .monthly-energy-container .table-wrapper::-webkit-scrollbar {
-  width: 0 !important;  /* 禁用垂直滚动条 */
+  width: 14px !important;  /* 启用垂直滚动条 */
   height: 14px !important;  /* 保留横向滚动条 */
 }
 

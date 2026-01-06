@@ -49,7 +49,7 @@ const exportToExcel = (data: any, year: number, month: number, day: number) => {
 
       // 列宽设置
       xml += '<Table>\n';
-      xml += '<Column ss:Width="120"/>\n'; // 车间列
+      xml += '<Column ss:Width="90"/>\n'; // 车间列
       for (let i = 0; i < allHours.length; i++) {
         xml += '<Column ss:Width="75"/>\n'; // 小时列
       }
@@ -146,7 +146,7 @@ const HourlyEnergyPage: React.FC = () => {
   const [day, setDay] = useState(currentDate.getDate());
   const [data, setData] = useState<any>(null);
 
-  // 📊 动态计算表格容器高度
+  //  动态计算表格容器高度
   const ROW_HEIGHT_FALLBACK = 35; // 预估行高（px）
   const HEADER_HEIGHT = 42; // 表头高度（px）
   const FOOTER_HEIGHT = 50; // 合计行高度（px）
@@ -171,7 +171,7 @@ const HourlyEnergyPage: React.FC = () => {
     };
   }, []);
 
-  // 📏 测量真实行高，确保容器高度完全精确
+  //  测量真实行高，确保容器高度完全精确
   useLayoutEffect(() => {
     if (!data || !data.workshopList) {
       setContainerHeight(`${HEADER_HEIGHT + 2 * ROW_HEIGHT_FALLBACK + FOOTER_HEIGHT + PADDING}px`);
@@ -182,7 +182,7 @@ const HourlyEnergyPage: React.FC = () => {
     requestAnimationFrame(() => {
       const firstRow = tbodyRef.current?.querySelector('tr') as HTMLElement | null;
       const realRowHeight = firstRow?.getBoundingClientRect().height || ROW_HEIGHT_FALLBACK;
-      // 🎯 精确计算：表头 + 数据行 + 合计行，滚动条不占用容器高度
+      //  精确计算：表头 + 数据行 + 合计行，滚动条不占用容器高度
       const total = HEADER_HEIGHT + data.workshopList.length * realRowHeight + FOOTER_HEIGHT + PADDING;
       setContainerHeight(`${Math.round(total)}px`);
     });

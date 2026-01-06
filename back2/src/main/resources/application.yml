@@ -13,8 +13,8 @@ spring:
       matching-strategy: ant_path_matcher
   # session 配置
   session:
-    # todo 取消注释开启分布式 session（须先配置 Redis）
-    # store-type: redis
+    # 禁用 Redis Session，使用本地 Session
+    store-type: none
     # 30 天过期
     timeout: 2592000
   # 多数据源配置 - 参考CSDN博客标准实现

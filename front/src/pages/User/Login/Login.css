@@ -384,3 +384,22 @@
   }
 }
 
+
+/* 登录页面隐藏滚动条 */
+.login-background-container,
+.login-main-container,
+html:has(.login-background-container),
+body:has(.login-background-container) {
+  overflow: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.login-background-container::-webkit-scrollbar,
+.login-main-container::-webkit-scrollbar,
+html:has(.login-background-container)::-webkit-scrollbar,
+body:has(.login-background-container)::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}

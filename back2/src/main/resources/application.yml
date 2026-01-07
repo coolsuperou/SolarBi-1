@@ -23,7 +23,7 @@ spring:
     # MySQL 主数据源配置
     primary:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: jdbc:mysql://47.105.82.96:3306/solarbi?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+      jdbc-url: jdbc:mysql://10.2.0.9:3306/dnpt?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
       username: ozh
       password: 123456
       hikari:

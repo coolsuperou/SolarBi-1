@@ -778,19 +778,9 @@ body::after {
   -ms-overflow-style: none !important;
 }
 
-/* 终极解决方案 - 只隐藏侧边栏滚动条，保留页面内容滚动条 */
+/* 终极解决方案 - 侧边栏滚动条悬停显示 */
 
-/* 侧边栏滚动条隐藏 */
-.ant-layout-sider::-webkit-scrollbar,
-.ant-pro-sider::-webkit-scrollbar,
-.ant-pro-sider-menu::-webkit-scrollbar,
-[class*="sider"]::-webkit-scrollbar,
-[class*="Sider"]::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
-
+/* 侧边栏默认隐藏滚动条 */
 .ant-layout-sider,
 .ant-pro-sider,
 .ant-pro-sider-menu,
@@ -798,9 +788,63 @@ body::after {
 [class*="Sider"] {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
+  overflow-y: auto !important;
 }
 
-/* 页面内容区域滚动条样式 - 科技风格 */
+.ant-layout-sider::-webkit-scrollbar,
+.ant-pro-sider::-webkit-scrollbar,
+.ant-pro-sider-menu::-webkit-scrollbar,
+[class*="sider"]::-webkit-scrollbar,
+[class*="Sider"]::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.ant-layout-sider::-webkit-scrollbar-track,
+.ant-pro-sider::-webkit-scrollbar-track,
+.ant-pro-sider-menu::-webkit-scrollbar-track,
+[class*="sider"]::-webkit-scrollbar-track,
+[class*="Sider"]::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.ant-layout-sider::-webkit-scrollbar-thumb,
+.ant-pro-sider::-webkit-scrollbar-thumb,
+.ant-pro-sider-menu::-webkit-scrollbar-thumb,
+[class*="sider"]::-webkit-scrollbar-thumb,
+[class*="Sider"]::-webkit-scrollbar-thumb {
+  background: transparent !important;
+  border-radius: 4px !important;
+  transition: background 0.3s ease !important;
+}
+
+/* 侧边栏悬停时显示滚动条 */
+.ant-layout-sider:hover::-webkit-scrollbar-thumb,
+.ant-pro-sider:hover::-webkit-scrollbar-thumb,
+.ant-pro-sider-menu:hover::-webkit-scrollbar-thumb,
+[class*="sider"]:hover::-webkit-scrollbar-thumb,
+[class*="Sider"]:hover::-webkit-scrollbar-thumb {
+  background: #00d4ff !important;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.6) !important;
+}
+
+.ant-layout-sider:hover::-webkit-scrollbar-track,
+.ant-pro-sider:hover::-webkit-scrollbar-track,
+.ant-pro-sider-menu:hover::-webkit-scrollbar-track,
+[class*="sider"]:hover::-webkit-scrollbar-track,
+[class*="Sider"]:hover::-webkit-scrollbar-track {
+  background: rgba(10, 25, 41, 0.5) !important;
+}
+
+/* 页面内容区域滚动条样式 - 悬停显示 */
+.ant-pro-layout-content,
+.ant-layout-content,
+html,
+body {
+  scrollbar-width: thin !important;
+  scrollbar-color: transparent transparent !important;
+}
+
 .ant-pro-layout-content::-webkit-scrollbar,
 .ant-layout-content::-webkit-scrollbar,
 html::-webkit-scrollbar,
@@ -814,7 +858,7 @@ body::-webkit-scrollbar {
 .ant-layout-content::-webkit-scrollbar-track,
 html::-webkit-scrollbar-track,
 body::-webkit-scrollbar-track {
-  background: rgba(10, 25, 41, 0.8) !important;
+  background: transparent !important;
   border-radius: 6px !important;
 }
 
@@ -822,10 +866,26 @@ body::-webkit-scrollbar-track {
 .ant-layout-content::-webkit-scrollbar-thumb,
 html::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-thumb {
-  background: #00d4ff !important;
+  background: transparent !important;
   border-radius: 6px !important;
+  transition: background 0.3s ease !important;
+}
+
+/* 悬停时显示滚动条 */
+.ant-pro-layout-content:hover::-webkit-scrollbar-thumb,
+.ant-layout-content:hover::-webkit-scrollbar-thumb,
+html:hover::-webkit-scrollbar-thumb,
+body:hover::-webkit-scrollbar-thumb {
+  background: #00d4ff !important;
   box-shadow: 0 0 15px rgba(0, 212, 255, 0.8),
               inset 0 0 5px rgba(255, 255, 255, 0.2) !important;
+}
+
+.ant-pro-layout-content:hover::-webkit-scrollbar-track,
+.ant-layout-content:hover::-webkit-scrollbar-track,
+html:hover::-webkit-scrollbar-track,
+body:hover::-webkit-scrollbar-track {
+  background: rgba(10, 25, 41, 0.8) !important;
 }
 
 .ant-pro-layout-content::-webkit-scrollbar-thumb:hover,
@@ -844,8 +904,7 @@ body::-webkit-scrollbar-corner {
   background: transparent !important;
 }
 
-/* Firefox 滚动条样式 */
-html, body, .ant-pro-layout-content, .ant-layout-content {
-  scrollbar-width: thin !important;
+/* Firefox 悬停显示 */
+html:hover, body:hover, .ant-pro-layout-content:hover, .ant-layout-content:hover {
   scrollbar-color: #00d4ff rgba(10, 25, 41, 0.8) !important;
 }

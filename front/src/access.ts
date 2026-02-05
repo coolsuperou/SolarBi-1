@@ -26,6 +26,7 @@ export default function access(initialState: { currentUser?: API.LoginUserVO; pa
     // 🔑 30个业务页面的动态权限（统一从 pagePermissions 读取）
     canAccessMonthlyEnergy: pagePermissions['monthly-energy'] === true,
     canAccessHourlyEnergy: pagePermissions['hourly-energy'] === true,
+    canAccessElectricityCostAllocation: pagePermissions['electricity-cost-allocation'] === true,
     canAccessAirConditioning: pagePermissions['airConditioning'] === true,
     canAccessInjectionWorkshop: pagePermissions['injection_workshop'] === true,
     canAccessGranulationWorkshop: pagePermissions['granulation_workshop'] === true,

@@ -22,6 +22,13 @@ export default [
     access: 'canAccessHourlyEnergy',
   },
   {
+    path: '/electricity-cost-allocation',
+    name: '电费分摊计算',
+    icon: 'DollarOutlined',
+    component: './ElectricityCostAllocation',
+    access: 'canAccessElectricityCostAllocation',
+  },
+  {
     path: '/airConditioning',
     name: '114_空调水机主机',
     icon: 'WalletFilled',

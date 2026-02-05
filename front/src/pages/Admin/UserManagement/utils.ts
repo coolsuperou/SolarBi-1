@@ -21,6 +21,7 @@ export interface PermissionItem {
 export const PERMISSION_CONFIG: PermissionItem[] = [
   { key: 'monthly-energy', icon: '📊', name: '月度能耗统计', desc: '查看月度电能消耗数据', category: '统计' },
   { key: 'hourly-energy', icon: '📈', name: '日能耗统计', desc: '查看日度电能消耗数据', category: '统计' },
+  { key: 'electricity-cost-allocation', icon: '💰', name: '电费分摊计算', desc: '电费分摊计算与统计', category: '统计' },
   { key: 'airConditioning', icon: '❄️', name: '114_空调水机主机', desc: '空调系统能耗监控', category: '设施' },
   { key: 'injection_workshop', icon: '🏭', name: '110注射环保设备', desc: '注射车间环保监控', category: '车间' },
   { key: 'granulation_workshop', icon: '🏭', name: '102造粒环保设备', desc: '造粒车间环保监控', category: '车间' },

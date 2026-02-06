@@ -69,6 +69,22 @@ const ElectricityCostAllocationPage: React.FC = () => {
     loadPowerSupplyData();
   }, [year, month]);
 
+  // 切换计算模式时清空计算结果
+  useEffect(() => {
+    setCalculationResult(null);
+    setDepartmentData([]);
+    
+    // 清空图表实例,下次有数据时会重新初始化
+    if (dept1ChartInstance.current) {
+      dept1ChartInstance.current.dispose();
+      dept1ChartInstance.current = null;
+    }
+    if (dept2ChartInstance.current) {
+      dept2ChartInstance.current.dispose();
+      dept2ChartInstance.current = null;
+    }
+  }, [calculationMode]);
+
   // 加载供电局数据
   const loadPowerSupplyData = async () => {
     try {
@@ -139,6 +155,9 @@ const ElectricityCostAllocationPage: React.FC = () => {
 
   // 初始化图表
   useEffect(() => {
+    // 只在有数据时初始化图表
+    if (departmentData.length === 0) return;
+    
     if (dept1ChartRef.current && !dept1ChartInstance.current) {
       dept1ChartInstance.current = echarts.init(dept1ChartRef.current);
     }
@@ -156,7 +175,7 @@ const ElectricityCostAllocationPage: React.FC = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [departmentData.length > 0]);
 
   // 渲染图表 - 单独的effect
   useEffect(() => {
@@ -546,15 +565,23 @@ const ElectricityCostAllocationPage: React.FC = () => {
             </span>
             <span className="chart-container-title">电费分布图表</span>
           </div>
-          <div className={`charts-section ${chartsCollapsed ? 'collapsed' : ''}`}>
-            <div className="chart-item">
-              <div className="chart-title">一级部门电费分布</div>
-              <div className="chart-wrapper" ref={dept1ChartRef}></div>
-            </div>
-            <div className="chart-item">
-              <div className="chart-title">二级部门电费分布</div>
-              <div className="chart-wrapper" ref={dept2ChartRef}></div>
-            </div>
+          <div className={`charts-section ${chartsCollapsed ? 'collapsed' : ''} ${departmentData.length === 0 ? 'empty' : ''}`}>
+            {departmentData.length > 0 ? (
+              <>
+                <div className="chart-item">
+                  <div className="chart-title">一级部门电费分布</div>
+                  <div className="chart-wrapper" ref={dept1ChartRef}></div>
+                </div>
+                <div className="chart-item">
+                  <div className="chart-title">二级部门电费分布</div>
+                  <div className="chart-wrapper" ref={dept2ChartRef}></div>
+                </div>
+              </>
+            ) : (
+              <div className="chart-empty-state">
+                <div className="chart-empty-text">请点击"计算电费"按钮获取数据</div>
+              </div>
+            )}
           </div>
         </div>
 

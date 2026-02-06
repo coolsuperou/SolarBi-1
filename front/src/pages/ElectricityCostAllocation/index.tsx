@@ -69,6 +69,22 @@ const ElectricityCostAllocationPage: React.FC = () => {
     loadPowerSupplyData();
   }, [year, month]);
 
+  // 切换年份或月份时清空计算结果
+  useEffect(() => {
+    setCalculationResult(null);
+    setDepartmentData([]);
+    
+    // 清空图表实例,下次有数据时会重新初始化
+    if (dept1ChartInstance.current) {
+      dept1ChartInstance.current.dispose();
+      dept1ChartInstance.current = null;
+    }
+    if (dept2ChartInstance.current) {
+      dept2ChartInstance.current.dispose();
+      dept2ChartInstance.current = null;
+    }
+  }, [year, month]);
+
   // 切换计算模式时清空计算结果
   useEffect(() => {
     setCalculationResult(null);
@@ -175,14 +191,7 @@ const ElectricityCostAllocationPage: React.FC = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [departmentData.length > 0]);
-
-  // 渲染图表 - 单独的effect
-  useEffect(() => {
-    if (departmentData.length > 0 && dept1ChartInstance.current && dept2ChartInstance.current) {
-      renderCharts();
-    }
-  }, [departmentData]);
+  }, [departmentData.length]);
 
   // 渲染图表
   const renderCharts = () => {
@@ -323,6 +332,13 @@ const ElectricityCostAllocationPage: React.FC = () => {
     dept2ChartInstance.current.setOption(dept2Option);
   };
 
+  // 渲染图表 - 当数据变化时调用
+  useEffect(() => {
+    if (departmentData.length > 0 && dept1ChartInstance.current && dept2ChartInstance.current) {
+      renderCharts();
+    }
+  }, [departmentData]);
+
   // 计算电费
   const handleCalculate = async () => {
     setLoading(true);
@@ -363,8 +379,222 @@ const ElectricityCostAllocationPage: React.FC = () => {
 
   // 导出Excel
   const handleExport = () => {
-    const modeName = (ELECTRICITY_COST_CONFIG.MODE_NAMES as any)[calculationMode] || calculationMode;
-    message.info(`导出 ${year}年${month}月 电费分摊表\n计算模式: ${modeName}`);
+    if (!calculationResult || departmentData.length === 0) {
+      message.warning('请先计算电费后再导出');
+      return;
+    }
+
+    try {
+      const modeName = (ELECTRICITY_COST_CONFIG.MODE_NAMES as any)[calculationMode] || calculationMode;
+      const modeDesc = (ELECTRICITY_COST_CONFIG.MODE_DESCRIPTIONS as any)[calculationMode] || '';
+      
+      // 预先计算天石源电量值
+      const energy1To24Value = calculationMode === 'mode1' && calculationResult?.totalEnergy 
+        ? calculationResult.totalEnergy 
+        : calculationMode === 'mode3' && calculationResult?.energy1To24 
+        ? calculationResult.energy1To24 
+        : null;
+      
+      const energy25ToEndValue = calculationMode === 'mode2' && calculationResult?.totalEnergy 
+        ? calculationResult.totalEnergy 
+        : calculationMode === 'mode3' && calculationResult?.energy25ToEnd 
+        ? calculationResult.energy25ToEnd 
+        : null;
+      
+      // 生成Excel XML格式
+      const generateExcelXML = () => {
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+        xml += '<?mso-application progid="Excel.Sheet"?>\n';
+        xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n';
+        xml += '  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
+
+        // 样式定义
+        xml += '<Styles>\n';
+        xml += '<Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Center"/></Style>\n';
+        xml += '<Style ss:ID="Title"><Font ss:Bold="1" ss:Size="16" ss:Color="#FFFFFF"/><Interior ss:Color="#4472C4" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/></Style>\n';
+        xml += '<Style ss:ID="SubTitle"><Font ss:Size="11"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/></Style>\n';
+        xml += '<Style ss:ID="InfoLabel"><Font ss:Bold="1" ss:Size="10"/><Interior ss:Color="#FFF2CC" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>\n';
+        xml += '<Style ss:ID="InfoValue"><Font ss:Size="10"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0.00"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>\n';
+        xml += '<Style ss:ID="Header"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF"/><Interior ss:Color="#5B9BD5" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>\n';
+        xml += '<Style ss:ID="Dept1"><Font ss:Bold="1" ss:Size="10"/><Interior ss:Color="#E2EFDA" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/></Borders></Style>\n';
+        xml += '<Style ss:ID="Dept2"><Font ss:Size="10"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/></Borders></Style>\n';
+        xml += '<Style ss:ID="Data"><Font ss:Size="10"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0.00"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/></Borders></Style>\n';
+        xml += '<Style ss:ID="Total"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF"/><Interior ss:Color="#ED7D31" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0.00"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>\n';
+        xml += '</Styles>\n';
+
+        // 工作表
+        xml += '<Worksheet ss:Name="电费分摊">\n';
+        xml += '<Table>\n';
+        xml += '<Column ss:Width="120"/>\n'; // A列
+        xml += '<Column ss:Width="100"/>\n'; // B列
+        xml += '<Column ss:Width="100"/>\n'; // C列
+        xml += '<Column ss:Width="100"/>\n'; // D列
+        xml += '<Column ss:Width="100"/>\n'; // E列
+        xml += '<Column ss:Width="100"/>\n'; // F列
+        xml += '<Column ss:Width="100"/>\n'; // G列
+        xml += '<Column ss:Width="100"/>\n'; // H列
+        xml += '<Column ss:Width="100"/>\n'; // I列
+        xml += '<Column ss:Width="100"/>\n'; // J列
+
+        // 标题行
+        xml += '<Row ss:Height="30">\n';
+        xml += `<Cell ss:StyleID="Title" ss:MergeAcross="9"><Data ss:Type="String">${year}年${month}月 电费分摊表 - ${modeName}</Data></Cell>\n`;
+        xml += '</Row>\n';
+
+        // 副标题行
+        xml += '<Row ss:Height="20">\n';
+        xml += `<Cell ss:StyleID="SubTitle" ss:MergeAcross="9"><Data ss:Type="String">${modeDesc}</Data></Cell>\n`;
+        xml += '</Row>\n';
+
+        // 空行
+        xml += '<Row ss:Height="10"></Row>\n';
+
+        // 供电局数据信息区域
+        // 1-24日数据（1行，6列）
+        xml += '<Row ss:Height="22">\n';
+        xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">1-24日供电局抄表数</Data></Cell>\n';
+        xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${powerSupplyData?.reading1To24 || 0}</Data></Cell>\n`;
+        xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">实际总金额</Data></Cell>\n';
+        xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${powerSupplyData?.amount1To24 || 0}</Data></Cell>\n`;
+        xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">供电局平均单价</Data></Cell>\n';
+        xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${powerSupplyData?.reading1To24 && powerSupplyData?.amount1To24 ? (powerSupplyData.amount1To24 / powerSupplyData.reading1To24).toFixed(4) : 0}</Data></Cell>\n`;
+        xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">天石源电量</Data></Cell>\n';
+        xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="${energy1To24Value ? 'Number' : 'String'}">${energy1To24Value || '-'}</Data></Cell>\n`;
+        xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">内部平均单价</Data></Cell>\n';
+        xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="${(calculationMode === 'mode1' || calculationMode === 'mode3') && calculationResult?.avgUnitPrice1To24 ? 'Number' : 'String'}">${calculationMode === 'mode1' && calculationResult?.avgUnitPrice ? calculationResult.avgUnitPrice.toFixed(4) : calculationMode === 'mode3' && calculationResult?.avgUnitPrice1To24 ? calculationResult.avgUnitPrice1To24.toFixed(4) : '-'}</Data></Cell>\n`;
+        xml += '</Row>\n';
+
+        // 25-月末数据（1行，6列）
+        xml += '<Row ss:Height="22">\n';
+        xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">25-月末抄表数</Data></Cell>\n';
+        xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${powerSupplyData?.reading25ToEnd || 0}</Data></Cell>\n`;
+        xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">实际总金额</Data></Cell>\n';
+        xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${powerSupplyData?.amount25ToEnd || 0}</Data></Cell>\n`;
+        xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">供电局平均单价</Data></Cell>\n';
+        xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${powerSupplyData?.reading25ToEnd && powerSupplyData?.amount25ToEnd ? (powerSupplyData.amount25ToEnd / powerSupplyData.reading25ToEnd).toFixed(4) : 0}</Data></Cell>\n`;
+        xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">天石源电量</Data></Cell>\n';
+        xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="${energy25ToEndValue ? 'Number' : 'String'}">${energy25ToEndValue || '-'}</Data></Cell>\n`;
+        xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">内部平均单价</Data></Cell>\n';
+        xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="${(calculationMode === 'mode2' || calculationMode === 'mode3') && calculationResult?.avgUnitPrice25ToEnd ? 'Number' : 'String'}">${calculationMode === 'mode2' && calculationResult?.avgUnitPrice ? calculationResult.avgUnitPrice.toFixed(4) : calculationMode === 'mode3' && calculationResult?.avgUnitPrice25ToEnd ? calculationResult.avgUnitPrice25ToEnd.toFixed(4) : '-'}</Data></Cell>\n`;
+        xml += '</Row>\n';
+
+        // 模式三添加月平均单价行
+        if (calculationMode === 'mode3' && calculationResult?.monthlyAvgUnitPrice) {
+          xml += '<Row ss:Height="22">\n';
+          xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">月平均单价</Data></Cell>\n';
+          xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${calculationResult.monthlyAvgUnitPrice.toFixed(4)}</Data></Cell>\n`;
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '</Row>\n';
+        }
+
+        // 空行
+        xml += '<Row ss:Height="15"></Row>\n';
+
+        // 表头行
+        xml += '<Row ss:Height="25">\n';
+        xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">一级部门</Data></Cell>\n';
+        xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">二级部门</Data></Cell>\n';
+        xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">月电能值(kWh)</Data></Cell>\n';
+        xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">分配金额(元)</Data></Cell>\n';
+        xml += '</Row>\n';
+
+        // 数据行 - 按一级部门分组处理
+        const dept1Groups: { [key: string]: any[] } = {};
+        departmentData.forEach((item: any) => {
+          if (!dept1Groups[item.dept1]) {
+            dept1Groups[item.dept1] = [];
+          }
+          dept1Groups[item.dept1].push(item);
+        });
+
+        // 按顺序输出每个一级部门的数据
+        Object.entries(dept1Groups).forEach(([dept1, items]: [string, any[]]) => {
+          items.forEach((item: any, itemIndex: number) => {
+            xml += '<Row ss:Height="22">\n';
+            
+            // 一级部门单元格(每行都要输出,第一行包含数据和合并属性,后续行为空单元格)
+            if (itemIndex === 0) {
+              if (items.length > 1) {
+                xml += `<Cell ss:StyleID="Dept1" ss:MergeDown="${items.length - 1}"><Data ss:Type="String">${escapeXml(dept1)}</Data></Cell>\n`;
+              } else {
+                xml += `<Cell ss:StyleID="Dept1"><Data ss:Type="String">${escapeXml(dept1)}</Data></Cell>\n`;
+              }
+            } else {
+              // 被合并的单元格也要输出Cell标签,但不包含Data
+              xml += `<Cell ss:StyleID="Dept1"></Cell>\n`;
+            }
+            
+            // 二级部门单元格(每行都要显示)
+            xml += `<Cell ss:StyleID="Dept2"><Data ss:Type="String">${escapeXml(item.dept2)}</Data></Cell>\n`;
+            xml += `<Cell ss:StyleID="Data"><Data ss:Type="Number">${item.energy}</Data></Cell>\n`;
+            xml += `<Cell ss:StyleID="Data"><Data ss:Type="Number">${item.cost}</Data></Cell>\n`;
+            xml += '</Row>\n';
+          });
+        });
+
+        // 合计行
+        const summary = calculateSummary();
+        const summaryEntries = Object.entries(summary);
+        summaryEntries.forEach(([dept1, data]: [string, any], index: number) => {
+          xml += '<Row ss:Height="25">\n';
+          if (index === 0) {
+            if (summaryEntries.length > 1) {
+              xml += `<Cell ss:StyleID="Total" ss:MergeDown="${summaryEntries.length - 1}"><Data ss:Type="String">合计</Data></Cell>\n`;
+            } else {
+              xml += '<Cell ss:StyleID="Total"><Data ss:Type="String">合计</Data></Cell>\n';
+            }
+          } else {
+            // 被合并的单元格也要输出Cell标签,但不包含Data
+            xml += `<Cell ss:StyleID="Total"></Cell>\n`;
+          }
+          xml += `<Cell ss:StyleID="Total"><Data ss:Type="String">${escapeXml(dept1)}</Data></Cell>\n`;
+          xml += `<Cell ss:StyleID="Total"><Data ss:Type="Number">${data.energy}</Data></Cell>\n`;
+          xml += `<Cell ss:StyleID="Total"><Data ss:Type="Number">${data.cost}</Data></Cell>\n`;
+          xml += '</Row>\n';
+        });
+
+        xml += '</Table>\n';
+        xml += '</Worksheet>\n';
+        xml += '</Workbook>';
+
+        return xml;
+      };
+
+      // XML特殊字符转义
+      const escapeXml = (str: string) => {
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&apos;');
+      };
+
+      const xmlContent = generateExcelXML();
+
+      // 创建下载
+      const blob = new Blob([xmlContent], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `电费分摊表_${year}年${month}月_${modeName}.xls`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      message.success('导出成功！');
+    } catch (error) {
+      console.error('导出失败:', error);
+      message.error('导出失败，请重试');
+    }
   };
 
   // 切换图表显示
@@ -469,8 +699,10 @@ const ElectricityCostAllocationPage: React.FC = () => {
             <div className="info-card">
               <div className="info-card-title">天石源电量</div>
               <div className="info-card-value">
-                {(calculationMode === 'mode1' || calculationMode === 'mode3') && calculationResult?.totalEnergy
+                {calculationMode === 'mode1' && calculationResult?.totalEnergy
                   ? calculationResult.totalEnergy.toLocaleString()
+                  : calculationMode === 'mode3' && calculationResult?.energy1To24
+                  ? calculationResult.energy1To24.toLocaleString()
                   : calculationMode === 'mode2'
                   ? '-'
                   : '0'}{' '}
@@ -480,8 +712,10 @@ const ElectricityCostAllocationPage: React.FC = () => {
             <div className="info-card">
               <div className="info-card-title">内部平均单价</div>
               <div className="info-card-value">
-                {(calculationMode === 'mode1' || calculationMode === 'mode3') && calculationResult?.avgUnitPrice
+                {calculationMode === 'mode1' && calculationResult?.avgUnitPrice
                   ? calculationResult.avgUnitPrice.toFixed(3)
+                  : calculationMode === 'mode3' && calculationResult?.avgUnitPrice1To24
+                  ? calculationResult.avgUnitPrice1To24.toFixed(3)
                   : calculationMode === 'mode2'
                   ? '-'
                   : '0.000'}{' '}
@@ -521,8 +755,10 @@ const ElectricityCostAllocationPage: React.FC = () => {
             <div className="info-card">
               <div className="info-card-title">天石源电量</div>
               <div className="info-card-value">
-                {(calculationMode === 'mode2' || calculationMode === 'mode3') && calculationResult?.totalEnergy
+                {calculationMode === 'mode2' && calculationResult?.totalEnergy
                   ? calculationResult.totalEnergy.toLocaleString()
+                  : calculationMode === 'mode3' && calculationResult?.energy25ToEnd
+                  ? calculationResult.energy25ToEnd.toLocaleString()
                   : calculationMode === 'mode1'
                   ? '-'
                   : '0'}{' '}
@@ -532,8 +768,10 @@ const ElectricityCostAllocationPage: React.FC = () => {
             <div className="info-card">
               <div className="info-card-title">内部平均单价</div>
               <div className="info-card-value">
-                {(calculationMode === 'mode2' || calculationMode === 'mode3') && calculationResult?.avgUnitPrice
+                {calculationMode === 'mode2' && calculationResult?.avgUnitPrice
                   ? calculationResult.avgUnitPrice.toFixed(3)
+                  : calculationMode === 'mode3' && calculationResult?.avgUnitPrice25ToEnd
+                  ? calculationResult.avgUnitPrice25ToEnd.toFixed(3)
                   : calculationMode === 'mode1'
                   ? '-'
                   : '0.000'}{' '}
@@ -554,6 +792,26 @@ const ElectricityCostAllocationPage: React.FC = () => {
                 导出Excel
               </button>
             </div>
+            
+            {/* 模式三月平均单价 - 显示在按钮右侧 */}
+            {calculationMode === 'mode3' && (
+              <div style={{ 
+                marginLeft: '30px', 
+                color: '#00d4ff', 
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                fontWeight: 'bold'
+              }}>
+                <span style={{ marginRight: '10px' }}>月平均单价:</span>
+                <span style={{ fontSize: '20px', color: '#00ff88' }}>
+                  {calculationResult?.monthlyAvgUnitPrice
+                    ? calculationResult.monthlyAvgUnitPrice.toFixed(3)
+                    : '0.000'}
+                </span>
+                <span style={{ marginLeft: '5px', fontSize: '14px' }}>元/kWh</span>
+              </div>
+            )}
           </div>
         </div>
 

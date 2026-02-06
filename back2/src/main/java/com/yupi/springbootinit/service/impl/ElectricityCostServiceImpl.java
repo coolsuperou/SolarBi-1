@@ -340,12 +340,12 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
                 .filter(d -> d.getWorkshop() != null && !d.getWorkshop().isEmpty())
                 .collect(Collectors.groupingBy(TempMonitor::getWorkshop));
         
-        // 3. 获取电能表设备映射
+        // 3. 获取电能表设备映射(使用 DeviceID|NodeID 作为设备标识)
         Map<String, Set<String>> electricMeterMap = new HashMap<>();
         for (String workshop : dataByWorkshop.keySet()) {
-            List<String> meterNames = electricityCostMapper.getElectricMeterNames(workshop);
-            if (meterNames != null && !meterNames.isEmpty()) {
-                electricMeterMap.put(workshop, new HashSet<>(meterNames));
+            List<String> deviceKeys = electricityCostMapper.getElectricMeterDeviceKeys(workshop);
+            if (deviceKeys != null && !deviceKeys.isEmpty()) {
+                electricMeterMap.put(workshop, new HashSet<>(deviceKeys));
             }
         }
         
@@ -356,15 +356,18 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
             String workshop = entry.getKey();
             List<TempMonitor> workshopData = entry.getValue();
             
-            // 过滤出电能表设备的数据
-            Set<String> meterNames = electricMeterMap.get(workshop);
-            if (meterNames == null || meterNames.isEmpty()) {
+            // 过滤出电能表设备的数据(使用 DeviceID|NodeID 匹配)
+            Set<String> deviceKeys = electricMeterMap.get(workshop);
+            if (deviceKeys == null || deviceKeys.isEmpty()) {
                 log.warn("车间 {} 没有配置电能表设备", workshop);
                 continue;
             }
             
             List<TempMonitor> filteredData = workshopData.stream()
-                    .filter(d -> d.getName() != null && meterNames.contains(d.getName()))
+                    .filter(d -> {
+                        String deviceKey = d.getDeviceId() + "|" + d.getNodeId();
+                        return deviceKeys.contains(deviceKey);
+                    })
                     .collect(Collectors.toList());
             
             if (filteredData.isEmpty()) {
@@ -433,7 +436,7 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
             dto.setEnergy(dto.getEnergy().add(workshopEnergy));
         }
         
-        // 3. 计算各部门分摊金额
+        // 3. 计算各部门分摊金额并排序
         List<DepartmentCostDTO> result = new ArrayList<>();
         for (DepartmentCostDTO dto : dept2Map.values()) {
             BigDecimal cost = dto.getEnergy().multiply(unitPrice).setScale(2, RoundingMode.HALF_UP);
@@ -441,6 +444,31 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
             result.add(dto);
         }
         
+        // 4. 按一级部门排序: 工具制造中心 -> 管理部 -> 工具研发中心
+        result.sort((a, b) -> {
+            int orderA = getDept1Order(a.getDept1());
+            int orderB = getDept1Order(b.getDept1());
+            if (orderA != orderB) {
+                return Integer.compare(orderA, orderB);
+            }
+            // 同一级部门内按二级部门名称排序
+            return a.getDept2().compareTo(b.getDept2());
+        });
+        
         return result;
+    }
+    
+    /**
+     * 获取一级部门的排序顺序
+     */
+    private int getDept1Order(String dept1) {
+        if ("工具制造中心".equals(dept1)) {
+            return 1;
+        } else if ("管理部".equals(dept1)) {
+            return 2;
+        } else if ("工具研发中心".equals(dept1)) {
+            return 3;
+        }
+        return 999; // 其他部门排在最后
     }
 }

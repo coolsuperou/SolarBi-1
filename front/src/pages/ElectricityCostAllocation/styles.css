@@ -597,3 +597,30 @@ html.electricity-cost-page,
 .edit-form .ant-input-number-handler:hover {
   color: #00e5ff;
 }
+
+/* 图表空状态 */
+.charts-section.empty {
+  min-height: 80px;
+  max-height: 80px;
+  display: flex !important;
+  grid-template-columns: none !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-empty-state {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  padding: 20px;
+}
+
+.chart-empty-text {
+  color: #00d4ff;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}

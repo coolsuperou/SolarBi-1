@@ -52,12 +52,13 @@ public interface ElectricityCostMapper extends BaseMapper<PowerSupplyData> {
     List<Map<String, Object>> getWorkshopHierarchy();
 
     /**
-     * 查询指定车间的电能表设备名称列表
+     * 查询指定车间的电能表设备(DeviceID + NodeID)
      * 
      * @param workshop 车间名称
-     * @return 电能表设备名称列表
+     * @return 设备标识列表(格式: DeviceID|NodeID)
      */
-    @Select("SELECT Name FROM tbl_monitordevice " +
+    @Select("SELECT CONCAT(DeviceID, '|', NodeID) as deviceKey " +
+            "FROM tbl_monitordevice " +
             "WHERE Workshop = #{workshop} AND IsElectricMeter = 1")
-    List<String> getElectricMeterNames(@Param("workshop") String workshop);
+    List<String> getElectricMeterDeviceKeys(@Param("workshop") String workshop);
 }

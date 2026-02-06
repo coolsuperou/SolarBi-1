@@ -40,9 +40,9 @@ public class EnergyCalculationUtils {
             return result;
         }
 
-        // 按设备名称分组
+        // 按设备分组 (使用 DeviceID + NodeID 组合)
         Map<String, List<TempMonitor>> deviceDataMap = rawData.stream()
-                .collect(Collectors.groupingBy(TempMonitor::getName));
+                .collect(Collectors.groupingBy(d -> d.getDeviceId() + "|" + d.getNodeId()));
 
         log.info("{}设备分组结果: 共{}个设备", workshopName, deviceDataMap.size());
 
@@ -162,9 +162,9 @@ public class EnergyCalculationUtils {
             return result;
         }
 
-        // 按设备名称分组
+        // 按设备分组 (使用 DeviceID + NodeID 组合)
         Map<String, List<TempMonitor>> deviceDataMap = rawData.stream()
-                .collect(Collectors.groupingBy(TempMonitor::getName));
+                .collect(Collectors.groupingBy(d -> d.getDeviceId() + "|" + d.getNodeId()));
 
         log.info("{}设备分组结果: 共{}个设备", workshopName, deviceDataMap.size());
 

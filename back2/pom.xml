@@ -44,6 +44,7 @@
             <version>3.5.2</version>
         </dependency>
         <!-- redis -->
+        <!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -52,6 +53,7 @@
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-data-redis</artifactId>
         </dependency>
+        -->
 
 
         <!-- https://doc.xiaominfo.com/docs/quick-start#openapi2 -->
@@ -112,11 +114,13 @@
             <scope>test</scope>
         </dependency>
 <!--        引入Redis限流-->
+        <!--
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
             <version>3.21.3</version>
         </dependency>
+        -->
 
 
 

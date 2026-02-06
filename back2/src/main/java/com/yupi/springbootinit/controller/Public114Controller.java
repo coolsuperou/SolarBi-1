@@ -10,7 +10,6 @@ import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorQueryRequest;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
 import com.yupi.springbootinit.model.entity.TempMonitor;
 import com.yupi.springbootinit.service.Public114Service;
-import com.yupi.springbootinit.service.cache.TempMonitorCacheLoader;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -30,10 +29,6 @@ public class Public114Controller {
 
     @Autowired
     private Public114Service public114Service;
-
-    @Autowired
-    private TempMonitorCacheLoader tempMonitorCacheLoader;
-
 
     @ApiOperation("分页查询温湿电能数据（114公共，支持多条件查询）")
     @PostMapping("/query")
@@ -138,17 +133,4 @@ public class Public114Controller {
         }
     }
 
-    @ApiOperation("刷新缓存并预加载上个时间段数据（114公共）")
-    @PostMapping("/refresh-cache")
-    public BaseResponse<Boolean> refreshCache(
-            @ApiParam("车间名称，可为空，默认114公共") @RequestParam(required = false) String workshop) {
-        try {
-            String fixedWorkshop = (workshop == null || workshop.isEmpty()) ? "114公共" : workshop;
-            tempMonitorCacheLoader.rebuildOneYearWindow(fixedWorkshop);
-            return ResultUtils.success(Boolean.TRUE);
-        } catch (Exception e) {
-            log.error("刷新缓存失败", e);
-            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "刷新缓存失败");
-        }
-    }
 }

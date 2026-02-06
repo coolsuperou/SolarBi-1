@@ -73,32 +73,12 @@ const ElectricityCostAllocationPage: React.FC = () => {
   useEffect(() => {
     setCalculationResult(null);
     setDepartmentData([]);
-    
-    // 清空图表实例,下次有数据时会重新初始化
-    if (dept1ChartInstance.current) {
-      dept1ChartInstance.current.dispose();
-      dept1ChartInstance.current = null;
-    }
-    if (dept2ChartInstance.current) {
-      dept2ChartInstance.current.dispose();
-      dept2ChartInstance.current = null;
-    }
   }, [year, month]);
 
   // 切换计算模式时清空计算结果
   useEffect(() => {
     setCalculationResult(null);
     setDepartmentData([]);
-    
-    // 清空图表实例,下次有数据时会重新初始化
-    if (dept1ChartInstance.current) {
-      dept1ChartInstance.current.dispose();
-      dept1ChartInstance.current = null;
-    }
-    if (dept2ChartInstance.current) {
-      dept2ChartInstance.current.dispose();
-      dept2ChartInstance.current = null;
-    }
   }, [calculationMode]);
 
   // 加载供电局数据
@@ -174,12 +154,22 @@ const ElectricityCostAllocationPage: React.FC = () => {
     // 只在有数据时初始化图表
     if (departmentData.length === 0) return;
     
-    if (dept1ChartRef.current && !dept1ChartInstance.current) {
-      dept1ChartInstance.current = echarts.init(dept1ChartRef.current);
+    // 确保DOM元素存在
+    if (!dept1ChartRef.current || !dept2ChartRef.current) return;
+    
+    // 如果图表实例已存在，先销毁
+    if (dept1ChartInstance.current) {
+      dept1ChartInstance.current.dispose();
+      dept1ChartInstance.current = null;
     }
-    if (dept2ChartRef.current && !dept2ChartInstance.current) {
-      dept2ChartInstance.current = echarts.init(dept2ChartRef.current);
+    if (dept2ChartInstance.current) {
+      dept2ChartInstance.current.dispose();
+      dept2ChartInstance.current = null;
     }
+    
+    // 重新初始化图表
+    dept1ChartInstance.current = echarts.init(dept1ChartRef.current);
+    dept2ChartInstance.current = echarts.init(dept2ChartRef.current);
 
     // 响应式调整
     const handleResize = () => {
@@ -481,16 +471,16 @@ const ElectricityCostAllocationPage: React.FC = () => {
         // 模式三添加月平均单价行
         if (calculationMode === 'mode3' && calculationResult?.monthlyAvgUnitPrice) {
           xml += '<Row ss:Height="22">\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
+          xml += '<Cell></Cell>\n';
           xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">月平均单价</Data></Cell>\n';
           xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${calculationResult.monthlyAvgUnitPrice.toFixed(4)}</Data></Cell>\n`;
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
           xml += '</Row>\n';
         }
 
@@ -630,10 +620,11 @@ const ElectricityCostAllocationPage: React.FC = () => {
                 value={year}
                 onChange={(e) => setYear(Number(e.target.value))}
               >
-                <option value="2026">2026</option>
-                <option value="2025">2025</option>
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
+                {Array.from({ length: 10 }, (_, i) => currentDate.getFullYear() - i).map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="query-group">

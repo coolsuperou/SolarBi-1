@@ -9,9 +9,7 @@ import com.yupi.springbootinit.model.dto.tempmonitor.HourlyEnergyConsumption;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorQueryRequest;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
 import com.yupi.springbootinit.model.entity.TempMonitor;
-import com.yupi.springbootinit.service.ColdPress103Service;
 import com.yupi.springbootinit.service.Sintering105Service;
-import com.yupi.springbootinit.service.cache.TempMonitorCacheLoader;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -31,10 +29,6 @@ public class Sintering105Controller {
 
     @Autowired
     private Sintering105Service sintering105Service;
-
-    @Autowired
-    private TempMonitorCacheLoader tempMonitorCacheLoader;
-
 
     @ApiOperation("分页查询温湿电能数据（105烧结，支持多条件查询）")
     @PostMapping("/query")
@@ -139,17 +133,4 @@ public class Sintering105Controller {
         }
     }
 
-    @ApiOperation("刷新缓存并预加载上个时间段数据（105烧结）")
-    @PostMapping("/refresh-cache")
-    public BaseResponse<Boolean> refreshCache(
-            @ApiParam("车间名称，可为空，默认105烧结") @RequestParam(required = false) String workshop) {
-        try {
-            String fixedWorkshop = (workshop == null || workshop.isEmpty()) ? "105烧结" : workshop;
-            tempMonitorCacheLoader.rebuildOneYearWindow(fixedWorkshop);
-            return ResultUtils.success(Boolean.TRUE);
-        } catch (Exception e) {
-            log.error("刷新缓存失败", e);
-            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "刷新缓存失败");
-        }
-    }
 }

@@ -10,7 +10,7 @@ import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorQueryRequest;
 import com.yupi.springbootinit.model.dto.tempmonitor.TempMonitorStatistics;
 import com.yupi.springbootinit.model.entity.TempMonitor;
 import com.yupi.springbootinit.service.AirCompressor114Service;
-import com.yupi.springbootinit.service.cache.TempMonitorCacheLoader;
+// import com.yupi.springbootinit.service.cache.TempMonitorCacheLoader; // Redis相关已删除
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -31,8 +31,8 @@ public class AirCompressor114 {
     @Autowired
     private AirCompressor114Service airCompressor114Service;
 
-    @Autowired
-    private TempMonitorCacheLoader tempMonitorCacheLoader;
+    // @Autowired
+    // private TempMonitorCacheLoader tempMonitorCacheLoader; // Redis相关已删除
 
 
     @ApiOperation("分页查询温湿电能数据（114空压机，支持多条件查询）")
@@ -138,10 +138,13 @@ public class AirCompressor114 {
         }
     }
 
-    @ApiOperation("刷新缓存并预加载上个时间段数据（114空压机）")
+    @ApiOperation("刷新缓存并预加载上个时间段数据（114空压机）- 已禁用")
     @PostMapping("/refresh-cache")
     public BaseResponse<Boolean> refreshCache(
             @ApiParam("车间名称，可为空，默认114空压机") @RequestParam(required = false) String workshop) {
+        // Redis缓存功能已删除
+        return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "缓存功能已禁用");
+        /*
         try {
             String fixedWorkshop = (workshop == null || workshop.isEmpty()) ? "114空压机" : workshop;
             tempMonitorCacheLoader.rebuildOneYearWindow(fixedWorkshop);
@@ -150,5 +153,6 @@ public class AirCompressor114 {
             log.error("刷新缓存失败", e);
             return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "刷新缓存失败");
         }
+        */
     }
 }

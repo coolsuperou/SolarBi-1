@@ -234,60 +234,112 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "未找到供电局数据");
         }
         
-        // 2. 计算时间范围 (1日 7:00:00 到 月末 6:59:59)
-        Calendar startCal = Calendar.getInstance();
-        startCal.set(request.getYear(), request.getMonth() - 1, 1,
+        // 2. 分别计算1-24日和25-月末的时间范围
+        // 2.1 计算1-24日时间范围
+        Calendar start1To24 = Calendar.getInstance();
+        start1To24.set(request.getYear(), request.getMonth() - 1, 1,
                 EnergyTimeConfig.DAY_START_HOUR,
                 EnergyTimeConfig.DAY_START_MINUTE,
                 EnergyTimeConfig.DAY_START_SECOND);
-        startCal.set(Calendar.MILLISECOND, 0);
-        Date startTime = startCal.getTime();
+        start1To24.set(Calendar.MILLISECOND, 0);
         
-        Calendar endCal = Calendar.getInstance();
-        endCal.set(request.getYear(), request.getMonth(), 1,
+        Calendar end1To24 = Calendar.getInstance();
+        end1To24.set(request.getYear(), request.getMonth() - 1, 25,
                 EnergyTimeConfig.DAY_END_HOUR,
                 EnergyTimeConfig.DAY_END_MINUTE,
                 EnergyTimeConfig.DAY_END_SECOND);
-        endCal.set(Calendar.MILLISECOND, 999);
-        Date endTime = endCal.getTime();
+        end1To24.set(Calendar.MILLISECOND, 999);
         
-        log.info("计算时间范围: {} 到 {}", startTime, endTime);
+        // 2.2 计算25-月末时间范围
+        Calendar start25ToEnd = Calendar.getInstance();
+        start25ToEnd.set(request.getYear(), request.getMonth() - 1, 25,
+                EnergyTimeConfig.DAY_START_HOUR,
+                EnergyTimeConfig.DAY_START_MINUTE,
+                EnergyTimeConfig.DAY_START_SECOND);
+        start25ToEnd.set(Calendar.MILLISECOND, 0);
         
-        // 3. 计算各车间电量
-        Map<String, BigDecimal> workshopEnergyMap = calculateWorkshopEnergy(startTime, endTime);
+        Calendar end25ToEnd = Calendar.getInstance();
+        end25ToEnd.set(request.getYear(), request.getMonth(), 1,
+                EnergyTimeConfig.DAY_END_HOUR,
+                EnergyTimeConfig.DAY_END_MINUTE,
+                EnergyTimeConfig.DAY_END_SECOND);
+        end25ToEnd.set(Calendar.MILLISECOND, 999);
         
-        // 4. 计算总电量
-        BigDecimal totalEnergy = workshopEnergyMap.values().stream()
+        log.info("1-24日时间范围: {} 到 {}", start1To24.getTime(), end1To24.getTime());
+        log.info("25-月末时间范围: {} 到 {}", start25ToEnd.getTime(), end25ToEnd.getTime());
+        
+        // 3. 分别计算两个时间段的各车间电量
+        Map<String, BigDecimal> workshopEnergy1To24 = calculateWorkshopEnergy(start1To24.getTime(), end1To24.getTime());
+        Map<String, BigDecimal> workshopEnergy25ToEnd = calculateWorkshopEnergy(start25ToEnd.getTime(), end25ToEnd.getTime());
+        
+        // 4. 计算两个时间段的总电量
+        BigDecimal totalEnergy1To24 = workshopEnergy1To24.values().stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalEnergy25ToEnd = workshopEnergy25ToEnd.values().stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalEnergy = totalEnergy1To24.add(totalEnergy25ToEnd);
         
         if (totalEnergy.compareTo(BigDecimal.ZERO) == 0) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "全月总电量为0，无法计算");
         }
         
+        log.info("1-24日总电量: {} kWh", totalEnergy1To24);
+        log.info("25-月末总电量: {} kWh", totalEnergy25ToEnd);
         log.info("全月总电量: {} kWh", totalEnergy);
         
-        // 5. 计算总金额和单价
+        // 5. 合并两个时间段的车间电量
+        Map<String, BigDecimal> workshopEnergyMap = new java.util.HashMap<>();
+        workshopEnergy1To24.forEach((workshop, energy) -> 
+            workshopEnergyMap.put(workshop, energy));
+        workshopEnergy25ToEnd.forEach((workshop, energy) -> 
+            workshopEnergyMap.merge(workshop, energy, BigDecimal::add));
+        
+        // 6. 计算总金额和各时间段的单价
         BigDecimal totalAmount = powerSupplyData.getAmount1To24().add(powerSupplyData.getAmount25ToEnd());
-        BigDecimal unitPrice = totalAmount.divide(totalEnergy, 4, RoundingMode.HALF_UP);
         
-        log.info("计算单价: {} 元 ÷ {} kWh = {} 元/kWh",
-                totalAmount, totalEnergy, unitPrice);
+        // 计算1-24日内部单价
+        BigDecimal unitPrice1To24 = BigDecimal.ZERO;
+        if (totalEnergy1To24.compareTo(BigDecimal.ZERO) > 0) {
+            unitPrice1To24 = powerSupplyData.getAmount1To24()
+                    .divide(totalEnergy1To24, 4, RoundingMode.HALF_UP);
+        }
         
-        // 6. 生成部门电费明细
-        List<DepartmentCostDTO> departmentCostList = generateDepartmentCostList(workshopEnergyMap, unitPrice);
+        // 计算25-月末内部单价
+        BigDecimal unitPrice25ToEnd = BigDecimal.ZERO;
+        if (totalEnergy25ToEnd.compareTo(BigDecimal.ZERO) > 0) {
+            unitPrice25ToEnd = powerSupplyData.getAmount25ToEnd()
+                    .divide(totalEnergy25ToEnd, 4, RoundingMode.HALF_UP);
+        }
         
-        // 7. 计算一级部门汇总
+        // 计算月平均单价
+        BigDecimal monthlyAvgUnitPrice = totalAmount.divide(totalEnergy, 4, RoundingMode.HALF_UP);
+        
+        log.info("1-24日内部单价: {} 元 ÷ {} kWh = {} 元/kWh",
+                powerSupplyData.getAmount1To24(), totalEnergy1To24, unitPrice1To24);
+        log.info("25-月末内部单价: {} 元 ÷ {} kWh = {} 元/kWh",
+                powerSupplyData.getAmount25ToEnd(), totalEnergy25ToEnd, unitPrice25ToEnd);
+        log.info("月平均单价: {} 元 ÷ {} kWh = {} 元/kWh",
+                totalAmount, totalEnergy, monthlyAvgUnitPrice);
+        
+        // 7. 生成部门电费明细（使用月平均单价）
+        List<DepartmentCostDTO> departmentCostList = generateDepartmentCostList(workshopEnergyMap, monthlyAvgUnitPrice);
+        
+        // 8. 计算一级部门汇总
         Map<String, ElectricityCostResponse.DepartmentSummaryDTO> dept1Summary = 
                 calculateDept1Summary(departmentCostList);
         
-        // 8. 组装响应
+        // 9. 组装响应
         ElectricityCostResponse response = new ElectricityCostResponse();
         response.setPowerSupplyData(powerSupplyData);
         response.setDepartmentCostList(departmentCostList);
         response.setDept1Summary(dept1Summary);
         response.setTotalEnergy(totalEnergy);
+        response.setEnergy1To24(totalEnergy1To24);  // 设置1-24日电量
+        response.setEnergy25ToEnd(totalEnergy25ToEnd);  // 设置25-月末电量
         response.setTotalCost(totalAmount);
-        response.setAvgUnitPrice(unitPrice);
+        response.setAvgUnitPrice1To24(unitPrice1To24);  // 设置1-24日内部单价
+        response.setAvgUnitPrice25ToEnd(unitPrice25ToEnd);  // 设置25-月末内部单价
+        response.setMonthlyAvgUnitPrice(monthlyAvgUnitPrice);  // 设置月平均单价
         
         return response;
     }

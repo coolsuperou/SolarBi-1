@@ -47,16 +47,16 @@ spring:
         connection-timeout: 30000
         idle-timeout: 600000
         max-lifetime: 1800000
-  # Redis 配置
-  redis:
-    host: 47.105.82.96
-    port: 6379
-    timeout: 5000
-    password: 123456
-    database: 0
-  # 缓存配置
-  cache:
-    type: redis
+  # Redis 配置 (已禁用)
+  # redis:
+  #   host: 47.105.82.96
+  #   port: 6379
+  #   timeout: 5000
+  #   password: 123456
+  #   database: 0
+  # 缓存配置 (已禁用)
+  # cache:
+  #   type: redis
 
 
 

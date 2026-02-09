@@ -468,19 +468,25 @@ const ElectricityCostAllocationPage: React.FC = () => {
         xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="${(calculationMode === 'mode2' || calculationMode === 'mode3') && calculationResult?.avgUnitPrice25ToEnd ? 'Number' : 'String'}">${calculationMode === 'mode2' && calculationResult?.avgUnitPrice ? calculationResult.avgUnitPrice.toFixed(4) : calculationMode === 'mode3' && calculationResult?.avgUnitPrice25ToEnd ? calculationResult.avgUnitPrice25ToEnd.toFixed(4) : '-'}</Data></Cell>\n`;
         xml += '</Row>\n';
 
-        // 模式三添加月平均单价行
-        if (calculationMode === 'mode3' && calculationResult?.monthlyAvgUnitPrice) {
+        // 模式三添加合计行
+        if (calculationMode === 'mode3') {
+          const totalReading = (powerSupplyData?.reading1To24 || 0) + (powerSupplyData?.reading25ToEnd || 0);
+          const totalAmount = (powerSupplyData?.amount1To24 || 0) + (powerSupplyData?.amount25ToEnd || 0);
+          const avgUnitPrice = totalReading > 0 ? (totalAmount / totalReading).toFixed(4) : '0.0000';
+          const totalEnergy = calculationResult?.totalEnergy || 0;
+          const monthlyAvgUnitPrice = calculationResult?.monthlyAvgUnitPrice ? calculationResult.monthlyAvgUnitPrice.toFixed(4) : '0.0000';
+          
           xml += '<Row ss:Height="22">\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
-          xml += '<Cell></Cell>\n';
+          xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">供电局抄表合计</Data></Cell>\n';
+          xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${totalReading}</Data></Cell>\n`;
+          xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">供电局金额合计</Data></Cell>\n';
+          xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${totalAmount}</Data></Cell>\n`;
+          xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">供电局平均单价</Data></Cell>\n';
+          xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${avgUnitPrice}</Data></Cell>\n`;
+          xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">天石源电量合计</Data></Cell>\n';
+          xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${totalEnergy}</Data></Cell>\n`;
           xml += '<Cell ss:StyleID="InfoLabel"><Data ss:Type="String">月平均单价</Data></Cell>\n';
-          xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${calculationResult.monthlyAvgUnitPrice.toFixed(4)}</Data></Cell>\n`;
+          xml += `<Cell ss:StyleID="InfoValue"><Data ss:Type="Number">${monthlyAvgUnitPrice}</Data></Cell>\n`;
           xml += '</Row>\n';
         }
 
@@ -771,6 +777,57 @@ const ElectricityCostAllocationPage: React.FC = () => {
             </div>
           </div>
 
+          {/* 模式三合计行方框 - 一直显示 */}
+          {calculationMode === 'mode3' && (
+            <div className="info-cards">
+              <div className="info-card">
+                <div className="info-card-title">供电局抄表合计</div>
+                <div className="info-card-value">
+                  {((powerSupplyData?.reading1To24 || 0) + (powerSupplyData?.reading25ToEnd || 0)).toLocaleString()}{' '}
+                  <span className="info-card-unit">kWh</span>
+                </div>
+              </div>
+              <div className="info-card">
+                <div className="info-card-title">供电局金额合计</div>
+                <div className="info-card-value">
+                  {((powerSupplyData?.amount1To24 || 0) + (powerSupplyData?.amount25ToEnd || 0)).toLocaleString('zh-CN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{' '}
+                  <span className="info-card-unit">元</span>
+                </div>
+              </div>
+              <div className="info-card">
+                <div className="info-card-title">供电局平均单价</div>
+                <div className="info-card-value">
+                  {((powerSupplyData?.reading1To24 || 0) + (powerSupplyData?.reading25ToEnd || 0)) > 0
+                    ? (((powerSupplyData?.amount1To24 || 0) + (powerSupplyData?.amount25ToEnd || 0)) / 
+                       ((powerSupplyData?.reading1To24 || 0) + (powerSupplyData?.reading25ToEnd || 0))).toFixed(3)
+                    : '0.000'}{' '}
+                  <span className="info-card-unit">元/kWh</span>
+                </div>
+              </div>
+              <div className="info-card">
+                <div className="info-card-title">天石源电量合计</div>
+                <div className="info-card-value">
+                  {calculationResult?.totalEnergy
+                    ? calculationResult.totalEnergy.toLocaleString()
+                    : '0'}{' '}
+                  <span className="info-card-unit">kWh</span>
+                </div>
+              </div>
+              <div className="info-card">
+                <div className="info-card-title">月平均单价</div>
+                <div className="info-card-value">
+                  {calculationResult?.monthlyAvgUnitPrice
+                    ? calculationResult.monthlyAvgUnitPrice.toFixed(3)
+                    : '0.000'}{' '}
+                  <span className="info-card-unit">元/kWh</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="query-row">
             <div className="button-group">
               <button className="query-button" onClick={handleCalculate} disabled={loading}>
@@ -783,26 +840,6 @@ const ElectricityCostAllocationPage: React.FC = () => {
                 导出Excel
               </button>
             </div>
-            
-            {/* 模式三月平均单价 - 显示在按钮右侧 */}
-            {calculationMode === 'mode3' && (
-              <div style={{ 
-                marginLeft: '30px', 
-                color: '#00d4ff', 
-                fontSize: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                fontWeight: 'bold'
-              }}>
-                <span style={{ marginRight: '10px' }}>月平均单价:</span>
-                <span style={{ fontSize: '20px', color: '#00ff88' }}>
-                  {calculationResult?.monthlyAvgUnitPrice
-                    ? calculationResult.monthlyAvgUnitPrice.toFixed(3)
-                    : '0.000'}
-                </span>
-                <span style={{ marginLeft: '5px', fontSize: '14px' }}>元/kWh</span>
-              </div>
-            )}
           </div>
         </div>
 

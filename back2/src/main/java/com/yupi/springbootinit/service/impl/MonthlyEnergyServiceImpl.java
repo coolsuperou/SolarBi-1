@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,6 +25,10 @@ import java.util.stream.Collectors;
  * 月度能耗统计服务实现
  * 🔥 所有车间都只统计 tbl_monitordevice 中 IsElectricMeter=1 的设备
  * 🔥 优化：一次性查询所有车间的电能表设备，使用并行流加速计算
+ * 
+ * @author 每天十点睡
+ * @date 2026-02-09
+ * 修改：使用 BigDecimal 替代 Double，确保精确计算，避免浮点数误差
  */
 @Service
 @Slf4j
@@ -35,47 +41,36 @@ public class MonthlyEnergyServiceImpl implements MonthlyEnergyService {
     private UserService userService;
 
     /**
-     * 🔥 一次性获取所有车间的电能表设备映射
+     * 🔥 一次性获取所有车间的电能表设备映射（使用DeviceID|NodeID组合）
      * @param workshopList 车间列表
-     * @return Map<车间名称, Set<电能表设备名称>>
+     * @return Set<电能表设备Key（DeviceID|NodeID）>
      */
-    private Map<String, Set<String>> getElectricMeterMap(List<String> workshopList) {
+    private Set<String> getElectricMeterDeviceKeys(List<String> workshopList) {
         long startTime = System.currentTimeMillis();
         
-        // 批量查询所有车间的电能表设备
-        List<TempMonitor> meterList = monthlyEnergyMapper.getElectricMetersByWorkshops(workshopList);
-        
-        // 按车间分组
-        Map<String, Set<String>> meterMap = new HashMap<>();
-        for (TempMonitor meter : meterList) {
-            String workshop = meter.getWorkshop();
-            String name = meter.getName();
-            if (workshop != null && name != null) {
-                meterMap.computeIfAbsent(workshop, k -> new HashSet<>()).add(name);
-            }
-        }
+        // 批量查询所有车间的电能表设备Key
+        List<String> deviceKeys = monthlyEnergyMapper.getElectricMeterDeviceKeysByWorkshops(workshopList);
+        Set<String> deviceKeySet = new HashSet<>(deviceKeys);
         
         long elapsed = System.currentTimeMillis() - startTime;
-        log.info("🔥 批量查询电能表设备完成，耗时: {}ms，共{}个车间", elapsed, meterMap.size());
+        log.info("🔥 批量查询电能表设备Key完成，耗时: {}ms，共{}个设备", elapsed, deviceKeySet.size());
         
-        // 打印每个车间的电能表数量
-        for (Map.Entry<String, Set<String>> entry : meterMap.entrySet()) {
-            log.debug("车间 {} 有 {} 个电能表设备: {}", entry.getKey(), entry.getValue().size(), entry.getValue());
-        }
-        
-        return meterMap;
+        return deviceKeySet;
     }
 
     /**
-     * 🔥 过滤原始数据，只保留电能表设备的数据
+     * 🔥 过滤原始数据，只保留电能表设备的数据（使用DeviceID|NodeID匹配）
      */
-    private List<TempMonitor> filterByElectricMeter(List<TempMonitor> rawData, Set<String> electricMeterNames) {
-        if (rawData == null || rawData.isEmpty() || electricMeterNames == null || electricMeterNames.isEmpty()) {
+    private List<TempMonitor> filterByElectricMeterDeviceKeys(List<TempMonitor> rawData, Set<String> electricMeterDeviceKeys) {
+        if (rawData == null || rawData.isEmpty() || electricMeterDeviceKeys == null || electricMeterDeviceKeys.isEmpty()) {
             return new ArrayList<>();
         }
         
         return rawData.stream()
-                .filter(item -> electricMeterNames.contains(item.getName()))
+                .filter(item -> {
+                    String deviceKey = item.getDeviceId() + "|" + item.getNodeId();
+                    return electricMeterDeviceKeys.contains(deviceKey);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -125,8 +120,8 @@ public class MonthlyEnergyServiceImpl implements MonthlyEnergyService {
 
         log.info("时间范围: {} 至 {}, 共{}天", monthStart, monthEnd, daysInMonth);
 
-        // 🔥 3. 一次性查询所有车间的电能表设备映射（优化：只查一次数据库）
-        Map<String, Set<String>> electricMeterMap = getElectricMeterMap(allowedWorkshops);
+        // 🔥 3. 一次性查询所有车间的电能表设备Key（DeviceID|NodeID组合）
+        Set<String> electricMeterDeviceKeys = getElectricMeterDeviceKeys(allowedWorkshops);
 
         // 4. 查询用户有权限的车间数据
         long queryStartTime = System.currentTimeMillis();
@@ -140,18 +135,10 @@ public class MonthlyEnergyServiceImpl implements MonthlyEnergyService {
             return createEmptyStatistics(year, month, daysInMonth);
         }
         
-        // 🔥 5. 过滤原始数据，只保留电能表设备的数据（优化：在分组前统一过滤）
+        // 🔥 5. 过滤原始数据，只保留电能表设备的数据（使用DeviceID|NodeID匹配）
         long filterStartTime = System.currentTimeMillis();
-        List<TempMonitor> filteredRawData = allRawData.stream()
-                .filter(item -> {
-                    String workshop = item.getWorkshop();
-                    String name = item.getName();
-                    if (workshop == null || name == null) return false;
-                    Set<String> meterNames = electricMeterMap.get(workshop);
-                    return meterNames != null && meterNames.contains(name);
-                })
-                .collect(Collectors.toList());
-        log.info("🔥 电能表过滤完成，耗时: {}ms，原始记录: {}，过滤后: {}", 
+        List<TempMonitor> filteredRawData = filterByElectricMeterDeviceKeys(allRawData, electricMeterDeviceKeys);
+        log.info("🔥 电能表过滤完成（DeviceID|NodeID匹配），耗时: {}ms，原始记录: {}，过滤后: {}", 
                 System.currentTimeMillis() - filterStartTime, allRawData.size(), filteredRawData.size());
         
         if (filteredRawData.isEmpty()) {
@@ -182,9 +169,13 @@ public class MonthlyEnergyServiceImpl implements MonthlyEnergyService {
             .collect(Collectors.groupingBy(TempMonitor::getWorkshop));
         
         // 8. 初始化数据结构
-        Map<String, List<Double>> workshopDailyData = new LinkedHashMap<>();
-        Map<String, Double> workshopMonthlyTotal = new LinkedHashMap<>();
-        double[] dailyTotalArray = new double[daysInMonth];
+        Map<String, List<BigDecimal>> workshopDailyData = new LinkedHashMap<>();
+        Map<String, BigDecimal> workshopMonthlyTotal = new LinkedHashMap<>();
+        BigDecimal[] dailyTotalArray = new BigDecimal[daysInMonth];
+        // 初始化数组为 BigDecimal.ZERO
+        for (int i = 0; i < daysInMonth; i++) {
+            dailyTotalArray[i] = BigDecimal.ZERO;
+        }
         
         // 🔥 9. 遍历每个车间计算能耗（串行处理，便于打印详细日志）
         long calcStartTime = System.currentTimeMillis();
@@ -194,8 +185,12 @@ public class MonthlyEnergyServiceImpl implements MonthlyEnergyService {
             
             if (workshopData.isEmpty()) {
                 log.warn("车间 {} 无数据", workshop);
-                workshopDailyData.put(workshop, new ArrayList<>(Collections.nCopies(daysInMonth, 0.0)));
-                workshopMonthlyTotal.put(workshop, 0.0);
+                List<BigDecimal> emptyList = new ArrayList<>();
+                for (int i = 0; i < daysInMonth; i++) {
+                    emptyList.add(BigDecimal.ZERO);
+                }
+                workshopDailyData.put(workshop, emptyList);
+                workshopMonthlyTotal.put(workshop, BigDecimal.ZERO);
                 continue;
             }
 
@@ -213,21 +208,24 @@ public class MonthlyEnergyServiceImpl implements MonthlyEnergyService {
             log.info("╠════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣");
             
             // 转换为数组格式
-            List<Double> dailyData = new ArrayList<>(Collections.nCopies(daysInMonth, 0.0));
-            double monthlySum = 0.0;
+            List<BigDecimal> dailyData = new ArrayList<>();
+            for (int i = 0; i < daysInMonth; i++) {
+                dailyData.add(BigDecimal.ZERO);
+            }
+            BigDecimal monthlySum = BigDecimal.ZERO;
 
             for (DailyEnergyConsumption consumption : dailyConsumptions) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(consumption.getDay());
                 int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
                 
-                double energy = consumption.getEnergyConsumption() != null ? 
-                               consumption.getEnergyConsumption() : 0.0;
+                BigDecimal energy = consumption.getEnergyConsumption() != null ? 
+                               consumption.getEnergyConsumption() : BigDecimal.ZERO;
                 
                 if (dayOfMonth >= 1 && dayOfMonth <= daysInMonth) {
                     dailyData.set(dayOfMonth - 1, energy);
-                    monthlySum += energy;
-                    dailyTotalArray[dayOfMonth - 1] += energy;
+                    monthlySum = monthlySum.add(energy);
+                    dailyTotalArray[dayOfMonth - 1] = dailyTotalArray[dayOfMonth - 1].add(energy);
                     
                     // 🔥 打印每日计算详情
                     String dateStr = String.format("%d月%02d日", month, dayOfMonth);
@@ -250,7 +248,7 @@ public class MonthlyEnergyServiceImpl implements MonthlyEnergyService {
             
             // 🔥 打印车间月度汇总
             log.info("╠════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣");
-            log.info("║  📈 月度汇总: {} kWh", String.format("%.2f", monthlySum));
+            log.info("║  📈 月度汇总: {} kWh", monthlySum.setScale(2, RoundingMode.HALF_UP));
             log.info("╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝");
             log.info("");
 
@@ -262,46 +260,46 @@ public class MonthlyEnergyServiceImpl implements MonthlyEnergyService {
 
         // 🔥 特殊处理：104还原需要扣除无压烧结的数据
         if (workshopDailyData.containsKey("104还原") && workshopDailyData.containsKey("无压烧结")) {
-            List<Double> restoration104Data = workshopDailyData.get("104还原");
-            List<Double> presslessData = workshopDailyData.get("无压烧结");
-            Double restoration104Total = workshopMonthlyTotal.get("104还原");
-            Double presslessTotal = workshopMonthlyTotal.get("无压烧结");
+            List<BigDecimal> restoration104Data = workshopDailyData.get("104还原");
+            List<BigDecimal> presslessData = workshopDailyData.get("无压烧结");
+            BigDecimal restoration104Total = workshopMonthlyTotal.get("104还原");
+            BigDecimal presslessTotal = workshopMonthlyTotal.get("无压烧结");
             
             // 按天扣除
-            List<Double> adjustedDailyData = new ArrayList<>();
+            List<BigDecimal> adjustedDailyData = new ArrayList<>();
             for (int i = 0; i < daysInMonth; i++) {
-                double original = restoration104Data.get(i);
-                double pressless = presslessData.get(i);
-                double adjusted = Math.max(0, original - pressless);
+                BigDecimal original = restoration104Data.get(i);
+                BigDecimal pressless = presslessData.get(i);
+                BigDecimal adjusted = original.subtract(pressless).max(BigDecimal.ZERO);
                 adjustedDailyData.add(adjusted);
                 
                 // 同时更新每日总能耗（先减去原值，再加上调整后的值）
-                dailyTotalArray[i] = dailyTotalArray[i] - original + adjusted;
+                dailyTotalArray[i] = dailyTotalArray[i].subtract(original).add(adjusted);
             }
             
             // 更新104还原的数据
             workshopDailyData.put("104还原", adjustedDailyData);
-            double adjustedTotal = Math.max(0, restoration104Total - presslessTotal);
+            BigDecimal adjustedTotal = restoration104Total.subtract(presslessTotal).max(BigDecimal.ZERO);
             workshopMonthlyTotal.put("104还原", adjustedTotal);
             
             log.info("🔥 104还原已扣除无压烧结: 原始总量={}, 无压烧结={}, 调整后={}", 
-                    String.format("%.2f", restoration104Total), 
-                    String.format("%.2f", presslessTotal), 
-                    String.format("%.2f", adjustedTotal));
+                    restoration104Total.setScale(2, RoundingMode.HALF_UP), 
+                    presslessTotal.setScale(2, RoundingMode.HALF_UP), 
+                    adjustedTotal.setScale(2, RoundingMode.HALF_UP));
         }
 
         // 10. 转换数组为List并计算月度总能耗
-        List<Double> dailyTotal = new ArrayList<>();
-        for (double d : dailyTotalArray) {
+        List<BigDecimal> dailyTotal = new ArrayList<>();
+        for (BigDecimal d : dailyTotalArray) {
             dailyTotal.add(d);
         }
         
-        double monthlyTotal = workshopMonthlyTotal.values().stream()
-                .mapToDouble(Double::doubleValue).sum();
+        BigDecimal monthlyTotal = workshopMonthlyTotal.values().stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // 转换为有序Map（保持车间顺序）
-        Map<String, List<Double>> orderedDailyData = new LinkedHashMap<>();
-        Map<String, Double> orderedMonthlyTotal = new LinkedHashMap<>();
+        Map<String, List<BigDecimal>> orderedDailyData = new LinkedHashMap<>();
+        Map<String, BigDecimal> orderedMonthlyTotal = new LinkedHashMap<>();
         for (String workshop : workshops) {
             orderedDailyData.put(workshop, workshopDailyData.get(workshop));
             orderedMonthlyTotal.put(workshop, workshopMonthlyTotal.get(workshop));
@@ -313,7 +311,8 @@ public class MonthlyEnergyServiceImpl implements MonthlyEnergyService {
         statistics.setMonthlyTotal(monthlyTotal);
 
         long totalElapsed = System.currentTimeMillis() - totalStartTime;
-        log.info("✅ 月度统计完成: 总能耗 = {} kWh，总耗时: {}ms", String.format("%.2f", monthlyTotal), totalElapsed);
+        log.info("✅ 月度统计完成: 总能耗 = {} kWh，总耗时: {}ms", 
+                monthlyTotal.setScale(2, RoundingMode.HALF_UP), totalElapsed);
         return statistics;
     }
     
@@ -337,8 +336,13 @@ public class MonthlyEnergyServiceImpl implements MonthlyEnergyService {
         statistics.setWorkshopList(new ArrayList<>());
         statistics.setWorkshopDailyData(new LinkedHashMap<>());
         statistics.setWorkshopMonthlyTotal(new LinkedHashMap<>());
-        statistics.setDailyTotal(new ArrayList<>(Collections.nCopies(daysInMonth, 0.0)));
-        statistics.setMonthlyTotal(0.0);
+        
+        List<BigDecimal> emptyDailyTotal = new ArrayList<>();
+        for (int i = 0; i < daysInMonth; i++) {
+            emptyDailyTotal.add(BigDecimal.ZERO);
+        }
+        statistics.setDailyTotal(emptyDailyTotal);
+        statistics.setMonthlyTotal(BigDecimal.ZERO);
         return statistics;
     }
 

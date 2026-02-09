@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -151,9 +152,9 @@ public class Restoration104ServiceImpl implements Restoration104Service {
                 for (HourlyEnergyConsumption presslessItem : presslessResult) {
                     // 匹配相同小时的数据
                     if (item.getHour() != null && item.getHour().equals(presslessItem.getHour())) {
-                        Double originalConsumption = item.getEnergyConsumption() != null ? item.getEnergyConsumption() : 0.0;
-                        Double presslessConsumption = presslessItem.getEnergyConsumption() != null ? presslessItem.getEnergyConsumption() : 0.0;
-                        Double adjustedConsumption = Math.max(0, originalConsumption - presslessConsumption);
+                        BigDecimal originalConsumption = item.getEnergyConsumption() != null ? item.getEnergyConsumption() : BigDecimal.ZERO;
+                        BigDecimal presslessConsumption = presslessItem.getEnergyConsumption() != null ? presslessItem.getEnergyConsumption() : BigDecimal.ZERO;
+                        BigDecimal adjustedConsumption = originalConsumption.subtract(presslessConsumption).max(BigDecimal.ZERO);
                         item.setEnergyConsumption(adjustedConsumption);
                         log.debug("小时 {} 扣除无压烧结: 原始={}, 无压烧结={}, 调整后={}", 
                                 item.getHour(), originalConsumption, presslessConsumption, adjustedConsumption);
@@ -220,9 +221,9 @@ public class Restoration104ServiceImpl implements Restoration104Service {
                 for (DailyEnergyConsumption presslessItem : presslessResult) {
                     // 匹配相同日期的数据
                     if (item.getDay() != null && item.getDay().equals(presslessItem.getDay())) {
-                        Double originalConsumption = item.getEnergyConsumption() != null ? item.getEnergyConsumption() : 0.0;
-                        Double presslessConsumption = presslessItem.getEnergyConsumption() != null ? presslessItem.getEnergyConsumption() : 0.0;
-                        Double adjustedConsumption = Math.max(0, originalConsumption - presslessConsumption);
+                        BigDecimal originalConsumption = item.getEnergyConsumption() != null ? item.getEnergyConsumption() : BigDecimal.ZERO;
+                        BigDecimal presslessConsumption = presslessItem.getEnergyConsumption() != null ? presslessItem.getEnergyConsumption() : BigDecimal.ZERO;
+                        BigDecimal adjustedConsumption = originalConsumption.subtract(presslessConsumption).max(BigDecimal.ZERO);
                         item.setEnergyConsumption(adjustedConsumption);
                         log.debug("日期 {} 扣除无压烧结: 原始={}, 无压烧结={}, 调整后={}", 
                                 item.getDay(), originalConsumption, presslessConsumption, adjustedConsumption);
@@ -283,8 +284,9 @@ public class Restoration104ServiceImpl implements Restoration104Service {
 
             totalConsumption = dailyResults.stream()
                     .filter(item -> item.getEnergyConsumption() != null)
-                    .mapToDouble(DailyEnergyConsumption::getEnergyConsumption)
-                    .sum();
+                    .map(DailyEnergyConsumption::getEnergyConsumption)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                    .doubleValue();
 
             // 计算无压烧结的日能耗总和
             List<DailyEnergyConsumption> presslessDailyResults = EnergyCalculationUtils.calculateDailyEnergyFromRawData(
@@ -292,8 +294,9 @@ public class Restoration104ServiceImpl implements Restoration104Service {
             );
             presslessConsumption = presslessDailyResults.stream()
                     .filter(item -> item.getEnergyConsumption() != null)
-                    .mapToDouble(DailyEnergyConsumption::getEnergyConsumption)
-                    .sum();
+                    .map(DailyEnergyConsumption::getEnergyConsumption)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                    .doubleValue();
 
             log.info("日模式计算: {}天数据，原始总消耗: {} kWh, 无压烧结: {} kWh", dailyResults.size(), totalConsumption, presslessConsumption);
 
@@ -305,8 +308,9 @@ public class Restoration104ServiceImpl implements Restoration104Service {
 
             totalConsumption = hourlyResults.stream()
                     .filter(item -> item.getEnergyConsumption() != null)
-                    .mapToDouble(HourlyEnergyConsumption::getEnergyConsumption)
-                    .sum();
+                    .map(HourlyEnergyConsumption::getEnergyConsumption)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                    .doubleValue();
 
             // 计算无压烧结的小时能耗总和
             List<HourlyEnergyConsumption> presslessHourlyResults = EnergyCalculationUtils.calculateHourlyEnergyFromRawData(
@@ -314,8 +318,9 @@ public class Restoration104ServiceImpl implements Restoration104Service {
             );
             presslessConsumption = presslessHourlyResults.stream()
                     .filter(item -> item.getEnergyConsumption() != null)
-                    .mapToDouble(HourlyEnergyConsumption::getEnergyConsumption)
-                    .sum();
+                    .map(HourlyEnergyConsumption::getEnergyConsumption)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                    .doubleValue();
 
             log.info("小时模式计算: {}小时数据，原始总消耗: {} kWh, 无压烧结: {} kWh", hourlyResults.size(), totalConsumption, presslessConsumption);
         }

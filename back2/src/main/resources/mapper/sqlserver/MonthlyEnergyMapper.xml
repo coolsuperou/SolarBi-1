@@ -79,4 +79,20 @@
         </if>
     </select>
 
+    <!-- 批量查询多个车间的电能表设备Key（DeviceID|NodeID组合） -->
+    <!-- Author: 每天十点睡 -->
+    <!-- Create date: 2026-02-09 -->
+    <!-- Description: 查询电能表设备的DeviceID和NodeID组合，用于精确匹配设备 -->
+    <select id="getElectricMeterDeviceKeysByWorkshops" resultType="java.lang.String">
+        SELECT CONCAT(DeviceID, '|', NodeID) AS DeviceKey
+        FROM tbl_monitordevice 
+        WHERE IsElectricMeter = 1
+        <if test="workshopList != null and workshopList.size() > 0">
+            AND Workshop IN
+            <foreach collection="workshopList" item="ws" open="(" separator="," close=")">
+                #{ws}
+            </foreach>
+        </if>
+    </select>
+
 </mapper>

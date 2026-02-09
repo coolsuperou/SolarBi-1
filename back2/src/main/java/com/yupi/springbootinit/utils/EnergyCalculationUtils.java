@@ -6,6 +6,8 @@ import com.yupi.springbootinit.model.dto.tempmonitor.DailyEnergyConsumption;
 import com.yupi.springbootinit.model.entity.TempMonitor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.Comparator;
@@ -14,10 +16,17 @@ import java.util.Comparator;
  * 🔥 统一的能耗计算工具类
  * 所有车间的小时/日能耗计算都使用这个工具类
  * 避免代码重复，便于维护
- * @author yupi
+ * 
+ * @author 每天十点睡
+ * @date 2026-02-09
+ * 修改：使用 BigDecimal 替代 Double，确保精确计算，避免浮点数误差
  */
 @Slf4j
 public class EnergyCalculationUtils {
+
+    /** BigDecimal 计算精度 */
+    private static final int SCALE = 4;
+    private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
 
     /**
      * 🔥 通用小时能耗计算方法
@@ -58,8 +67,8 @@ public class EnergyCalculationUtils {
             Date hourEnd = cal.getTime();
 
             // 所有设备的能耗汇总
-            Double totalStartEnergy = 0.0;
-            Double totalEndEnergy = 0.0;
+            BigDecimal totalStartEnergy = BigDecimal.ZERO;
+            BigDecimal totalEndEnergy = BigDecimal.ZERO;
             Date earliestStartTime = null;
             Date latestEndTime = null;
             boolean hasValidData = false;
@@ -91,7 +100,7 @@ public class EnergyCalculationUtils {
 
                 // 累加各设备的开始能耗
                 if (startRecord != null && startRecord.getElectricEnergy() != null) {
-                    totalStartEnergy += startRecord.getElectricEnergy();
+                    totalStartEnergy = totalStartEnergy.add(BigDecimal.valueOf(startRecord.getElectricEnergy()));
                     if (earliestStartTime == null || startRecord.getUpdateTime().before(earliestStartTime)) {
                         earliestStartTime = startRecord.getUpdateTime();
                     }
@@ -100,7 +109,7 @@ public class EnergyCalculationUtils {
 
                 // 累加各设备的结束能耗
                 if (endRecord != null && endRecord.getElectricEnergy() != null) {
-                    totalEndEnergy += endRecord.getElectricEnergy();
+                    totalEndEnergy = totalEndEnergy.add(BigDecimal.valueOf(endRecord.getElectricEnergy()));
                     if (latestEndTime == null || endRecord.getUpdateTime().after(latestEndTime)) {
                         latestEndTime = endRecord.getUpdateTime();
                     }
@@ -109,22 +118,24 @@ public class EnergyCalculationUtils {
             }
 
             // 构建结果（只有有效数据才添加）
-            if (hasValidData && totalStartEnergy != null && totalEndEnergy != null &&
-                    totalStartEnergy > 0 && totalEndEnergy > 0) {
+            if (hasValidData && totalStartEnergy.compareTo(BigDecimal.ZERO) > 0 && 
+                    totalEndEnergy.compareTo(BigDecimal.ZERO) > 0) {
 
                 HourlyEnergyConsumption consumption = new HourlyEnergyConsumption();
                 consumption.setDeviceId(workshopName);
                 consumption.setName(workshopName);
                 consumption.setWorkshop(workshopName);
                 consumption.setHour(hourStart);
-                consumption.setStartEnergy(totalStartEnergy);
-                consumption.setEndEnergy(totalEndEnergy);
+                consumption.setStartEnergy(totalStartEnergy.setScale(SCALE, ROUNDING_MODE));
+                consumption.setEndEnergy(totalEndEnergy.setScale(SCALE, ROUNDING_MODE));
                 consumption.setStartTime(earliestStartTime);
                 consumption.setEndTime(latestEndTime);
 
                 // 计算能耗差值
-                if (totalEndEnergy >= totalStartEnergy) {
-                    consumption.setEnergyConsumption(totalEndEnergy - totalStartEnergy);
+                if (totalEndEnergy.compareTo(totalStartEnergy) >= 0) {
+                    consumption.setEnergyConsumption(
+                        totalEndEnergy.subtract(totalStartEnergy).setScale(SCALE, ROUNDING_MODE)
+                    );
                 } else {
                     consumption.setEnergyConsumption(null);
                 }
@@ -184,7 +195,7 @@ public class EnergyCalculationUtils {
             Date dayEnd = cal.getTime();
 
             // 计算所有设备的能耗并累加
-            double totalEnergyConsumption = 0.0;
+            BigDecimal totalEnergyConsumption = BigDecimal.ZERO;
             Date earliestStartTime = null;
             Date latestEndTime = null;
             boolean hasValidData = false;
@@ -218,9 +229,12 @@ public class EnergyCalculationUtils {
                 if (startRecord != null && endRecord != null &&
                         startRecord.getElectricEnergy() != null && endRecord.getElectricEnergy() != null) {
 
-                    double deviceEnergy = endRecord.getElectricEnergy() - startRecord.getElectricEnergy();
-                    if (deviceEnergy >= 0) {
-                        totalEnergyConsumption += deviceEnergy;
+                    BigDecimal startEnergy = BigDecimal.valueOf(startRecord.getElectricEnergy());
+                    BigDecimal endEnergy = BigDecimal.valueOf(endRecord.getElectricEnergy());
+                    BigDecimal deviceEnergy = endEnergy.subtract(startEnergy);
+                    
+                    if (deviceEnergy.compareTo(BigDecimal.ZERO) >= 0) {
+                        totalEnergyConsumption = totalEnergyConsumption.add(deviceEnergy);
                         hasValidData = true;
 
                         if (earliestStartTime == null || startRecord.getUpdateTime().before(earliestStartTime)) {
@@ -247,10 +261,10 @@ public class EnergyCalculationUtils {
                 consumption.setDeviceId(workshopName);
                 consumption.setName(workshopName);
                 consumption.setWorkshop(workshopName);
-                consumption.setDay(dayCalendar.getTime());  // 使用归零后的日期，避免前端时间轴偏移
+                consumption.setDay(dayCalendar.getTime());
                 consumption.setStartTime(earliestStartTime);
                 consumption.setEndTime(latestEndTime);
-                consumption.setEnergyConsumption(totalEnergyConsumption);
+                consumption.setEnergyConsumption(totalEnergyConsumption.setScale(SCALE, ROUNDING_MODE));
 
                 result.add(consumption);
             }
@@ -312,7 +326,7 @@ public class EnergyCalculationUtils {
 
         while (cal.getTime().before(endTime)) {
             dailyPoints.add(cal.getTime());
-            cal.add(Calendar.DAY_OF_MONTH, 1);  // 每次加一天
+            cal.add(Calendar.DAY_OF_MONTH, 1);
         }
 
         return dailyPoints;

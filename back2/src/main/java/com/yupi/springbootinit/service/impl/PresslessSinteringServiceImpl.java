@@ -254,8 +254,9 @@ public class PresslessSinteringServiceImpl implements PresslessSinteringService 
 
             totalConsumption = dailyResults.stream()
                     .filter(item -> item.getEnergyConsumption() != null)
-                    .mapToDouble(DailyEnergyConsumption::getEnergyConsumption)
-                    .sum();
+                    .map(DailyEnergyConsumption::getEnergyConsumption)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                    .doubleValue();
 
             log.info("日模式计算: {}天数据，总消耗: {} kWh (仅电能表设备)", dailyResults.size(), totalConsumption);
 
@@ -267,8 +268,9 @@ public class PresslessSinteringServiceImpl implements PresslessSinteringService 
 
             totalConsumption = hourlyResults.stream()
                     .filter(item -> item.getEnergyConsumption() != null)
-                    .mapToDouble(HourlyEnergyConsumption::getEnergyConsumption)
-                    .sum();
+                    .map(HourlyEnergyConsumption::getEnergyConsumption)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                    .doubleValue();
 
             log.info("小时模式计算: {}小时数据，总消耗: {} kWh (仅电能表设备)", hourlyResults.size(), totalConsumption);
         }

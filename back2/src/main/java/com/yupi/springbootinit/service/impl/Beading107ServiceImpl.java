@@ -1,4 +1,5 @@
 package com.yupi.springbootinit.service.impl;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -133,18 +134,18 @@ public class Beading107ServiceImpl implements Beading107Service {
         );
 
         // 🔥 减法操作：从主结果中减去嵌套表对应时间的消耗
-        Map<Date, Double> nestedMap = nestedResult.stream()
+        Map<Date, BigDecimal> nestedMap = nestedResult.stream()
                 .collect(Collectors.toMap(
                         HourlyEnergyConsumption::getHour,
-                        item -> item.getEnergyConsumption() != null ? item.getEnergyConsumption() : 0.0,
-                        Double::sum
+                        item -> item.getEnergyConsumption() != null ? item.getEnergyConsumption() : BigDecimal.ZERO,
+                        BigDecimal::add
                 ));
 
         for (HourlyEnergyConsumption mainItem : mainResult) {
             if (mainItem.getHour() != null && mainItem.getEnergyConsumption() != null) {
-                Double nestedConsumption = nestedMap.get(mainItem.getHour());
-                if (nestedConsumption != null && nestedConsumption > 0) {
-                    Double netConsumption = Math.max(0.0, mainItem.getEnergyConsumption() - nestedConsumption);
+                BigDecimal nestedConsumption = nestedMap.get(mainItem.getHour());
+                if (nestedConsumption != null && nestedConsumption.compareTo(BigDecimal.ZERO) > 0) {
+                    BigDecimal netConsumption = mainItem.getEnergyConsumption().subtract(nestedConsumption).max(BigDecimal.ZERO);
                     log.debug("小时: {}, 107串珠: {} kWh, 嵌套表: {} kWh, 净消耗: {} kWh",
                             mainItem.getHour(), mainItem.getEnergyConsumption(), nestedConsumption, netConsumption);
                     mainItem.setEnergyConsumption(netConsumption);
@@ -205,18 +206,18 @@ public class Beading107ServiceImpl implements Beading107Service {
         );
 
         // 🔥 减法操作：从主结果中减去嵌套表对应日期的消耗
-        Map<Date, Double> nestedMap = nestedResult.stream()
+        Map<Date, BigDecimal> nestedMap = nestedResult.stream()
                 .collect(Collectors.toMap(
                         DailyEnergyConsumption::getDay,
-                        item -> item.getEnergyConsumption() != null ? item.getEnergyConsumption() : 0.0,
-                        Double::sum
+                        item -> item.getEnergyConsumption() != null ? item.getEnergyConsumption() : BigDecimal.ZERO,
+                        BigDecimal::add
                 ));
 
         for (DailyEnergyConsumption mainItem : mainResult) {
             if (mainItem.getDay() != null && mainItem.getEnergyConsumption() != null) {
-                Double nestedConsumption = nestedMap.get(mainItem.getDay());
-                if (nestedConsumption != null && nestedConsumption > 0) {
-                    Double netConsumption = Math.max(0.0, mainItem.getEnergyConsumption() - nestedConsumption);
+                BigDecimal nestedConsumption = nestedMap.get(mainItem.getDay());
+                if (nestedConsumption != null && nestedConsumption.compareTo(BigDecimal.ZERO) > 0) {
+                    BigDecimal netConsumption = mainItem.getEnergyConsumption().subtract(nestedConsumption).max(BigDecimal.ZERO);
                     log.debug("日期: {}, 107串珠: {} kWh, 嵌套表: {} kWh, 净消耗: {} kWh",
                             mainItem.getDay(), mainItem.getEnergyConsumption(), nestedConsumption, netConsumption);
                     mainItem.setEnergyConsumption(netConsumption);
@@ -278,13 +279,15 @@ public class Beading107ServiceImpl implements Beading107Service {
 
             mainTotalConsumption = mainDailyResults.stream()
                     .filter(item -> item.getEnergyConsumption() != null)
-                    .mapToDouble(DailyEnergyConsumption::getEnergyConsumption)
-                    .sum();
+                    .map(DailyEnergyConsumption::getEnergyConsumption)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                    .doubleValue();
 
             nestedTotalConsumption = nestedDailyResults.stream()
                     .filter(item -> item.getEnergyConsumption() != null)
-                    .mapToDouble(DailyEnergyConsumption::getEnergyConsumption)
-                    .sum();
+                    .map(DailyEnergyConsumption::getEnergyConsumption)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                    .doubleValue();
 
             log.info("日模式计算: 107串珠总消耗: {} kWh, 嵌套表总消耗: {} kWh", mainTotalConsumption, nestedTotalConsumption);
 
@@ -299,13 +302,15 @@ public class Beading107ServiceImpl implements Beading107Service {
 
             mainTotalConsumption = mainHourlyResults.stream()
                     .filter(item -> item.getEnergyConsumption() != null)
-                    .mapToDouble(HourlyEnergyConsumption::getEnergyConsumption)
-                    .sum();
+                    .map(HourlyEnergyConsumption::getEnergyConsumption)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                    .doubleValue();
 
             nestedTotalConsumption = nestedHourlyResults.stream()
                     .filter(item -> item.getEnergyConsumption() != null)
-                    .mapToDouble(HourlyEnergyConsumption::getEnergyConsumption)
-                    .sum();
+                    .map(HourlyEnergyConsumption::getEnergyConsumption)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                    .doubleValue();
 
             log.info("小时模式计算: 107串珠总消耗: {} kWh, 嵌套表总消耗: {} kWh", mainTotalConsumption, nestedTotalConsumption);
         }

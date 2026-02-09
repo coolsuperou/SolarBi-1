@@ -38,6 +38,9 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
 
     @Resource
     private com.yupi.springbootinit.service.UserService userService;
+    
+    @Resource
+    private com.yupi.springbootinit.service.MonthlyEnergyService monthlyEnergyService;
 
     @Override
     public PowerSupplyDataVO getPowerSupplyData(Integer year, Integer month) {
@@ -234,50 +237,59 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "未找到供电局数据");
         }
         
-        // 2. 分别计算1-24日和25-月末的时间范围
-        // 2.1 计算1-24日时间范围
-        Calendar start1To24 = Calendar.getInstance();
-        start1To24.set(request.getYear(), request.getMonth() - 1, 1,
-                EnergyTimeConfig.DAY_START_HOUR,
-                EnergyTimeConfig.DAY_START_MINUTE,
-                EnergyTimeConfig.DAY_START_SECOND);
-        start1To24.set(Calendar.MILLISECOND, 0);
+        // 🔥 2. 直接调用月度能耗统计服务获取整个月的数据（确保数据一致性）
+        javax.servlet.http.HttpServletRequest httpRequest = 
+            ((org.springframework.web.context.request.ServletRequestAttributes) 
+                org.springframework.web.context.request.RequestContextHolder.getRequestAttributes())
+                .getRequest();
         
-        Calendar end1To24 = Calendar.getInstance();
-        end1To24.set(request.getYear(), request.getMonth() - 1, 25,
-                EnergyTimeConfig.DAY_END_HOUR,
-                EnergyTimeConfig.DAY_END_MINUTE,
-                EnergyTimeConfig.DAY_END_SECOND);
-        end1To24.set(Calendar.MILLISECOND, 999);
+        com.yupi.springbootinit.model.dto.tempmonitor.MonthlyEnergyStatistics monthlyStats = 
+            monthlyEnergyService.getMonthlyStatistics(request.getYear(), request.getMonth(), httpRequest);
         
-        // 2.2 计算25-月末时间范围
-        Calendar start25ToEnd = Calendar.getInstance();
-        start25ToEnd.set(request.getYear(), request.getMonth() - 1, 25,
-                EnergyTimeConfig.DAY_START_HOUR,
-                EnergyTimeConfig.DAY_START_MINUTE,
-                EnergyTimeConfig.DAY_START_SECOND);
-        start25ToEnd.set(Calendar.MILLISECOND, 0);
+        if (monthlyStats == null || monthlyStats.getWorkshopMonthlyTotal() == null) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "无法获取月度能耗统计数据");
+        }
         
-        Calendar end25ToEnd = Calendar.getInstance();
-        end25ToEnd.set(request.getYear(), request.getMonth(), 1,
-                EnergyTimeConfig.DAY_END_HOUR,
-                EnergyTimeConfig.DAY_END_MINUTE,
-                EnergyTimeConfig.DAY_END_SECOND);
-        end25ToEnd.set(Calendar.MILLISECOND, 999);
+        log.info("🔥 使用月度能耗统计数据，共{}个车间", monthlyStats.getWorkshopList().size());
         
-        log.info("1-24日时间范围: {} 到 {}", start1To24.getTime(), end1To24.getTime());
-        log.info("25-月末时间范围: {} 到 {}", start25ToEnd.getTime(), end25ToEnd.getTime());
+        // 3. 从月度统计中提取1-24日和25-月末的数据
+        Map<String, BigDecimal> workshopEnergy1To24 = new java.util.HashMap<>();
+        Map<String, BigDecimal> workshopEnergy25ToEnd = new java.util.HashMap<>();
+        Map<String, BigDecimal> workshopEnergyMap = new java.util.HashMap<>();
         
-        // 3. 分别计算两个时间段的各车间电量
-        Map<String, BigDecimal> workshopEnergy1To24 = calculateWorkshopEnergy(start1To24.getTime(), end1To24.getTime());
-        Map<String, BigDecimal> workshopEnergy25ToEnd = calculateWorkshopEnergy(start25ToEnd.getTime(), end25ToEnd.getTime());
+        int daysInMonth = monthlyStats.getDaysInMonth();
+        
+        for (String workshop : monthlyStats.getWorkshopList()) {
+            List<BigDecimal> dailyData = monthlyStats.getWorkshopDailyData().get(workshop);
+            if (dailyData == null || dailyData.isEmpty()) {
+                continue;
+            }
+            
+            // 累加1-24日的能耗（索引0-23，对应1日到24日）
+            BigDecimal energy1To24 = BigDecimal.ZERO;
+            for (int i = 0; i < 24 && i < dailyData.size(); i++) {
+                energy1To24 = energy1To24.add(dailyData.get(i));
+            }
+            workshopEnergy1To24.put(workshop, energy1To24);
+            
+            // 累加25-月末的能耗（索引24到月末）
+            BigDecimal energy25ToEnd = BigDecimal.ZERO;
+            for (int i = 24; i < daysInMonth && i < dailyData.size(); i++) {
+                energy25ToEnd = energy25ToEnd.add(dailyData.get(i));
+            }
+            workshopEnergy25ToEnd.put(workshop, energy25ToEnd);
+            
+            // 整个月的能耗（直接使用月度统计的汇总值）
+            BigDecimal monthlyTotal = monthlyStats.getWorkshopMonthlyTotal().get(workshop);
+            workshopEnergyMap.put(workshop, monthlyTotal);
+        }
         
         // 4. 计算两个时间段的总电量
         BigDecimal totalEnergy1To24 = workshopEnergy1To24.values().stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal totalEnergy25ToEnd = workshopEnergy25ToEnd.values().stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal totalEnergy = totalEnergy1To24.add(totalEnergy25ToEnd);
+        BigDecimal totalEnergy = monthlyStats.getMonthlyTotal();
         
         if (totalEnergy.compareTo(BigDecimal.ZERO) == 0) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "全月总电量为0，无法计算");
@@ -287,14 +299,7 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
         log.info("25-月末总电量: {} kWh", totalEnergy25ToEnd);
         log.info("全月总电量: {} kWh", totalEnergy);
         
-        // 5. 合并两个时间段的车间电量
-        Map<String, BigDecimal> workshopEnergyMap = new java.util.HashMap<>();
-        workshopEnergy1To24.forEach((workshop, energy) -> 
-            workshopEnergyMap.put(workshop, energy));
-        workshopEnergy25ToEnd.forEach((workshop, energy) -> 
-            workshopEnergyMap.merge(workshop, energy, BigDecimal::add));
-        
-        // 6. 计算总金额和各时间段的单价
+        // 5. 计算总金额和各时间段的单价
         BigDecimal totalAmount = powerSupplyData.getAmount1To24().add(powerSupplyData.getAmount25ToEnd());
         
         // 计算1-24日内部单价
@@ -321,14 +326,14 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
         log.info("月平均单价: {} 元 ÷ {} kWh = {} 元/kWh",
                 totalAmount, totalEnergy, monthlyAvgUnitPrice);
         
-        // 7. 生成部门电费明细（使用月平均单价）
+        // 6. 生成部门电费明细（使用月平均单价）
         List<DepartmentCostDTO> departmentCostList = generateDepartmentCostList(workshopEnergyMap, monthlyAvgUnitPrice);
         
-        // 8. 计算一级部门汇总
+        // 7. 计算一级部门汇总
         Map<String, ElectricityCostResponse.DepartmentSummaryDTO> dept1Summary = 
                 calculateDept1Summary(departmentCostList);
         
-        // 9. 组装响应
+        // 8. 组装响应
         ElectricityCostResponse response = new ElectricityCostResponse();
         response.setPowerSupplyData(powerSupplyData);
         response.setDepartmentCostList(departmentCostList);
@@ -432,14 +437,27 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
                     EnergyCalculationUtils.calculateDailyEnergyFromRawData(
                             filteredData, startTime, endTime, workshop);
             
-            // 累加所有天的能耗
-            double totalEnergy = dailyConsumptions.stream()
+            // 累加所有天的能耗 - 直接使用 BigDecimal,避免 double 转换的精度损失
+            BigDecimal totalEnergy = dailyConsumptions.stream()
                     .filter(c -> c.getEnergyConsumption() != null)
-                    .mapToDouble(DailyEnergyConsumption::getEnergyConsumption)
-                    .sum();
+                    .map(DailyEnergyConsumption::getEnergyConsumption)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
             
-            workshopEnergyMap.put(workshop, BigDecimal.valueOf(totalEnergy));
-            log.info("车间 {} 电量: {} kWh", workshop, String.format("%.2f", totalEnergy));
+            workshopEnergyMap.put(workshop, totalEnergy);
+            log.info("车间 {} 电量: {} kWh", workshop, totalEnergy.setScale(2, RoundingMode.HALF_UP));
+        }
+        
+        // 🔥 特殊处理：104还原需要扣除无压烧结的数据
+        if (workshopEnergyMap.containsKey("104还原") && workshopEnergyMap.containsKey("无压烧结")) {
+            BigDecimal restoration104Energy = workshopEnergyMap.get("104还原");
+            BigDecimal presslessEnergy = workshopEnergyMap.get("无压烧结");
+            BigDecimal adjustedEnergy = restoration104Energy.subtract(presslessEnergy).max(BigDecimal.ZERO);
+            
+            workshopEnergyMap.put("104还原", adjustedEnergy);
+            log.info("🔥 104还原已扣除无压烧结: 原始={} kWh, 无压烧结={} kWh, 调整后={} kWh", 
+                    String.format("%.2f", restoration104Energy), 
+                    String.format("%.2f", presslessEnergy), 
+                    String.format("%.2f", adjustedEnergy));
         }
         
         return workshopEnergyMap;

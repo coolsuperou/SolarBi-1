@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -185,13 +186,13 @@ public class HourlyEnergyServiceImpl implements HourlyEnergyService {
                         continue;
                     }
                     
-                    Double energy = consumption.getEnergyConsumption() != null ? 
-                                   consumption.getEnergyConsumption() : 0.0;
-                    hourlyData.set(index, energy);
+                    BigDecimal energy = consumption.getEnergyConsumption() != null ? 
+                                   consumption.getEnergyConsumption() : BigDecimal.ZERO;
+                    hourlyData.set(index, energy.doubleValue());
                     
                     // 线程安全地累加到每小时总能耗
                     synchronized (hourlyTotalArray) {
-                        hourlyTotalArray[index] += energy;
+                        hourlyTotalArray[index] += energy.doubleValue();
                     }
                 }
             }

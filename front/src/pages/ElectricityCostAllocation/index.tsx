@@ -201,7 +201,9 @@ const ElectricityCostAllocationPage: React.FC = () => {
       backgroundColor: 'transparent',
       tooltip: {
         trigger: 'item',
-        formatter: '{a} <br/>{b}: ¥{c} ({d}%)',
+        formatter: (params: any) => {
+          return `${params.seriesName} <br/>${params.name}: ¥${params.value.toFixed(2)} (${params.percent}%)`;
+        },
         backgroundColor: 'rgba(10, 25, 41, 0.9)',
         borderColor: '#00d4ff',
         borderWidth: 1,
@@ -229,7 +231,9 @@ const ElectricityCostAllocationPage: React.FC = () => {
           },
           label: {
             show: true,
-            formatter: '{b}\n¥{c}\n{d}%',
+            formatter: (params: any) => {
+              return `${params.name}\n¥${params.value.toFixed(2)}\n${params.percent}%`;
+            },
             color: '#ffffff',
             fontSize: 12,
             fontWeight: 'bold',
@@ -262,7 +266,9 @@ const ElectricityCostAllocationPage: React.FC = () => {
       backgroundColor: 'transparent',
       tooltip: {
         trigger: 'item',
-        formatter: '{a} <br/>{b}: ¥{c} ({d}%)',
+        formatter: (params: any) => {
+          return `${params.seriesName} <br/>${params.name}: ¥${params.value.toFixed(2)} (${params.percent}%)`;
+        },
         backgroundColor: 'rgba(10, 25, 41, 0.9)',
         borderColor: '#00d4ff',
         borderWidth: 1,
@@ -297,7 +303,9 @@ const ElectricityCostAllocationPage: React.FC = () => {
               show: true,
               fontSize: 13,
               fontWeight: 'bold',
-              formatter: '{b}\n¥{c}\n{d}%',
+              formatter: (params: any) => {
+                return `${params.name}\n¥${params.value.toFixed(2)}\n${params.percent}%`;
+              },
               color: '#ffffff',
             },
             itemStyle: {

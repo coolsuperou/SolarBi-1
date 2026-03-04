@@ -100,27 +100,39 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "未找到供电局数据");
         }
         
-        // 2. 计算时间范围 (1日 7:00:00 到 24日 6:59:59)
-        Calendar startCal = Calendar.getInstance();
-        startCal.set(request.getYear(), request.getMonth() - 1, 1,
-                EnergyTimeConfig.DAY_START_HOUR,
-                EnergyTimeConfig.DAY_START_MINUTE,
-                EnergyTimeConfig.DAY_START_SECOND);
-        startCal.set(Calendar.MILLISECOND, 0);
-        Date startTime = startCal.getTime();
+        // 🔥 2. 直接调用月度能耗统计服务获取整个月的数据（确保数据一致性）
+        javax.servlet.http.HttpServletRequest httpRequest = 
+            ((org.springframework.web.context.request.ServletRequestAttributes) 
+                org.springframework.web.context.request.RequestContextHolder.getRequestAttributes())
+                .getRequest();
         
-        Calendar endCal = Calendar.getInstance();
-        endCal.set(request.getYear(), request.getMonth() - 1, 25,
-                EnergyTimeConfig.DAY_END_HOUR,
-                EnergyTimeConfig.DAY_END_MINUTE,
-                EnergyTimeConfig.DAY_END_SECOND);
-        endCal.set(Calendar.MILLISECOND, 999);
-        Date endTime = endCal.getTime();
+        com.yupi.springbootinit.model.dto.tempmonitor.MonthlyEnergyStatistics monthlyStats = 
+            monthlyEnergyService.getMonthlyStatistics(request.getYear(), request.getMonth(), httpRequest);
         
-        log.info("计算时间范围: {} 到 {}", startTime, endTime);
+        if (monthlyStats == null || monthlyStats.getWorkshopMonthlyTotal() == null) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "无法获取月度能耗统计数据");
+        }
         
-        // 3. 计算各车间电量
-        Map<String, BigDecimal> workshopEnergyMap = calculateWorkshopEnergy(startTime, endTime);
+        log.info("🔥 使用月度能耗统计数据，共{}个车间", monthlyStats.getWorkshopList().size());
+        
+        // 3. 从月度统计中提取1-24日的数据
+        Map<String, BigDecimal> workshopEnergyMap = new java.util.HashMap<>();
+        
+        int daysInMonth = monthlyStats.getDaysInMonth();
+        
+        for (String workshop : monthlyStats.getWorkshopList()) {
+            List<BigDecimal> dailyData = monthlyStats.getWorkshopDailyData().get(workshop);
+            if (dailyData == null || dailyData.isEmpty()) {
+                continue;
+            }
+            
+            // 累加1-24日的能耗（索引0-23，对应1日到24日）
+            BigDecimal energy1To24 = BigDecimal.ZERO;
+            for (int i = 0; i < 24 && i < dailyData.size(); i++) {
+                energy1To24 = energy1To24.add(dailyData.get(i));
+            }
+            workshopEnergyMap.put(workshop, energy1To24);
+        }
         
         // 4. 计算总电量
         BigDecimal totalEnergy = workshopEnergyMap.values().stream()

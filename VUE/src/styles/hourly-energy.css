@@ -1,0 +1,164 @@
+/* =============================================
+ * 日能耗统计页样式 - 亮色风格
+ * 参考 ElectricEnergyManagement 设计
+ * ============================================= */
+
+/* 查询操作栏 */
+.hourly-toolbar {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hourly-toolbar select,
+.hourly-toolbar input[type="number"] {
+  padding: 6px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1e293b;
+  background: #f8fafc;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.hourly-toolbar select:focus,
+.hourly-toolbar input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* 宽表格容器 */
+.hourly-table-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.hourly-table-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* 美化滚动条 */
+.hourly-table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.hourly-table-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.hourly-table-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.hourly-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 日能耗宽表格 */
+.hourly-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.hourly-table thead th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 10px 12px;
+  border-bottom: 2px solid #e2e8f0;
+  text-align: center;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* 车间名称列 - sticky */
+.hourly-table thead th:first-child,
+.hourly-table tbody td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  min-width: 120px;
+  text-align: left;
+}
+
+.hourly-table thead th:first-child {
+  z-index: 4;
+  background: #f8fafc;
+}
+
+.hourly-table tbody td:first-child {
+  background: #fff;
+  font-weight: 600;
+  color: #1e293b;
+  border-right: 2px solid #e2e8f0;
+}
+
+.hourly-table tbody td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: center;
+  color: #475569;
+  white-space: nowrap;
+}
+
+/* 行悬停高亮 */
+.hourly-table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+.hourly-table tbody tr:hover td:first-child {
+  background: #eff6ff;
+}
+
+/* 日合计列 - 橙色高亮 */
+.hourly-table thead th.col-total {
+  background: #fff7ed;
+  color: #ea580c;
+  font-weight: 700;
+}
+
+.hourly-table tbody td.col-total {
+  background: #fff7ed;
+  color: #ea580c;
+  font-weight: 700;
+}
+
+/* 底部合计行 - 绿色背景 */
+.hourly-table tbody tr.row-total td {
+  background: #f0fdf4;
+  font-weight: 700;
+  color: #16a34a;
+  border-top: 2px solid #86efac;
+}
+
+.hourly-table tbody tr.row-total td:first-child {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+/* 暂无数据提示 */
+.hourly-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+  font-size: 14px;
+}

@@ -1,0 +1,407 @@
+/* =============================================
+ * 通用车间监控页样式 - 亮色风格
+ * 参考 ElectricEnergyManagement 设计
+ * ============================================= */
+
+/* ===== 页面入场动画 ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+.workshop-page .overview-cards {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.workshop-page .search-card {
+  animation: fadeInUp 0.5s ease-out 0.08s both;
+}
+
+.workshop-page .chart-card {
+  animation: fadeInUp 0.5s ease-out 0.16s both;
+}
+
+.workshop-page .table-card {
+  animation: fadeInUp 0.5s ease-out 0.24s both;
+}
+
+/* ===== 模式切换按钮组 ===== */
+.mode-switch {
+  display: inline-flex;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #f8fafc;
+  padding: 3px;
+  gap: 2px;
+}
+
+.mode-btn {
+  border: none;
+  padding: 7px 22px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  background: transparent;
+  border-radius: 17px;
+}
+
+.mode-btn.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+}
+
+.mode-btn:not(.active):hover {
+  color: #3b82f6;
+  background: #eff6ff;
+}
+
+/* ===== 统计概览卡片 ===== */
+.workshop-page .overview-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.workshop-page .overview-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px 26px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 4px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.workshop-page .overview-card::after {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  opacity: 0.06;
+}
+
+.workshop-page .overview-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+}
+
+.workshop-page .overview-card:nth-child(1) { border-left-color: #8b5cf6; }
+.workshop-page .overview-card:nth-child(1)::after { background: #8b5cf6; }
+.workshop-page .overview-card:nth-child(2) { border-left-color: #22c55e; }
+.workshop-page .overview-card:nth-child(2)::after { background: #22c55e; }
+.workshop-page .overview-card:nth-child(3) { border-left-color: #f97316; }
+.workshop-page .overview-card:nth-child(3)::after { background: #f97316; }
+
+.workshop-page .overview-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #fff;
+  flex-shrink: 0;
+  transition: transform 0.3s;
+}
+
+.workshop-page .overview-card:hover .overview-icon {
+  transform: scale(1.08);
+}
+
+.workshop-page .overview-icon.purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.workshop-page .overview-icon.green {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.workshop-page .overview-icon.orange {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.workshop-page .overview-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.workshop-page .overview-unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-left: 2px;
+}
+
+.workshop-page .overview-label {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* ===== 查询表单行 ===== */
+.search-form-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ===== 查询按钮 ===== */
+.workshop-page .btn-search {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.workshop-page .btn-search:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+}
+
+.workshop-page .btn-search:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-search.loading {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+/* ===== 图表区域 ===== */
+.chart-card {
+  background: #fff;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+}
+
+.chart-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.chart-card-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+  user-select: none;
+}
+
+.chart-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-card-title > i {
+  color: #3b82f6;
+  font-size: 16px;
+}
+
+.chart-badge {
+  font-size: 11px;
+  font-weight: 500;
+  color: #3b82f6;
+  background: #eff6ff;
+  padding: 2px 10px;
+  border-radius: 10px;
+  margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.chart-badge i {
+  font-size: 16px;
+  margin-right: -2px;
+  color: #3b82f6;
+}
+
+.collapse-icon {
+  color: #94a3b8;
+  font-size: 16px;
+  transition: transform 0.3s, color 0.2s;
+}
+
+.chart-card-header:hover .collapse-icon {
+  color: #3b82f6;
+}
+
+.chart-area {
+  height: 380px;
+  padding: 16px 20px 20px;
+  position: relative;
+}
+
+.chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #cbd5e1;
+}
+
+.chart-empty i {
+  font-size: 52px;
+  margin-bottom: 14px;
+  opacity: 0.5;
+}
+
+.chart-empty p {
+  font-size: 14px;
+  margin: 0;
+  color: #94a3b8;
+}
+
+/* ===== 表格卡片 ===== */
+.workshop-page .table-card {
+  transition: box-shadow 0.3s;
+}
+
+.workshop-page .table-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.workshop-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+}
+
+.workshop-table-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.workshop-table-title i {
+  color: #3b82f6;
+}
+
+.table-count {
+  font-size: 12px;
+  color: #3b82f6;
+  background: #eff6ff;
+  padding: 4px 12px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.table-count i {
+  font-size: 12px;
+}
+
+/* 斑马纹 */
+.data-table tbody tr.row-even td {
+  background: #fafbfc;
+}
+
+/* 行悬停 */
+.workshop-page .data-table tbody tr {
+  transition: background 0.2s;
+}
+
+.workshop-page .data-table tbody tr:hover td {
+  background: #eff6ff !important;
+}
+
+/* 行号列 */
+.td-index {
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 600;
+  width: 50px;
+}
+
+/* 空数据状态 */
+.empty-cell {
+  padding: 48px 0 !important;
+}
+
+.empty-state-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #cbd5e1;
+}
+
+.empty-state-mini i {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.empty-state-mini p {
+  margin: 0;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+/* ===== 分页美化 ===== */
+.workshop-page .page-btn.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-color: transparent;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 992px) {
+  .workshop-page .overview-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-area {
+    height: 280px;
+  }
+  .search-form-row {
+    gap: 8px;
+  }
+}

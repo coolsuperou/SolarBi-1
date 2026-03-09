@@ -54,6 +54,34 @@
   color: rgba(255, 255, 255, 0.35);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.sidebar .nav-group-title:hover {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.sidebar .nav-group-title .collapse-arrow {
+  font-size: 10px;
+  transition: transform 0.3s;
+}
+
+/* 分组内容折叠动画 */
+.sidebar .nav-group-items {
+  overflow: hidden;
+  max-height: 2000px;
+  transition: max-height 0.35s ease-in-out, opacity 0.25s ease;
+  opacity: 1;
+}
+
+.sidebar .nav-group-items.collapsed {
+  max-height: 0;
+  opacity: 0;
 }
 
 /* 导航链接 */

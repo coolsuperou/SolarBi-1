@@ -489,7 +489,19 @@ function renderChart() {
           boxPadding: 6,
           usePointStyle: true,
           callbacks: {
-            title: (items) => items.length ? `📅 ${items[0].label}` : '',
+            title: (items) => {
+              if (!items.length) return ''
+              const label = items[0].label
+              if (queryMode.value === 'hour') {
+                // label 格式为 "MM-DD HH:00"，转成 "MM-DD HH:00-(HH+1):00"
+                const match = label.match(/^(\d{2}-\d{2})\s+(\d{2}):00$/)
+                if (match) {
+                  const nextHour = String((parseInt(match[2]) + 1) % 24).padStart(2, '0')
+                  return `📅 ${match[1]} ${match[2]}:00-${nextHour}:00`
+                }
+              }
+              return `📅 ${label}`
+            },
             label: (ctx) => ` ⚡ ${ctx.parsed.y.toFixed(2)} kWh`
           }
         }

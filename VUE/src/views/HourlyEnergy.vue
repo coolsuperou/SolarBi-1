@@ -11,8 +11,9 @@
       <select v-model="selectedDay">
         <option v-for="d in daysInSelectedMonth" :key="d" :value="d">{{ String(d).padStart(2, '0') }}日</option>
       </select>
-      <button class="btn btn-query" @click="fetchData">
-        <i class="bi bi-search"></i> 查询
+      <button class="btn btn-query" :class="{ loading: loading }" :disabled="loading" @click="fetchData">
+        <i class="bi" :class="loading ? 'bi-arrow-repeat spin' : 'bi-search'"></i>
+        {{ loading ? '查询中...' : '查询' }}
       </button>
       <button class="btn btn-export" @click="exportExcel" :disabled="!statisticsData">
         <i class="bi bi-download"></i> 导出Excel
@@ -136,55 +137,100 @@ async function fetchData() {
 
 function exportExcel() {
   if (!statisticsData.value) return
-
   const data = statisticsData.value
-  const rows = []
 
-  // 表头行
-  const header = ['车间名称', ...hourLabels, '日合计']
-  rows.push(header)
+  // 与原版React一致的小时标签
+  const HOURS = [
+    '07:00-08:00', '08:00-09:00', '09:00-10:00', '10:00-11:00',
+    '11:00-12:00', '12:00-13:00', '13:00-14:00', '14:00-15:00',
+    '15:00-16:00', '16:00-17:00', '17:00-18:00', '18:00-19:00',
+    '19:00-20:00', '20:00-21:00', '21:00-22:00', '22:00-23:00',
+    '23:00-00:00'
+  ]
+  const NEXT_DAY_HOURS = [
+    '00:00-01:00', '01:00-02:00', '02:00-03:00', '03:00-04:00',
+    '04:00-05:00', '05:00-06:00', '06:00-07:00'
+  ]
+  const allHours = [...HOURS, ...NEXT_DAY_HOURS]
 
-  // 车间数据行
+  function esc(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')
+  }
+
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+  xml += '<?mso-application progid="Excel.Sheet"?>\n'
+  xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n'
+  xml += '  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n'
+
+  // 样式
+  xml += '<Styles>\n'
+  xml += '<Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Center"/></Style>\n'
+  xml += '<Style ss:ID="Title"><Font ss:Bold="1" ss:Size="16" ss:Color="#FFFFFF"/><Interior ss:Color="#4472C4" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/></Style>\n'
+  xml += '<Style ss:ID="Header"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF"/><Interior ss:Color="#5B9BD5" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>\n'
+  xml += '<Style ss:ID="Workshop"><Font ss:Bold="1" ss:Size="10"/><Interior ss:Color="#E2EFDA" ss:Pattern="Solid"/><Alignment ss:Horizontal="Left" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/></Borders></Style>\n'
+  xml += '<Style ss:ID="Data"><Font ss:Size="10"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0.00"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/></Borders></Style>\n'
+  xml += '<Style ss:ID="Total"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF"/><Interior ss:Color="#ED7D31" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0.00"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>\n'
+  xml += '</Styles>\n'
+
+  xml += '<Worksheet ss:Name="日能耗统计">\n<Table>\n'
+  xml += '<Column ss:Width="90"/>\n'
+  for (let i = 0; i < allHours.length; i++) xml += '<Column ss:Width="75"/>\n'
+  xml += '<Column ss:Width="100"/>\n'
+
+  // 标题
+  xml += `<Row ss:Height="30"><Cell ss:StyleID="Title" ss:MergeAcross="${allHours.length + 1}"><Data ss:Type="String">${selectedYear.value}年${selectedMonth.value}月${selectedDay.value}日 日能耗统计表</Data></Cell></Row>\n`
+  xml += '<Row ss:Height="15"></Row>\n'
+
+  // 表头
+  xml += '<Row ss:Height="25">\n'
+  xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">车间</Data></Cell>\n'
+  for (const h of HOURS) xml += `<Cell ss:StyleID="Header"><Data ss:Type="String">${h}</Data></Cell>\n`
+  for (const h of NEXT_DAY_HOURS) xml += `<Cell ss:StyleID="Header"><Data ss:Type="String">${h}(次日)</Data></Cell>\n`
+  xml += '<Cell ss:StyleID="Header"><Data ss:Type="String">日合计(kWh)</Data></Cell>\n'
+  xml += '</Row>\n'
+
+  // 数据行
   for (const workshop of data.workshopList) {
-    const hourlyArr = data.workshopHourlyData[workshop] || []
-    const row = [workshop]
-    for (let i = 0; i < 24; i++) {
-      row.push(hourlyArr[i] ?? '')
+    const hourlyData = data.workshopHourlyData[workshop] || []
+    const dailyTotal = hourlyData.reduce((sum, val) => sum + (Number(val) || 0), 0)
+    xml += '<Row ss:Height="22">\n'
+    xml += `<Cell ss:StyleID="Workshop"><Data ss:Type="String">${esc(workshop)}</Data></Cell>\n`
+    for (const value of hourlyData) {
+      if (value === 0) {
+        xml += '<Cell ss:StyleID="Data"><Data ss:Type="String">-</Data></Cell>\n'
+      } else {
+        xml += `<Cell ss:StyleID="Data"><Data ss:Type="Number">${Number(value).toFixed(2)}</Data></Cell>\n`
+      }
     }
-    row.push(calcDailyTotal(hourlyArr))
-    rows.push(row)
+    xml += `<Cell ss:StyleID="Data"><Data ss:Type="Number">${dailyTotal.toFixed(2)}</Data></Cell>\n`
+    xml += '</Row>\n'
   }
 
   // 合计行
-  const totalRow = ['合计']
   const hourlyTotal = data.hourlyTotal || []
-  for (let i = 0; i < 24; i++) {
-    totalRow.push(hourlyTotal[i] ?? '')
+  const grandTotal = hourlyTotal.reduce((sum, val) => sum + (Number(val) || 0), 0)
+  xml += '<Row ss:Height="25">\n'
+  xml += '<Cell ss:StyleID="Total"><Data ss:Type="String">合计</Data></Cell>\n'
+  for (const value of hourlyTotal) {
+    if (value === 0) {
+      xml += '<Cell ss:StyleID="Total"><Data ss:Type="String">-</Data></Cell>\n'
+    } else {
+      xml += `<Cell ss:StyleID="Total"><Data ss:Type="Number">${Number(value).toFixed(2)}</Data></Cell>\n`
+    }
   }
-  totalRow.push(calcDailyTotal(hourlyTotal))
-  rows.push(totalRow)
+  xml += `<Cell ss:StyleID="Total"><Data ss:Type="Number">${grandTotal.toFixed(2)}</Data></Cell>\n`
+  xml += '</Row>\n'
 
-  // 生成 CSV
-  const csvContent = rows.map(row =>
-    row.map(cell => {
-      const str = String(cell)
-      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-        return '"' + str.replace(/"/g, '""') + '"'
-      }
-      return str
-    }).join(',')
-  ).join('\n')
+  xml += '</Table>\n</Worksheet>\n</Workbook>'
 
-  // BOM + CSV（支持中文）
-  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+  const blob = new Blob([xml], { type: 'application/vnd.ms-excel' })
   const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  const yStr = selectedYear.value
-  const mStr = String(selectedMonth.value).padStart(2, '0')
-  const dStr = String(selectedDay.value).padStart(2, '0')
-  link.download = `日能耗统计_${yStr}年${mStr}月${dStr}日.csv`
-  link.click()
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `日能耗统计_${selectedYear.value}年${selectedMonth.value}月${selectedDay.value}日.xls`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
 

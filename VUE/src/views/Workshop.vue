@@ -111,7 +111,7 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th style="width:50px">#</th>
+            <th style="width:50px">序号</th>
             <th>设备ID</th>
             <th>部门车间</th>
             <th>名称</th>
@@ -488,21 +488,35 @@ function renderChart() {
           boxHeight: 8,
           boxPadding: 6,
           usePointStyle: true,
+          titleAlign: 'center',
+          bodyAlign: 'center',
           callbacks: {
             title: (items) => {
-              if (!items.length) return ''
-              const label = items[0].label
-              if (queryMode.value === 'hour') {
-                // label 格式为 "MM-DD HH:00"，转成 "MM-DD HH:00-(HH+1):00"
-                const match = label.match(/^(\d{2}-\d{2})\s+(\d{2}):00$/)
-                if (match) {
-                  const nextHour = String((parseInt(match[2]) + 1) % 24).padStart(2, '0')
-                  return `📅 ${match[1]} ${match[2]}:00-${nextHour}:00`
-                }
+              if (!items.length) return []
+              const idx = items[0].dataIndex
+              const d = chartData.value[idx]
+              if (!d) return []
+              if (queryMode.value === 'hour' && d.hour) {
+                const dt = new Date(d.hour)
+                const y = dt.getFullYear()
+                const mm = String(dt.getMonth() + 1).padStart(2, '0')
+                const dd = String(dt.getDate()).padStart(2, '0')
+                const hh = String(dt.getHours()).padStart(2, '0')
+                const nextHh = String((dt.getHours() + 1) % 24).padStart(2, '0')
+                return [`${y}-${mm}-${dd}`, `${hh}:00-${nextHh}:00 用电量`]
               }
-              return `📅 ${label}`
+              if (d.day) {
+                const dt = new Date(d.day)
+                const y = dt.getFullYear()
+                const mm = String(dt.getMonth() + 1).padStart(2, '0')
+                const dd = String(dt.getDate()).padStart(2, '0')
+                return [`${y}-${mm}-${dd}`, '日用电量']
+              }
+              return [items[0].label]
             },
-            label: (ctx) => ` ⚡ ${ctx.parsed.y.toFixed(2)} kWh`
+            label: (ctx) => {
+              return ` ${workshopTitle.value}：${ctx.parsed.y.toFixed(2)} kWh`
+            }
           }
         }
       },

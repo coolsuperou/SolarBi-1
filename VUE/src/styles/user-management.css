@@ -264,3 +264,75 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ===== 分页栏 ===== */
+.pagination-bar {
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f1f5f9;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.pagination-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-btn {
+  padding: 6px 16px;
+  font-size: 13px;
+  color: #475569;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-indicator {
+  font-size: 13px;
+  color: #64748b;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
+/* ===== 无权限提示 ===== */
+.no-permission {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  color: #94a3b8;
+}
+
+.no-permission i {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.no-permission p {
+  font-size: 16px;
+}

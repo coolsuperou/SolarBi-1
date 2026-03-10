@@ -43,7 +43,7 @@
                     {{ user.userRole === 'admin' ? '管理员' : '普通用户' }}
                   </span>
                 </td>
-                <td>{{ user.createTime }}</td>
+                <td>{{ formatTime(user.createTime) }}</td>
                 <td>
                   <div class="action-btns">
                     <button class="btn-sm edit" @click="openEditModal(user)">
@@ -60,12 +60,16 @@
         </div>
 
         <!-- 分页 -->
-        <div v-if="total > 0" class="pagination-bar" style="padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9;">
-          <span style="font-size: 13px; color: #94a3b8;">共 {{ total }} 条记录</span>
-          <div style="display: flex; gap: 6px;">
-            <button class="page-btn" :disabled="currentPage <= 1" @click="changePage(currentPage - 1)">上一页</button>
-            <span style="font-size: 13px; color: #64748b; line-height: 32px; padding: 0 8px;">{{ currentPage }} / {{ totalPages }}</span>
-            <button class="page-btn" :disabled="currentPage >= totalPages" @click="changePage(currentPage + 1)">下一页</button>
+        <div v-if="total > 0" class="pagination-bar">
+          <span class="pagination-info">共 {{ total }} 条记录</span>
+          <div class="pagination-btns">
+            <button class="page-btn" :disabled="currentPage <= 1" @click="changePage(currentPage - 1)">
+              <i class="bi bi-chevron-left"></i> 上一页
+            </button>
+            <span class="page-indicator">{{ currentPage }} / {{ totalPages }}</span>
+            <button class="page-btn" :disabled="currentPage >= totalPages" @click="changePage(currentPage + 1)">
+              下一页 <i class="bi bi-chevron-right"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -201,6 +205,14 @@ const canSubmit = computed(() => {
   }
   return form.userAccount.trim() !== '' && form.userPassword.trim() !== '' && form.userName.trim() !== ''
 })
+
+// 格式化时间
+function formatTime(raw) {
+  if (!raw) return ''
+  const d = new Date(raw)
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
 
 // 非管理员重定向
 onMounted(() => {

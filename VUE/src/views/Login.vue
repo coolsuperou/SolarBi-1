@@ -2,9 +2,9 @@
   <div class="login-page">
     <div class="login-card">
       <div class="login-logo">
-        <div class="logo-icon"><i class="bi bi-lightning-charge-fill"></i></div>
-        <h3>电能监控平台</h3>
-        <p>SolarBi Energy Monitoring</p>
+        <div class="logo-icon"><i class="bi bi-cpu-fill"></i></div>
+        <h3>工具制造数据平台</h3>
+        <p>SolarBi Tool Manufacturing Data Platform</p>
       </div>
 
       <div v-if="errorMsg" class="login-error">

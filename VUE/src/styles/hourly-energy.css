@@ -81,13 +81,22 @@
   color: #475569;
   font-weight: 600;
   font-size: 12px;
-  padding: 10px 12px;
+  padding: 10px 8px;
   border-bottom: 2px solid #e2e8f0;
   text-align: center;
   white-space: nowrap;
   position: sticky;
   top: 0;
   z-index: 2;
+}
+
+/* 次日标签 */
+.hourly-table thead th .next-day-tag {
+  display: block;
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 /* 车间名称列 - sticky */
@@ -153,6 +162,17 @@
 .hourly-table tbody tr.row-total td:first-child {
   background: #dcfce7;
   color: #16a34a;
+}
+
+/* 用电量颜色标记（仅变字体颜色） */
+.hourly-table td.very-high {
+  color: #7c3aed;
+  font-weight: 700;
+}
+
+.hourly-table td.high {
+  color: #ea580c;
+  font-weight: 600;
 }
 
 /* 暂无数据提示 */

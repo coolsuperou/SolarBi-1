@@ -144,15 +144,15 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
         
         log.info("1-24日总电量: {} kWh", totalEnergy);
         
-        // 5. 计算单价
+        // 5. 计算单价（使用10位精度避免分摊误差）
         BigDecimal unitPrice = powerSupplyData.getAmount1To24()
-                .divide(totalEnergy, 4, RoundingMode.HALF_UP);
+                .divide(totalEnergy, 10, RoundingMode.HALF_UP);
         
         log.info("计算单价: {} 元 ÷ {} kWh = {} 元/kWh",
                 powerSupplyData.getAmount1To24(), totalEnergy, unitPrice);
         
-        // 6. 生成部门电费明细
-        List<DepartmentCostDTO> departmentCostList = generateDepartmentCostList(workshopEnergyMap, unitPrice);
+        // 6. 生成部门电费明细（传入总金额，按比例分摊）
+        List<DepartmentCostDTO> departmentCostList = generateDepartmentCostList(workshopEnergyMap, powerSupplyData.getAmount1To24());
         
         // 7. 计算一级部门汇总
         Map<String, ElectricityCostResponse.DepartmentSummaryDTO> dept1Summary = 
@@ -213,15 +213,15 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
         
         log.info("25-月末总电量: {} kWh", totalEnergy);
         
-        // 5. 计算单价
+        // 5. 计算单价（使用10位精度避免分摊误差）
         BigDecimal unitPrice = powerSupplyData.getAmount25ToEnd()
-                .divide(totalEnergy, 4, RoundingMode.HALF_UP);
+                .divide(totalEnergy, 10, RoundingMode.HALF_UP);
         
         log.info("计算单价: {} 元 ÷ {} kWh = {} 元/kWh",
                 powerSupplyData.getAmount25ToEnd(), totalEnergy, unitPrice);
         
         // 6. 生成部门电费明细
-        List<DepartmentCostDTO> departmentCostList = generateDepartmentCostList(workshopEnergyMap, unitPrice);
+        List<DepartmentCostDTO> departmentCostList = generateDepartmentCostList(workshopEnergyMap, powerSupplyData.getAmount25ToEnd());
         
         // 7. 计算一级部门汇总
         Map<String, ElectricityCostResponse.DepartmentSummaryDTO> dept1Summary = 
@@ -311,25 +311,25 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
         log.info("25-月末总电量: {} kWh", totalEnergy25ToEnd);
         log.info("全月总电量: {} kWh", totalEnergy);
         
-        // 5. 计算总金额和各时间段的单价
+        // 5. 计算总金额和各时间段的单价（使用10位精度避免分摊误差）
         BigDecimal totalAmount = powerSupplyData.getAmount1To24().add(powerSupplyData.getAmount25ToEnd());
         
         // 计算1-24日内部单价
         BigDecimal unitPrice1To24 = BigDecimal.ZERO;
         if (totalEnergy1To24.compareTo(BigDecimal.ZERO) > 0) {
             unitPrice1To24 = powerSupplyData.getAmount1To24()
-                    .divide(totalEnergy1To24, 4, RoundingMode.HALF_UP);
+                    .divide(totalEnergy1To24, 10, RoundingMode.HALF_UP);
         }
         
         // 计算25-月末内部单价
         BigDecimal unitPrice25ToEnd = BigDecimal.ZERO;
         if (totalEnergy25ToEnd.compareTo(BigDecimal.ZERO) > 0) {
             unitPrice25ToEnd = powerSupplyData.getAmount25ToEnd()
-                    .divide(totalEnergy25ToEnd, 4, RoundingMode.HALF_UP);
+                    .divide(totalEnergy25ToEnd, 10, RoundingMode.HALF_UP);
         }
         
         // 计算月平均单价
-        BigDecimal monthlyAvgUnitPrice = totalAmount.divide(totalEnergy, 4, RoundingMode.HALF_UP);
+        BigDecimal monthlyAvgUnitPrice = totalAmount.divide(totalEnergy, 10, RoundingMode.HALF_UP);
         
         log.info("1-24日内部单价: {} 元 ÷ {} kWh = {} 元/kWh",
                 powerSupplyData.getAmount1To24(), totalEnergy1To24, unitPrice1To24);
@@ -338,8 +338,8 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
         log.info("月平均单价: {} 元 ÷ {} kWh = {} 元/kWh",
                 totalAmount, totalEnergy, monthlyAvgUnitPrice);
         
-        // 6. 生成部门电费明细（使用月平均单价）
-        List<DepartmentCostDTO> departmentCostList = generateDepartmentCostList(workshopEnergyMap, monthlyAvgUnitPrice);
+        // 6. 生成部门电费明细（使用总金额按比例分摊）
+        List<DepartmentCostDTO> departmentCostList = generateDepartmentCostList(workshopEnergyMap, totalAmount);
         
         // 7. 计算一级部门汇总
         Map<String, ElectricityCostResponse.DepartmentSummaryDTO> dept1Summary = 
@@ -483,7 +483,7 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
      * @return 部门电费明细列表
      */
     private List<DepartmentCostDTO> generateDepartmentCostList(
-            Map<String, BigDecimal> workshopEnergyMap, BigDecimal unitPrice) {
+            Map<String, BigDecimal> workshopEnergyMap, BigDecimal totalAmount) {
         
         // 1. 查询车间层级关系
         List<Map<String, Object>> hierarchyList = electricityCostMapper.getWorkshopHierarchy();
@@ -518,15 +518,43 @@ public class ElectricityCostServiceImpl extends ServiceImpl<ElectricityCostMappe
             dto.setEnergy(dto.getEnergy().add(workshopEnergy));
         }
         
-        // 3. 计算各部门分摊金额并排序
-        List<DepartmentCostDTO> result = new ArrayList<>();
+        // 3. 计算总电量
+        BigDecimal totalEnergy = BigDecimal.ZERO;
         for (DepartmentCostDTO dto : dept2Map.values()) {
-            BigDecimal cost = dto.getEnergy().multiply(unitPrice).setScale(2, RoundingMode.HALF_UP);
+            totalEnergy = totalEnergy.add(dto.getEnergy());
+        }
+        
+        // 4. 按比例分摊金额（总金额 × 部门电量 / 总电量），保留2位小数
+        List<DepartmentCostDTO> result = new ArrayList<>();
+        BigDecimal allocatedCost = BigDecimal.ZERO;
+        for (DepartmentCostDTO dto : dept2Map.values()) {
+            BigDecimal cost;
+            if (totalEnergy.compareTo(BigDecimal.ZERO) > 0) {
+                cost = totalAmount.multiply(dto.getEnergy())
+                        .divide(totalEnergy, 2, RoundingMode.HALF_UP);
+            } else {
+                cost = BigDecimal.ZERO;
+            }
             dto.setCost(cost);
+            allocatedCost = allocatedCost.add(cost);
             result.add(dto);
         }
         
-        // 4. 按一级部门排序: 工具制造中心 -> 管理部 -> 工具研发中心
+        // 5. 尾差调整：把舍入误差加到最后一个有电量的部门上，确保合计严格等于总金额
+        BigDecimal diff = totalAmount.setScale(2, RoundingMode.HALF_UP).subtract(allocatedCost);
+        if (diff.compareTo(BigDecimal.ZERO) != 0 && !result.isEmpty()) {
+            // 找最后一个有电量的部门
+            for (int i = result.size() - 1; i >= 0; i--) {
+                if (result.get(i).getEnergy().compareTo(BigDecimal.ZERO) > 0) {
+                    DepartmentCostDTO lastDto = result.get(i);
+                    lastDto.setCost(lastDto.getCost().add(diff));
+                    log.info("尾差调整: {} 元，调整到部门 {}", diff, lastDto.getDept2());
+                    break;
+                }
+            }
+        }
+        
+        // 6. 按一级部门排序: 工具制造中心 -> 管理部 -> 工具研发中心
         result.sort((a, b) -> {
             int orderA = getDept1Order(a.getDept1());
             int orderB = getDept1Order(b.getDept1());

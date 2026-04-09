@@ -194,7 +194,7 @@ const workshopName = computed(() => route.meta?.workshop || '')
 const api = computed(() => getWorkshopApi(route.meta?.apiBase))
 
 // 统计卡片数据
-const statistics = ref({ energyConsumption: 0, totalElectricEnergy: 0 })
+const statistics = ref({ avgElectricEnergy: 0, totalElectricEnergy: 0 })
 
 // 查询模式
 const queryMode = ref('hour')
@@ -207,10 +207,18 @@ const monthAgoStr = formatDateStr(new Date(now.getFullYear(), now.getMonth() - 1
 
 const yesterdayStr = formatDateStr(new Date(now.getTime() - 1 * 24 * 3600 * 1000))
 
-const hourStartDate = ref(yesterdayStr)
-const hourStartHour = ref(now.getHours())
-const hourEndDate = ref(todayStr)
-const hourEndHour = ref(now.getHours())
+const nextHour = (now.getHours() + 1) % 24
+const nextHourDate = now.getHours() + 1 >= 24
+  ? formatDateStr(new Date(now.getTime() + 24 * 3600 * 1000))
+  : todayStr
+const prevNextHourDate = now.getHours() + 1 >= 24
+  ? todayStr
+  : yesterdayStr
+
+const hourStartDate = ref(prevNextHourDate)
+const hourStartHour = ref(nextHour)
+const hourEndDate = ref(nextHourDate)
+const hourEndHour = ref(nextHour)
 
 // 日模式时间
 const dayStartDate = ref(weekAgoStr)

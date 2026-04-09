@@ -117,31 +117,36 @@ public class EnergyCalculationUtils {
                 }
             }
 
-            // 构建结果（只有有效数据才添加）
+            // 构建结果（始终添加每个小时点，无数据时能耗为0，保证图表时间轴连续）
+            HourlyEnergyConsumption consumption = new HourlyEnergyConsumption();
+            consumption.setDeviceId(workshopName);
+            consumption.setName(workshopName);
+            consumption.setWorkshop(workshopName);
+            consumption.setHour(hourStart);
+
             if (hasValidData && totalStartEnergy.compareTo(BigDecimal.ZERO) > 0 && 
                     totalEndEnergy.compareTo(BigDecimal.ZERO) > 0) {
-
-                HourlyEnergyConsumption consumption = new HourlyEnergyConsumption();
-                consumption.setDeviceId(workshopName);
-                consumption.setName(workshopName);
-                consumption.setWorkshop(workshopName);
-                consumption.setHour(hourStart);
                 consumption.setStartEnergy(totalStartEnergy.setScale(SCALE, ROUNDING_MODE));
                 consumption.setEndEnergy(totalEndEnergy.setScale(SCALE, ROUNDING_MODE));
                 consumption.setStartTime(earliestStartTime);
                 consumption.setEndTime(latestEndTime);
 
-                // 计算能耗差值
+                // 计算能耗差值，异常情况（结束<开始）设为0而非null，避免图表断点
                 if (totalEndEnergy.compareTo(totalStartEnergy) >= 0) {
                     consumption.setEnergyConsumption(
                         totalEndEnergy.subtract(totalStartEnergy).setScale(SCALE, ROUNDING_MODE)
                     );
                 } else {
-                    consumption.setEnergyConsumption(null);
+                    consumption.setEnergyConsumption(BigDecimal.ZERO.setScale(SCALE, ROUNDING_MODE));
                 }
-
-                result.add(consumption);
+            } else {
+                // 无有效数据的小时，能耗设为0
+                consumption.setStartEnergy(BigDecimal.ZERO.setScale(SCALE, ROUNDING_MODE));
+                consumption.setEndEnergy(BigDecimal.ZERO.setScale(SCALE, ROUNDING_MODE));
+                consumption.setEnergyConsumption(BigDecimal.ZERO.setScale(SCALE, ROUNDING_MODE));
             }
+
+            result.add(consumption);
         }
 
         // 按小时排序
@@ -247,27 +252,30 @@ public class EnergyCalculationUtils {
                 }
             }
 
-            // 构建结果（只有有效数据才添加）
-            if (hasValidData) {
-                // 🔥 将 day 字段归零到当天 00:00:00，避免前端图表时间偏移
-                Calendar dayCalendar = Calendar.getInstance();
-                dayCalendar.setTime(dayStart);
-                dayCalendar.set(Calendar.HOUR_OF_DAY, 0);
-                dayCalendar.set(Calendar.MINUTE, 0);
-                dayCalendar.set(Calendar.SECOND, 0);
-                dayCalendar.set(Calendar.MILLISECOND, 0);
+            // 构建结果（始终添加每个日期点，无数据时能耗为0，保证图表时间轴连续）
+            // 🔥 将 day 字段归零到当天 00:00:00，避免前端图表时间偏移
+            Calendar dayCalendar = Calendar.getInstance();
+            dayCalendar.setTime(dayStart);
+            dayCalendar.set(Calendar.HOUR_OF_DAY, 0);
+            dayCalendar.set(Calendar.MINUTE, 0);
+            dayCalendar.set(Calendar.SECOND, 0);
+            dayCalendar.set(Calendar.MILLISECOND, 0);
 
-                DailyEnergyConsumption consumption = new DailyEnergyConsumption();
-                consumption.setDeviceId(workshopName);
-                consumption.setName(workshopName);
-                consumption.setWorkshop(workshopName);
-                consumption.setDay(dayCalendar.getTime());
+            DailyEnergyConsumption consumption = new DailyEnergyConsumption();
+            consumption.setDeviceId(workshopName);
+            consumption.setName(workshopName);
+            consumption.setWorkshop(workshopName);
+            consumption.setDay(dayCalendar.getTime());
+
+            if (hasValidData) {
                 consumption.setStartTime(earliestStartTime);
                 consumption.setEndTime(latestEndTime);
                 consumption.setEnergyConsumption(totalEnergyConsumption.setScale(SCALE, ROUNDING_MODE));
-
-                result.add(consumption);
+            } else {
+                consumption.setEnergyConsumption(BigDecimal.ZERO.setScale(SCALE, ROUNDING_MODE));
             }
+
+            result.add(consumption);
         }
 
         // 按日期排序

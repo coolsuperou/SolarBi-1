@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
 
 /**
  * 月度能耗统计服务实现
- * 🔥 所有车间都只统计 tbl_monitordevice 中 IsElectricMeter=1 的设备
- * 🔥 优化：一次性查询所有车间的电能表设备，使用并行流加速计算
+ *  所有车间都只统计 tbl_monitordevice 中 IsElectricMeter=1 的设备
+ *  优化：一次性查询所有车间的电能表设备，使用并行流加速计算
  * 
  * @author 每天十点睡
  * @date 2026-02-09

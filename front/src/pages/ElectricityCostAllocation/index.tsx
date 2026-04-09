@@ -606,8 +606,15 @@ const ElectricityCostAllocationPage: React.FC = () => {
     setChartsCollapsed(!chartsCollapsed);
   };
 
-  // 计算汇总数据
+  // 计算汇总数据（优先使用后端返回的dept1Summary，避免JS浮点数加法误差）
   const calculateSummary = () => {
+    if (calculationResult?.dept1Summary) {
+      const summary: { [key: string]: { energy: number; cost: number } } = {};
+      Object.entries(calculationResult.dept1Summary).forEach(([dept1, data]: [string, any]) => {
+        summary[dept1] = { energy: data.totalEnergy, cost: data.totalCost };
+      });
+      return summary;
+    }
     const summary: { [key: string]: { energy: number; cost: number } } = {};
     departmentData.forEach((item) => {
       if (!summary[item.dept1]) {

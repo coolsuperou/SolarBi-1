@@ -30,13 +30,25 @@
 .sidebar .logo .logo-icon {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.25) 0%, rgba(102, 126, 234, 0.25) 100%);
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
   flex-shrink: 0;
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+}
+
+.sidebar .logo .logo-icon i {
+  color: #00d4ff;
+  filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.6));
+}
+
+.sidebar .logo .logo-icon i {
+  color: #00d4ff;
+  filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.6));
 }
 
 .sidebar .logo .logo-text {
@@ -46,14 +58,13 @@
   color: #fff;
 }
 
-/* 菜单分组标题 */
+/* 一级分组标题（统计报表、车间监控、系统管理） */
 .sidebar .nav-group-title {
-  padding: 20px 20px 8px;
-  font-size: 11px;
+  padding: 16px 16px 8px;
+  font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.35);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.3px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -63,7 +74,7 @@
 }
 
 .sidebar .nav-group-title:hover {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .sidebar .nav-group-title .collapse-arrow {
@@ -84,25 +95,25 @@
   opacity: 0;
 }
 
-/* 导航链接 */
+/* 导航链接（统一 13px） */
 .sidebar .nav-link {
   color: rgba(255, 255, 255, 0.65);
-  padding: 10px 16px;
-  margin: 2px 12px;
+  padding: 8px 16px;
+  margin: 1px 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-decoration: none;
-  font-size: 14px;
-  transition: all 0.3s;
+  font-size: 13px;
+  transition: all 0.2s;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .sidebar .nav-link i {
-  font-size: 16px;
+  font-size: 14px;
   flex-shrink: 0;
 }
 
@@ -116,9 +127,51 @@
 .sidebar .nav-link.router-link-exact-active {
   color: #fff;
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  border-radius: 8px;
-  margin: 2px 12px;
+  border-radius: 6px;
+  margin: 1px 10px;
   font-weight: 500;
+}
+
+/* 二级子分组标题（前道生产线、后道生产线等） */
+.sidebar .nav-sub-group-title {
+  padding: 6px 16px 4px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+  transition: color 0.2s;
+  margin-top: 4px;
+}
+
+.sidebar .nav-sub-group-title:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.sidebar .nav-sub-group-title i {
+  font-size: 9px;
+  transition: transform 0.2s;
+}
+
+/* 子分组内容折叠 */
+.sidebar .nav-sub-group-items {
+  overflow: hidden;
+  max-height: 1500px;
+  transition: max-height 0.3s ease-in-out, opacity 0.2s ease;
+  opacity: 1;
+}
+
+.sidebar .nav-sub-group-items.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* 子分组内链接 — 和顶级链接同样 13px，只是多缩进 */
+.sidebar .nav-sub-group-items .nav-link {
+  padding-left: 28px;
 }
 
 /* 导航菜单滚动区域 */

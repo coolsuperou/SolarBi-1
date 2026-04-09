@@ -153,17 +153,15 @@
   color: #16a34a;
 }
 
-/* 用电量颜色标记 */
+/* 用电量颜色标记（仅变字体颜色，不变背景） */
 .monthly-table td.very-high {
   color: #7c3aed;
   font-weight: 700;
-  background: #f5f3ff;
 }
 
 .monthly-table td.high {
   color: #ea580c;
   font-weight: 600;
-  background: #fff7ed;
 }
 
 /* 暂无数据提示 */

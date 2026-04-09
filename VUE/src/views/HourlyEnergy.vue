@@ -27,7 +27,9 @@
           <thead>
             <tr>
               <th>车间名称</th>
-              <th v-for="label in hourLabels" :key="label">{{ label }}</th>
+              <th v-for="(label, idx) in hourLabels" :key="label">
+                {{ label }}<br v-if="idx >= nextDayIndexStart"><span v-if="idx >= nextDayIndexStart" class="next-day-tag">次日</span>
+              </th>
               <th class="col-total">日合计</th>
             </tr>
           </thead>
@@ -35,7 +37,11 @@
             <!-- 车间数据行 -->
             <tr v-for="workshop in statisticsData.workshopList" :key="workshop">
               <td>{{ workshop }}</td>
-              <td v-for="(label, idx) in hourLabels" :key="label">
+              <td
+                v-for="(label, idx) in hourLabels"
+                :key="label"
+                :class="getHourlyEnergyClass(statisticsData.workshopHourlyData[workshop]?.[idx] ?? 0)"
+              >
                 {{ formatNumber(statisticsData.workshopHourlyData[workshop]?.[idx]) }}
               </td>
               <td class="col-total">
@@ -69,13 +75,18 @@ import { ref, computed, onMounted } from 'vue'
 import { getHourlyStatistics } from '@/api/hourlyEnergy'
 import '@/styles/hourly-energy.css'
 
-// 24小时标签：07时~次日06时
+// 24小时标签：07:00~次日07:00 时间段格式
 const hourLabels = [
-  '07时', '08时', '09时', '10时', '11时', '12时',
-  '13时', '14时', '15时', '16时', '17时', '18时',
-  '19时', '20时', '21时', '22时', '23时',
-  '00时', '01时', '02时', '03时', '04时', '05时', '06时'
+  '07:00-08:00', '08:00-09:00', '09:00-10:00', '10:00-11:00',
+  '11:00-12:00', '12:00-13:00', '13:00-14:00', '14:00-15:00',
+  '15:00-16:00', '16:00-17:00', '17:00-18:00', '18:00-19:00',
+  '19:00-20:00', '20:00-21:00', '21:00-22:00', '22:00-23:00',
+  '23:00-00:00',
+  '00:00-01:00', '01:00-02:00', '02:00-03:00', '03:00-04:00',
+  '04:00-05:00', '05:00-06:00', '06:00-07:00'
 ]
+// 次日标记的索引（23:00之后的7个时间段）
+const nextDayIndexStart = 17
 
 const now = new Date()
 const currentYear = now.getFullYear()
@@ -107,6 +118,17 @@ function onMonthChange() {
 function formatNumber(val) {
   if (val == null) return '-'
   return Number(val).toFixed(2)
+}
+
+/**
+ * 小时用电量颜色标记
+ * @param {number} value - 用电量数值
+ * @returns {string} CSS 类名
+ */
+function getHourlyEnergyClass(value) {
+  if (value > 500) return 'very-high'
+  if (value > 200) return 'high'
+  return ''
 }
 
 /**

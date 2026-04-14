@@ -99,7 +99,7 @@ for (let y = currentYear - 2; y <= currentYear + 1; y++) {
 }
 
 function formatNumber(val) {
-  if (val == null) return '-'
+  if (val == null || Number(val) === 0) return '-'
   return Number(val).toFixed(2)
 }
 

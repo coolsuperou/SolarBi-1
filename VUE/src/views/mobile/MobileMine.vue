@@ -52,7 +52,7 @@ import { logout } from '@/api/user'
 import { mMine } from '@/views/mobile/mobileUiStrings'
 import { M } from '@/router/mobileUtils'
 
-const emDash = '\u2014'
+const emDash = '—'
 const router = useRouter()
 
 async function handleLogout() {

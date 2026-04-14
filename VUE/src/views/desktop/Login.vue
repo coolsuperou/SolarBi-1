@@ -4,7 +4,7 @@
       <div class="login-logo">
         <div class="logo-icon"><i class="bi bi-cpu-fill"></i></div>
         <h3>工具制造数据平台</h3>
-        <p>SolarBi Tool Manufacturing Data Platform</p>
+        <p> Tool Manufacturing Data Platform</p>
       </div>
 
       <div v-if="errorMsg" class="login-error">

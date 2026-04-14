@@ -398,7 +398,7 @@
 /* 小时网格 */
 .he-hour-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
   gap: 4px;
 }
 
@@ -411,9 +411,10 @@
 }
 
 .he-hour-cell__time {
-  font-size: 8px;
+  font-size: 9px;
   color: var(--text-muted);
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .he-hour-cell__val {

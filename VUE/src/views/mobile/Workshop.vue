@@ -159,7 +159,7 @@ import * as echarts from 'echarts'
 import { getWorkshopApi } from '@/api/workshopMap'
 import { MWS } from '@/views/mobile/workshopMobileStrings'
 import '@/styles/desktop/workshop.css'
-import '@/styles/mobile/workshop-mobile.css'
+import '@/styles/mobile/workshop-mobile-design.css'
 
 const route = useRoute()
 

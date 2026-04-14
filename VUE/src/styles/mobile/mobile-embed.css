@@ -19,16 +19,12 @@
   padding-top: 0;
 }
 
-.m-desktop-embed .monthly-energy-page,
-.m-desktop-embed .hourly-energy-page,
 .m-desktop-embed .electricity-cost-page,
 .m-desktop-embed .workshop-page,
 .m-desktop-embed .user-management-page {
   max-width: 100%;
 }
 
-.m-desktop-embed .monthly-toolbar,
-.m-desktop-embed .hourly-toolbar,
 .m-desktop-embed .search-card,
 .m-desktop-embed .um-toolbar {
   flex-wrap: wrap;

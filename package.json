@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "react-router-dom": "^6.30.1",
-    "sharp": "^0.34.4",
-    "three": "^0.180.0"
-  }
-}

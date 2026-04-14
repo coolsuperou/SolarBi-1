@@ -7,8 +7,11 @@
 
     <template v-if="front.length">
       <div class="m-group" style="margin: 0 12px 8px">
-        <div class="m-group__head"><span>{{ mWsHub.front }}</span><i class="bi bi-chevron-down"></i></div>
-        <ul class="m-list">
+        <div class="m-group__head" @click="toggleGroup('front')">
+          <span>{{ mWsHub.front }}</span>
+          <i class="bi bi-chevron-down m-group__arrow" :class="{ 'is-collapsed': collapsed.front }"></i>
+        </div>
+        <ul class="m-list" v-show="!collapsed.front">
           <li v-for="r in front" :key="r.path">
             <RouterLink :to="mobileWorkshopPath(r)">
               <i :class="'bi ' + r.meta.icon" style="color: var(--primary, #3b82f6)"></i> {{ r.meta.title }}
@@ -32,8 +35,11 @@
 
     <template v-if="back.length">
       <div class="m-group" style="margin: 0 12px 8px">
-        <div class="m-group__head"><span>{{ mWsHub.back }}</span><i class="bi bi-chevron-down"></i></div>
-        <ul class="m-list">
+        <div class="m-group__head" @click="toggleGroup('back')">
+          <span>{{ mWsHub.back }}</span>
+          <i class="bi bi-chevron-down m-group__arrow" :class="{ 'is-collapsed': collapsed.back }"></i>
+        </div>
+        <ul class="m-list" v-show="!collapsed.back">
           <li v-for="r in back" :key="r.path">
             <RouterLink :to="mobileWorkshopPath(r)">
               <i :class="'bi ' + r.meta.icon" style="color: var(--primary, #3b82f6)"></i> {{ r.meta.title }}
@@ -46,8 +52,11 @@
 
     <template v-if="public_.length">
       <div class="m-group" style="margin: 0 12px 8px">
-        <div class="m-group__head"><span>{{ mWsHub.pub }}</span><i class="bi bi-chevron-down"></i></div>
-        <ul class="m-list">
+        <div class="m-group__head" @click="toggleGroup('public')">
+          <span>{{ mWsHub.pub }}</span>
+          <i class="bi bi-chevron-down m-group__arrow" :class="{ 'is-collapsed': collapsed.public }"></i>
+        </div>
+        <ul class="m-list" v-show="!collapsed.public">
           <li v-for="r in public_" :key="r.path">
             <RouterLink :to="mobileWorkshopPath(r)">
               <i :class="'bi ' + r.meta.icon" style="color: var(--primary, #3b82f6)"></i> {{ r.meta.title }}
@@ -60,8 +69,11 @@
 
     <template v-if="other.length">
       <div class="m-group" style="margin: 0 12px 8px">
-        <div class="m-group__head"><span>{{ mWsHub.other }}</span><i class="bi bi-chevron-down"></i></div>
-        <ul class="m-list">
+        <div class="m-group__head" @click="toggleGroup('other')">
+          <span>{{ mWsHub.other }}</span>
+          <i class="bi bi-chevron-down m-group__arrow" :class="{ 'is-collapsed': collapsed.other }"></i>
+        </div>
+        <ul class="m-list" v-show="!collapsed.other">
           <li v-for="r in other" :key="r.path">
             <RouterLink :to="mobileWorkshopPath(r)">
               <i :class="'bi ' + r.meta.icon" style="color: var(--primary, #3b82f6)"></i> {{ r.meta.title }}
@@ -77,7 +89,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, reactive } from 'vue'
 import { workshopRouteEntries } from '@/router/workshopRoutesConfig'
 import { authState, hasPagePermission } from '@/auth'
 import { mWsHub } from '@/views/mobile/mobileUiStrings'
@@ -97,6 +109,12 @@ const pressless = computed(() => filterByGroup('pressless'))
 const back = computed(() => filterByGroup('back'))
 const public_ = computed(() => filterByGroup('public'))
 const other = computed(() => filterByGroup('other'))
+
+const collapsed = reactive({ front: false, back: false, public: false, other: false })
+
+function toggleGroup(group) {
+  collapsed[group] = !collapsed[group]
+}
 
 const hasAny = computed(
   () => front.value.length + pressless.value.length + back.value.length + public_.value.length + other.value.length > 0

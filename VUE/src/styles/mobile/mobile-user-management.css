@@ -1,0 +1,753 @@
+/* =============================================
+ * 用户管理 · 移动端专用样式
+ * ============================================= */
+
+.um-page {
+  padding: 0;
+}
+
+/* ---------- 搜索栏 ---------- */
+.um-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.um-search i {
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+.um-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--text);
+  background: transparent;
+}
+
+.um-search input::placeholder {
+  color: #94a3b8;
+}
+
+/* ---------- 顶部操作栏 ---------- */
+.um-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.um-top-bar .um-search {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.um-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.um-add-btn:active {
+  background: var(--primary-dark);
+}
+
+/* ---------- 统计卡片 ---------- */
+.um-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.um-stat {
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  padding: 10px 6px;
+  text-align: center;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.um-stat__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 6px;
+  font-size: 15px;
+}
+
+.um-stat__icon--total { background: #eff6ff; color: var(--primary); }
+.um-stat__icon--admin { background: #f5f3ff; color: #8b5cf6; }
+.um-stat__icon--user { background: #f0fdf4; color: #16a34a; }
+.um-stat__icon--active { background: #fef3c7; color: #f59e0b; }
+
+.um-stat__val {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.um-stat__label {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ---------- 用户列表 ---------- */
+.um-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.um-user-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.um-user-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.um-user-card__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.um-user-card__avatar--admin {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+}
+
+.um-user-card__avatar--user {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.um-user-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.um-user-card__name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.um-user-card__account {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.um-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.um-role-badge--admin {
+  background: #f5f3ff;
+  color: #8b5cf6;
+}
+
+.um-role-badge--user {
+  background: #eff6ff;
+  color: var(--primary);
+}
+
+.um-user-card__status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.um-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.um-status-dot--active {
+  background: #16a34a;
+}
+
+.um-status-dot--inactive {
+  background: #94a3b8;
+}
+
+/* 用户详情区 */
+.um-user-card__body {
+  padding: 10px 14px;
+}
+
+.um-user-card__detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.um-detail-item__label {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.um-detail-item__value {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.um-detail-item__value--password {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.um-pwd-toggle {
+  border: none;
+  background: none;
+  color: var(--primary);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* 操作按钮 */
+.um-user-card__actions {
+  display: flex;
+  border-top: 1px solid #f1f5f9;
+}
+
+.um-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 11px 0;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.um-action-btn + .um-action-btn {
+  border-left: 1px solid #f1f5f9;
+}
+
+.um-action-btn--edit { color: var(--primary); }
+.um-action-btn--perm { color: #8b5cf6; }
+.um-action-btn--delete { color: #ef4444; }
+
+.um-action-btn:active {
+  background: #f8fafc;
+}
+
+/* ---------- 模态框 ---------- */
+.um-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.um-modal {
+  background: var(--bg-card);
+  width: 100%;
+  max-height: 90vh;
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: um-slide-up 0.3s ease;
+}
+
+@keyframes um-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.um-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.um-modal__title {
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.um-modal__close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--bg-page);
+  border-radius: 50%;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.um-modal__body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 18px;
+}
+
+.um-modal__footer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 18px;
+  padding-bottom: calc(14px + var(--safe-bottom));
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.um-modal__footer .um-btn {
+  flex: 1;
+}
+
+/* ---------- 表单 ---------- */
+.um-form-group {
+  margin-bottom: 16px;
+}
+
+.um-form-group__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.um-form-group__label .um-required {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+.um-form-group__help {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.um-form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  color: var(--text);
+  background: #f8fafc;
+  outline: none;
+}
+
+.um-form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  background: #fff;
+}
+
+.um-form-input:disabled {
+  opacity: 0.6;
+  background: #e2e8f0;
+}
+
+.um-form-select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  color: var(--text);
+  background: #f8fafc;
+  appearance: auto;
+  outline: none;
+}
+
+.um-form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.um-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ---------- 按钮 ---------- */
+.um-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.um-btn--primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.um-btn--primary:active {
+  background: var(--primary-dark);
+}
+
+.um-btn--secondary {
+  background: var(--bg-page);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.um-btn--danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+.um-btn:disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ---------- 权限模态框 ---------- */
+.um-perm-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #eff6ff;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+
+.um-perm-info__name {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.um-perm-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.um-perm-quick {
+  display: flex;
+  gap: 6px;
+}
+
+.um-perm-quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-card);
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.um-perm-quick-btn:active {
+  background: var(--bg-page);
+}
+
+.um-perm-stats {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.um-perm-stats__selected {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.um-perm-stats__unselected {
+  color: var(--text-muted);
+}
+
+/* 权限分组 */
+.um-perm-section {
+  margin-bottom: 14px;
+}
+
+.um-perm-section__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.um-perm-section__head:active {
+  background: #f1f5f9;
+}
+
+.um-perm-section__arrow {
+  transition: transform 0.25s ease;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.um-perm-section__arrow.is-collapsed {
+  transform: rotate(-90deg);
+}
+
+.um-perm-section__icon {
+  font-size: 16px;
+}
+
+.um-perm-section__title {
+  font-size: 13px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.um-perm-section__count {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* 权限卡片 */
+.um-perm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.um-perm-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.um-perm-card.is-active {
+  border-color: var(--primary);
+  background: #eff6ff;
+}
+
+.um-perm-card:active {
+  transform: scale(0.97);
+}
+
+.um-perm-card__icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.um-perm-card__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.um-perm-card__desc {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+.um-perm-card__check {
+  margin-left: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.um-perm-card.is-active .um-perm-card__check {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* ---------- 确认删除对话框 ---------- */
+.um-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.um-confirm {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 320px;
+  overflow: hidden;
+  animation: um-fade-in 0.2s ease;
+}
+
+@keyframes um-fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.um-confirm__body {
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.um-confirm__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fef2f2;
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin: 0 auto 12px;
+}
+
+.um-confirm__title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.um-confirm__desc {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.um-confirm__desc b {
+  color: var(--text);
+}
+
+.um-confirm__actions {
+  display: flex;
+  border-top: 1px solid var(--border);
+}
+
+.um-confirm__actions .um-btn {
+  flex: 1;
+  border-radius: 0;
+  padding: 14px;
+}
+
+.um-confirm__actions .um-btn + .um-btn {
+  border-left: 1px solid var(--border);
+}
+
+/* ---------- 空状态 ---------- */
+.um-empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text-muted);
+}
+
+.um-empty i {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 12px;
+  color: #cbd5e1;
+}
+
+.um-empty span {
+  font-size: 14px;
+}
+
+/* ---------- 加载动画 ---------- */
+@keyframes um-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.um-spin {
+  animation: um-spin 1s linear infinite;
+  display: inline-block;
+}

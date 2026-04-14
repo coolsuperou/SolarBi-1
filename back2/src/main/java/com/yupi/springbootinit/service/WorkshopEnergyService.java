@@ -270,7 +270,7 @@ public class WorkshopEnergyService {
             );
             
             log.info("获取统计信息成功 - 车间: {}, 设备总数: {}", 
-                workshopName, result != null ? result.getTotalDevices() : 0);
+                workshopName, result != null && result.getTotalDevices() != null ? result.getTotalDevices() : 0);
             
             return result;
             

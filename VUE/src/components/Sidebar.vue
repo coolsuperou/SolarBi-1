@@ -119,7 +119,7 @@ import { useRouter } from 'vue-router'
 import { authState, hasPagePermission, clearUser } from '@/auth'
 import { logout } from '@/api/user'
 import { workshopRoutes } from '@/router/index'
-import '@/styles/sidebar.css'
+import '@/styles/desktop/sidebar.css'
 
 const router = useRouter()
 

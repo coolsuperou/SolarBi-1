@@ -1,0 +1,40 @@
+/* Second-level pages rendered inside shell-body */
+.m-sub-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.m-sub-page > .m-header {
+  flex-shrink: 0;
+}
+
+.m-sub-page > .m-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.m-desktop-embed {
+  padding-top: 0;
+}
+
+.m-desktop-embed .monthly-energy-page,
+.m-desktop-embed .hourly-energy-page,
+.m-desktop-embed .electricity-cost-page,
+.m-desktop-embed .workshop-page,
+.m-desktop-embed .user-management-page {
+  max-width: 100%;
+}
+
+.m-desktop-embed .monthly-toolbar,
+.m-desktop-embed .hourly-toolbar,
+.m-desktop-embed .search-card,
+.m-desktop-embed .um-toolbar {
+  flex-wrap: wrap;
+}
+
+.m-desktop-embed .wide-table-scroll,
+.m-desktop-embed .wide-table-wrapper {
+  max-width: 100%;
+}

@@ -14,7 +14,13 @@ request.interceptors.response.use(
       // 未登录，清除状态并跳转登录页
       // 使用动态 import 避免循环依赖（auth.js 和 router 尚未创建）
       import('../auth.js').then(({ clearUser }) => clearUser())
-      import('../router/index.js').then(({ default: router }) => router.push('/login'))
+      Promise.all([
+        import('../router/mobileUtils.js'),
+        import('../router/index.js')
+      ]).then(([{ isMobilePath, M }, { default: router }]) => {
+        const login = typeof window !== 'undefined' && isMobilePath(window.location.pathname) ? M.LOGIN : '/login'
+        router.push(login)
+      })
       throw new Error('未登录')
     }
     throw new Error(message || '请求失败')

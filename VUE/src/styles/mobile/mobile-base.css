@@ -1,0 +1,628 @@
+/* SolarBi mobile mockup styles (static HTML). Aligns with VUE global.css light theme. */
+
+:root {
+  --bg-page: #f5f7fa;
+  --bg-card: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --radius: 12px;
+  --radius-sm: 10px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tabbar-h: 56px;
+  --header-h: 52px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg-page);
+  min-height: 100dvh;
+  padding-top: var(--safe-top);
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+/* ----- App shell ----- */
+.m-app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom));
+}
+
+.m-app--no-tab {
+  padding-bottom: var(--safe-bottom);
+}
+
+.m-header {
+  flex-shrink: 0;
+  height: var(--header-h);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.m-header__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.m-header__action {
+  position: relative;
+  z-index: 2;
+  font-size: 14px;
+  color: var(--primary);
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.m-content {
+  flex: 1;
+  padding: 12px 16px 16px;
+  overflow-x: hidden;
+}
+
+/* ----- Bottom tab bar ----- */
+.m-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--tabbar-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding-top: 6px;
+  z-index: 20;
+}
+
+.m-tabbar a {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--text-muted);
+  max-width: 88px;
+}
+
+.m-tabbar a.m-tabbar__item--active {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.m-tabbar .bi {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* ----- Cards / toolbar ----- */
+.m-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.m-card__title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.m-card__title .bi {
+  color: var(--primary);
+}
+
+.m-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.m-toolbar select,
+.m-select {
+  flex: 1;
+  min-width: 100px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+.m-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.m-btn--primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.m-btn--primary:active {
+  background: var(--primary-dark);
+}
+
+.m-btn--outline {
+  background: var(--bg-card);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.m-btn--block {
+  width: 100%;
+}
+
+.m-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+}
+
+/* ----- Horizontal scroll tables ----- */
+.m-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.m-table-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.m-table-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.m-data-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  min-width: max-content;
+}
+
+.m-data-table th,
+.m-data-table td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: center;
+  white-space: nowrap;
+  background: var(--bg-card);
+}
+
+.m-data-table thead th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.m-data-table th:first-child,
+.m-data-table td:first-child {
+  text-align: left;
+  min-width: 88px;
+}
+
+.m-data-table .col-total {
+  font-weight: 600;
+  background: #eff6ff;
+}
+
+.m-data-table tr.row-total td {
+  background: #f1f5f9;
+  font-weight: 600;
+}
+
+/* Energy heat map (same thresholds as Vue getEnergyClass) */
+.m-cell--high {
+  background: #fef3c7 !important;
+}
+
+.m-cell--very-high {
+  background: #fecaca !important;
+}
+
+/* ----- Workshop stat cards ----- */
+.m-stat-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.m-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.m-stat-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #fff;
+}
+
+.m-stat-card__icon--purple {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.m-stat-card__icon--green {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.m-stat-card__icon--orange {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+.m-stat-card__value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.m-stat-card__unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.m-stat-card__label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ----- Segmented control ----- */
+.m-seg {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.m-seg__btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #f8fafc;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.m-seg__btn--active {
+  border-color: var(--primary);
+  background: #eff6ff;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ----- Electricity cost tiles ----- */
+.m-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.m-info-tile {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+
+.m-info-tile__label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.m-info-tile__value {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.m-info-tile__unit {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* ----- Chart placeholder ----- */
+.m-chart-placeholder {
+  height: 200px;
+  background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ----- Grouped workshop list ----- */
+.m-group {
+  margin-bottom: 8px;
+}
+
+.m-group__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: #e2e8f0;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.m-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.m-list a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.m-list li:last-child a {
+  border-bottom: none;
+}
+
+.m-list a:active {
+  background: #f8fafc;
+}
+
+.m-list .bi-chevron-right {
+  margin-left: auto;
+  color: #cbd5e1;
+}
+
+/* ----- User management ----- */
+.m-search-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.m-search-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.m-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.m-badge--admin {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.m-badge--user {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+/* ----- Login ----- */
+.m-login {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px calc(24px + var(--safe-bottom));
+  background: linear-gradient(165deg, #e0f2fe 0%, #f5f7fa 45%, #eff6ff 100%);
+}
+
+.m-login-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 28px 24px 32px;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.12);
+  border: 1px solid var(--border);
+}
+
+.m-login-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.m-login-logo__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 12px;
+  background: linear-gradient(135deg, var(--primary), #6366f1);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 28px;
+}
+
+.m-login-logo h1 {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.m-login-logo p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.m-form-group {
+  margin-bottom: 18px;
+}
+
+.m-form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.m-form-group input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+}
+
+.m-form-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.m-login-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: none;
+}
+
+.m-login-error.is-visible {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Demo: add .demo to show error state */
+.m-login-error.demo {
+  display: flex;
+}
+
+.m-hub {
+  padding: 20px 16px calc(24px + var(--safe-bottom));
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.m-hub h1 {
+  font-size: 22px;
+  margin: 0 0 8px;
+}
+
+.m-hub > p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+
+.m-hub-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.m-hub-list a {
+  display: block;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.m-hub-list a small {
+  display: block;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 4px;
+}

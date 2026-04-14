@@ -1,5 +1,5 @@
 <template>
-  <div class="electricity-cost-page">
+  <div v-if="!isMobileLayout" class="electricity-cost-page">
     <!-- 查询区域 -->
     <div class="query-section">
       <div class="query-row">
@@ -219,49 +219,251 @@
     <div v-if="!costData && !loading" class="empty-state">
       暂无数据，请选择年月后点击"计算电费"
     </div>
+  </div>
 
-    <!-- 编辑供电局数据弹窗 -->
-    <div class="modal fade cost-modal" id="editModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">编辑供电局数据 - {{ selectedYear }}年{{ selectedMonth }}月</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <!-- 移动端：对齐 design/mobile 电费分摊 -->
+  <div v-else class="electricity-cost-page electricity-cost-page--mobile">
+    <p class="m-hint">对齐 VUE 电费分摊：年月、计算模式、两段供电局数据、计算/编辑/导出、图表与明细表。</p>
+    <div class="m-toolbar" style="margin-bottom: 8px">
+      <select class="m-select" aria-label="年份" v-model.number="selectedYear">
+        <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}年</option>
+      </select>
+      <select class="m-select" aria-label="月份" v-model.number="selectedMonth">
+        <option v-for="m in 12" :key="m" :value="m">{{ String(m).padStart(2, '0') }}月</option>
+      </select>
+    </div>
+    <label class="m-hint" for="ec-mode-sel" style="display: block; margin: 0 0 6px">计算模式</label>
+    <select id="ec-mode-sel" class="m-select" style="width: 100%; margin-bottom: 12px" v-model="selectedMode">
+      <option value="mode1">模式一：仅1-24日数据（24日金额 ÷ 24日前电量）</option>
+      <option value="mode2">模式二：仅25-月末数据（25-月末金额 ÷ 25-月末电量）</option>
+      <option value="mode3">模式三：两期数据都有（总金额 ÷ 全月总电量）</option>
+    </select>
+
+    <div class="cost-ec-title"><i class="bi bi-lightning-charge"></i>1-24日供电局数据</div>
+    <div class="m-info-grid" style="margin: 0 12px 12px">
+      <div class="m-info-tile">
+        <div class="m-info-tile__label">1-24日抄表电量</div>
+        <div class="m-info-tile__value">
+          {{ formatNum(powerSupply?.reading1To24) }} <span class="m-info-tile__unit">kWh</span>
+        </div>
+      </div>
+      <div class="m-info-tile">
+        <div class="m-info-tile__label">实际金额</div>
+        <div class="m-info-tile__value">¥ {{ formatMoney(powerSupply?.amount1To24) }}</div>
+      </div>
+      <div class="m-info-tile">
+        <div class="m-info-tile__label">供电局均价</div>
+        <div class="m-info-tile__value">
+          {{ calcUnitPrice(powerSupply?.amount1To24, powerSupply?.reading1To24) }}
+          <span class="m-info-tile__unit">元/kWh</span>
+        </div>
+      </div>
+      <div class="m-info-tile">
+        <div class="m-info-tile__label">天石源电量</div>
+        <div class="m-info-tile__value">
+          <template v-if="get1To24Energy() === '-'">—</template>
+          <template v-else>{{ get1To24Energy() }} <span class="m-info-tile__unit">kWh</span></template>
+        </div>
+      </div>
+      <div class="m-info-tile" style="grid-column: 1 / -1">
+        <div class="m-info-tile__label">内部均价</div>
+        <div class="m-info-tile__value">
+          <template v-if="get1To24AvgPrice() === '-'">—</template>
+          <template v-else>{{ get1To24AvgPrice() }} <span class="m-info-tile__unit">元/kWh</span></template>
+        </div>
+      </div>
+    </div>
+
+    <div class="cost-ec-title"><i class="bi bi-calendar-week"></i>25日—月末供电数据</div>
+    <div class="m-info-grid" style="margin: 0 12px 12px">
+      <div class="m-info-tile">
+        <div class="m-info-tile__label">25-月末抄表</div>
+        <div class="m-info-tile__value">
+          {{ formatNum(powerSupply?.reading25ToEnd) }} <span class="m-info-tile__unit">kWh</span>
+        </div>
+      </div>
+      <div class="m-info-tile">
+        <div class="m-info-tile__label">实际金额</div>
+        <div class="m-info-tile__value">¥ {{ formatMoney(powerSupply?.amount25ToEnd) }}</div>
+      </div>
+      <div class="m-info-tile">
+        <div class="m-info-tile__label">供电局均价</div>
+        <div class="m-info-tile__value">
+          {{ calcUnitPrice(powerSupply?.amount25ToEnd, powerSupply?.reading25ToEnd) }}
+          <span class="m-info-tile__unit">元/kWh</span>
+        </div>
+      </div>
+      <div class="m-info-tile">
+        <div class="m-info-tile__label">天石源电量</div>
+        <div class="m-info-tile__value">
+          <template v-if="get25ToEndEnergy() === '-'">—</template>
+          <template v-else>{{ get25ToEndEnergy() }} <span class="m-info-tile__unit">kWh</span></template>
+        </div>
+      </div>
+      <div class="m-info-tile" style="grid-column: 1 / -1">
+        <div class="m-info-tile__label">内部均价</div>
+        <div class="m-info-tile__value">
+          <template v-if="get25ToEndAvgPrice() === '-'">—</template>
+          <template v-else>{{ get25ToEndAvgPrice() }} <span class="m-info-tile__unit">元/kWh</span></template>
+        </div>
+      </div>
+    </div>
+
+    <template v-if="selectedMode === 'mode3'">
+      <div class="cost-ec-title"><i class="bi bi-calculator"></i>全月合计（模式三）</div>
+      <div class="m-info-grid" style="margin: 0 12px 12px">
+        <div class="m-info-tile">
+          <div class="m-info-tile__label">抄表合计</div>
+          <div class="m-info-tile__value">
+            {{ formatNum((powerSupply?.reading1To24 || 0) + (powerSupply?.reading25ToEnd || 0)) }}
+            <span class="m-info-tile__unit">kWh</span>
           </div>
-          <div class="modal-body">
-            <div class="edit-section">
-              <h6>1-24日数据</h6>
-              <div class="form-group">
-                <label class="form-label">供电局抄表数 (kWh)</label>
-                <input type="number" class="form-control" v-model.number="editForm.reading1To24" min="0" step="0.01">
-              </div>
-              <div class="form-group">
-                <label class="form-label">供电局金额 (元)</label>
-                <input type="number" class="form-control" v-model.number="editForm.amount1To24" min="0" step="0.01">
-              </div>
-              <div class="auto-price">
-                单价自动计算: {{ editForm.reading1To24 > 0 ? (editForm.amount1To24 / editForm.reading1To24).toFixed(4) : '0.0000' }} 元/kWh
-              </div>
+        </div>
+        <div class="m-info-tile">
+          <div class="m-info-tile__label">金额合计</div>
+          <div class="m-info-tile__value">
+            ¥ {{ formatMoney((powerSupply?.amount1To24 || 0) + (powerSupply?.amount25ToEnd || 0)) }}
+          </div>
+        </div>
+        <div class="m-info-tile">
+          <div class="m-info-tile__label">供电局均价</div>
+          <div class="m-info-tile__value">
+            {{ calcMonthlyAvgPrice() }}
+            <span class="m-info-tile__unit">元/kWh</span>
+          </div>
+        </div>
+        <div class="m-info-tile">
+          <div class="m-info-tile__label">天石源合计</div>
+          <div class="m-info-tile__value">
+            {{ formatNum(costData?.totalEnergy) }}
+            <span class="m-info-tile__unit">kWh</span>
+          </div>
+        </div>
+        <div class="m-info-tile" style="grid-column: 1 / -1">
+          <div class="m-info-tile__label">月平均单价</div>
+          <div class="m-info-tile__value">
+            {{ formatPrice(costData?.monthlyAvgUnitPrice) }}
+            <span class="m-info-tile__unit">元/kWh</span>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <div class="cost-actions">
+      <button type="button" class="m-btn m-btn--primary" :disabled="loading" @click="calculate">
+        <i class="bi bi-calculator-fill"></i> {{ loading ? '计算中…' : '计算电费' }}
+      </button>
+      <button type="button" class="m-btn m-btn--outline" :disabled="loading" @click="openEditModal">
+        <i class="bi bi-pencil-square"></i> 编辑供电局数据
+      </button>
+      <button type="button" class="m-btn m-btn--outline" :disabled="!costData || loading" @click="exportExcel">
+        <i class="bi bi-download"></i> 导出Excel
+      </button>
+    </div>
+
+    <div class="cost-chart-box">
+      <h4>一级部门电费分布</h4>
+      <div v-show="hasChartData" ref="dept1ChartRef" class="cost-echarts"></div>
+      <div v-show="!hasChartData" class="m-hint" style="margin: 0; min-height: 160px; display: flex; align-items: center; justify-content: center; text-align: center">
+        请点击「计算电费」获取数据
+      </div>
+    </div>
+    <div class="cost-chart-box">
+      <h4>二级部门电费分布</h4>
+      <div v-show="hasChartData" ref="dept2ChartRef" class="cost-echarts cost-echarts--tall"></div>
+      <div v-show="!hasChartData" class="m-hint" style="margin: 0; min-height: 180px; display: flex; align-items: center; justify-content: center; text-align: center">
+        请点击「计算电费」获取数据
+      </div>
+    </div>
+
+    <div
+      v-if="costData && costData.departmentCostList && costData.departmentCostList.length > 0"
+      class="m-card m-card--ec-table"
+      style="margin: 0 12px 16px; padding: 12px"
+    >
+      <div class="m-card__title" style="margin-bottom: 8px; font-size: 13px"><i class="bi bi-table"></i> 数据列表</div>
+      <div class="m-table-scroll">
+        <table class="m-data-table ec-table">
+          <colgroup>
+            <col style="width: 22%">
+            <col style="width: 24%">
+            <col style="width: 27%">
+            <col style="width: 27%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>一级部门</th>
+              <th>二级/车间</th>
+              <th>月电能(kWh)</th>
+              <th>分摊金额(元)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in costData.departmentCostList" :key="index">
+              <td v-if="rowspans[index]" :rowspan="rowspans[index]" class="ec-col-dept1">{{ item.dept1 }}</td>
+              <td>{{ item.dept2 }}</td>
+              <td>{{ item.energy?.toLocaleString() || '0' }}</td>
+              <td>{{ item.cost?.toLocaleString() || '0' }}</td>
+            </tr>
+          </tbody>
+          <tfoot v-if="Object.keys(summary).length > 0">
+            <tr v-for="(data, dept1, idx) in summary" :key="'m-total-' + dept1" class="ec-row-total">
+              <td v-if="idx === 0" :rowspan="Object.keys(summary).length">合计</td>
+              <td>{{ dept1 }}</td>
+              <td>{{ data.energy.toLocaleString() }}</td>
+              <td>{{ data.cost.toLocaleString() }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div v-if="!costData && !loading" class="m-hint" style="margin: 0 12px 16px">
+      暂无数据，请选择年月后点击「计算电费」
+    </div>
+  </div>
+
+  <!-- 编辑供电局数据弹窗（桌面 / 移动共用） -->
+  <div class="modal fade cost-modal" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">编辑供电局数据 - {{ selectedYear }}年{{ selectedMonth }}月</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="edit-section">
+            <h6>1-24日数据</h6>
+            <div class="form-group">
+              <label class="form-label">供电局抄表数 (kWh)</label>
+              <input type="number" class="form-control" v-model.number="editForm.reading1To24" min="0" step="0.01">
             </div>
-            <div class="edit-section">
-              <h6>25-月末数据</h6>
-              <div class="form-group">
-                <label class="form-label">供电局抄表数 (kWh)</label>
-                <input type="number" class="form-control" v-model.number="editForm.reading25ToEnd" min="0" step="0.01">
-              </div>
-              <div class="form-group">
-                <label class="form-label">供电局金额 (元)</label>
-                <input type="number" class="form-control" v-model.number="editForm.amount25ToEnd" min="0" step="0.01">
-              </div>
-              <div class="auto-price">
-                单价自动计算: {{ editForm.reading25ToEnd > 0 ? (editForm.amount25ToEnd / editForm.reading25ToEnd).toFixed(4) : '0.0000' }} 元/kWh
-              </div>
+            <div class="form-group">
+              <label class="form-label">供电局金额 (元)</label>
+              <input type="number" class="form-control" v-model.number="editForm.amount1To24" min="0" step="0.01">
+            </div>
+            <div class="auto-price">
+              单价自动计算: {{ editForm.reading1To24 > 0 ? (editForm.amount1To24 / editForm.reading1To24).toFixed(4) : '0.0000' }} 元/kWh
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-            <button type="button" class="btn-calculate" @click="saveEdit">保存</button>
+          <div class="edit-section">
+            <h6>25-月末数据</h6>
+            <div class="form-group">
+              <label class="form-label">供电局抄表数 (kWh)</label>
+              <input type="number" class="form-control" v-model.number="editForm.reading25ToEnd" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+              <label class="form-label">供电局金额 (元)</label>
+              <input type="number" class="form-control" v-model.number="editForm.amount25ToEnd" min="0" step="0.01">
+            </div>
+            <div class="auto-price">
+              单价自动计算: {{ editForm.reading25ToEnd > 0 ? (editForm.amount25ToEnd / editForm.reading25ToEnd).toFixed(4) : '0.0000' }} 元/kWh
+            </div>
           </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn-calculate" @click="saveEdit">保存</button>
         </div>
       </div>
     </div>
@@ -301,10 +503,14 @@ export function calcDept1Summary(list) {
 </script>
 
 <script setup>
-import { ref, computed, watch, nextTick, onBeforeUnmount, onMounted } from 'vue'
+import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import { Modal } from 'bootstrap'
-import '@/styles/electricity-cost.css'
+import '@/styles/desktop/electricity-cost.css'
+
+defineProps({
+  isMobileLayout: { type: Boolean, default: false }
+})
 
 const now = new Date()
 const currentYear = now.getFullYear()
@@ -446,12 +652,6 @@ function get25ToEndAvgPrice() {
   return '0.000'
 }
 
-function calcTotalEnergy() {
-  if (!costData.value) return 0
-  if (selectedMode.value === 'mode3') return (costData.value.energy1To24 ?? 0) + (costData.value.energy25ToEnd ?? 0)
-  return costData.value.totalEnergy ?? 0
-}
-
 // 计算电费
 async function calculate() {
   const calculator = getModeCalculator(selectedMode.value)
@@ -533,6 +733,9 @@ function renderCharts() {
       itemStyle: { color: DEPT1_COLORS[name] || '#4f8cff' }
     }))
 
+    const dept1Box = dept1ChartRef.value
+    const dept1H = () => dept1Box?.clientHeight || 200
+
     dept1ChartInstance.setOption({
       tooltip: {
         trigger: 'item',
@@ -562,6 +765,7 @@ function renderCharts() {
         },
         label: {
           show: true,
+          distanceToLabelLine: 4,
           formatter: (params) => `${params.name}\n¥${params.value.toFixed(2)}\n${params.percent}%`,
           color: '#334155',
           fontSize: 12,
@@ -576,7 +780,27 @@ function renderCharts() {
         },
         labelLine: {
           show: true,
+          length: 14,
+          length2: 10,
           lineStyle: { color: '#94a3b8', width: 1.5 }
+        },
+        /** 仅整体上移易与底图例重叠的扇区标注，不改 radius/center */
+        labelLayout(params) {
+          const lr = params.labelRect
+          const h = dept1H()
+          if (!lr || !h) return {}
+          const bottom = lr.y + lr.height
+          const cx = lr.x + lr.width / 2
+          const w = dept1Box?.clientWidth || 300
+          // 底部偏右（典型与 legend 重叠）整体上移
+          if (bottom > h * 0.66 && cx > w * 0.42) {
+            return { dy: -38, dx: -6 }
+          }
+          // 其它落入底部图例带的标注略上移
+          if (bottom > h * 0.72) {
+            return { dy: -28 }
+          }
+          return {}
         },
         data: dept1Data
       }]
@@ -602,12 +826,19 @@ function renderCharts() {
         textStyle: { color: '#334155', fontSize: 13 }
       },
       legend: {
+        type: 'scroll',
         orient: 'horizontal',
+        left: 'center',
         bottom: 0,
-        textStyle: { color: '#475569', fontSize: 11 },
+        width: '92%',
         itemWidth: 12,
         itemHeight: 12,
-        itemGap: 8
+        itemGap: 8,
+        textStyle: { color: '#475569', fontSize: 11 },
+        pageButtonItemGap: 4,
+        pageIconSize: 12,
+        pageTextStyle: { color: '#64748b', fontSize: 11 },
+        pageFormatter: '{current}/{total}'
       },
       series: [{
         name: '二级部门电费',

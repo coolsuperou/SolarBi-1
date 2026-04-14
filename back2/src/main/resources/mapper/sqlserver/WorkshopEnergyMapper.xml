@@ -49,7 +49,8 @@
                 </if>
         )
         SELECT
-            SUM(ElectricEnergy) as totalElectricEnergy
+            SUM(ElectricEnergy) as totalElectricEnergy,
+            COUNT(DISTINCT Name) as totalDevices
         FROM LatestDeviceData
         WHERE rn = 1
     </select>
@@ -195,87 +196,34 @@
                 WHERE StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL
             </when>
 
-            <!-- 小时模式：使用改进的设备边界查询逻辑 -->
+            <!-- 小时模式：使用窗口函数高效计算设备能耗差值 -->
             <otherwise>
-                WITH DeviceList AS (
-                SELECT DISTINCT DeviceID, Name
-                FROM RSWS_TempMonitor_Copy
-                WHERE Workshop = #{workshop}
-                AND ElectricEnergy IS NOT NULL
-                ),
-                DeviceBounds AS (
-                SELECT
-                dl.DeviceID,
-                dl.Name,
-                <choose>
-                    <when test="startTime != null">#{startTime}</when>
-                    <otherwise>DATEADD(HOUR,-24,GETDATE())</otherwise>
-                </choose> AS StartTime,
-
-                -- 为每个设备找到结束时间以后最近的一条数据的时间，如果没有则用 endTime 内的最近一条时间
-                COALESCE(
-                (SELECT TOP 1 UpdateTime
-                FROM RSWS_TempMonitor_Copy t
-                WHERE t.Workshop = #{workshop}
-                AND t.DeviceID = dl.DeviceID
-                AND t.Name = dl.Name
-                AND t.ElectricEnergy IS NOT NULL
-                <if test="endTime != null">
-                    AND t.UpdateTime &gt; #{endTime}
-                </if>
-                ORDER BY t.UpdateTime ASC),
-                (SELECT TOP 1 UpdateTime
-                FROM RSWS_TempMonitor_Copy t
-                WHERE t.Workshop = #{workshop}
-                AND t.DeviceID = dl.DeviceID
-                AND t.Name = dl.Name
-                AND t.ElectricEnergy IS NOT NULL
-                <if test="startTime != null">
-                    AND t.UpdateTime &gt;= #{startTime}
-                </if>
-                <if test="endTime != null">
-                    AND t.UpdateTime &lt;= #{endTime}
-                </if>
-                ORDER BY t.UpdateTime DESC)
-                ) AS ActualEndTime
-                FROM DeviceList dl
-                ),
-                DeviceEnergyData AS (
-                SELECT
-                db.DeviceID,
-                db.Name,
-                -- 获取开始时间的电能值
-                (SELECT TOP 1 ElectricEnergy
-                FROM RSWS_TempMonitor_Copy t_start
-                WHERE t_start.Workshop = #{workshop}
-                AND t_start.DeviceID = db.DeviceID
-                AND t_start.Name = db.Name
-                AND t_start.UpdateTime &gt;= db.StartTime
-                AND t_start.ElectricEnergy IS NOT NULL
-                ORDER BY t_start.UpdateTime ASC) AS StartEnergy,
-
-                -- 获取结束时间的电能值
-                (SELECT TOP 1 ElectricEnergy
-                FROM RSWS_TempMonitor_Copy t_end
-                WHERE t_end.Workshop = #{workshop}
-                AND t_end.DeviceID = db.DeviceID
-                AND t_end.Name = db.Name
-                AND t_end.UpdateTime &lt;= db.ActualEndTime
-                AND t_end.ElectricEnergy IS NOT NULL
-                ORDER BY t_end.UpdateTime DESC) AS EndEnergy
-                FROM DeviceBounds db
-                WHERE db.ActualEndTime IS NOT NULL
+                WITH DeviceEnergy AS (
+                    SELECT
+                        DeviceID,
+                        Name,
+                        FIRST_VALUE(ElectricEnergy) OVER (PARTITION BY DeviceID, Name ORDER BY UpdateTime ASC) AS StartEnergy,
+                        FIRST_VALUE(ElectricEnergy) OVER (PARTITION BY DeviceID, Name ORDER BY UpdateTime DESC) AS EndEnergy,
+                        ROW_NUMBER() OVER (PARTITION BY DeviceID, Name ORDER BY UpdateTime ASC) AS rn
+                    FROM RSWS_TempMonitor_Copy
+                    WHERE Workshop = #{workshop}
+                    AND ElectricEnergy IS NOT NULL
+                    <if test="startTime != null">
+                        AND UpdateTime &gt;= #{startTime}
+                    </if>
+                    <if test="endTime != null">
+                        AND UpdateTime &lt;= #{endTime}
+                    </if>
                 )
                 SELECT
-                COALESCE(SUM(
-                CASE
-                WHEN StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL AND EndEnergy &gt;= StartEnergy
-                THEN EndEnergy - StartEnergy
-                ELSE 0
-                END
-                ), 0) AS totalConsumption
-                FROM DeviceEnergyData
-                WHERE StartEnergy IS NOT NULL AND EndEnergy IS NOT NULL
+                    COALESCE(SUM(
+                        CASE
+                            WHEN EndEnergy &gt;= StartEnergy THEN EndEnergy - StartEnergy
+                            ELSE 0
+                        END
+                    ), 0) AS totalConsumption
+                FROM DeviceEnergy
+                WHERE rn = 1
             </otherwise>
         </choose>
     </select>

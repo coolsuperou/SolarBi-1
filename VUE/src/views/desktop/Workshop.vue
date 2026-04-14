@@ -13,10 +13,10 @@
         <div class="overview-icon green"><i class="bi bi-lightning-charge-fill"></i></div>
         <div>
           <div class="overview-value">
-            {{ formatNumber(statistics.avgElectricEnergy) }}
+            {{ formatNumber(energyConsumption) }}
             <span class="overview-unit">kWh</span>
           </div>
-          <div class="overview-label">平均电能消耗</div>
+          <div class="overview-label">电能消耗</div>
         </div>
       </div>
       <div class="overview-card">
@@ -184,7 +184,7 @@ import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import Chart from 'chart.js/auto'
 import { getWorkshopApi } from '@/api/workshopMap'
-import '@/styles/workshop.css'
+import '@/styles/desktop/workshop.css'
 
 const route = useRoute()
 
@@ -194,7 +194,8 @@ const workshopName = computed(() => route.meta?.workshop || '')
 const api = computed(() => getWorkshopApi(route.meta?.apiBase))
 
 // 统计卡片数据
-const statistics = ref({ avgElectricEnergy: 0, totalElectricEnergy: 0 })
+const statistics = ref({ totalDevices: 0, totalElectricEnergy: 0 })
+const energyConsumption = ref(0)
 
 // 查询模式
 const queryMode = ref('hour')
@@ -277,15 +278,32 @@ function buildTimeRange() {
   }
 }
 
-// 加载统计卡片
+// 加载统计卡片（totalElectricEnergy）
 async function loadStatistics() {
   if (!api.value) return
   const { startTime, endTime } = buildTimeRange()
   try {
     const data = await api.value.getStatistics({ workshop: workshopName.value, startTime, endTime })
-    statistics.value = data || { energyConsumption: 0, totalElectricEnergy: 0 }
+    statistics.value = {
+      totalDevices: data?.totalDevices || 0,
+      totalElectricEnergy: data?.totalElectricEnergy || 0
+    }
   } catch (err) {
     console.error('获取统计数据失败:', err)
+    statistics.value = { totalDevices: 0, totalElectricEnergy: 0 }
+  }
+}
+
+// 加载电能消耗（独立接口，与老前端一致）
+async function loadEnergyConsumption() {
+  if (!api.value) return
+  const { startTime, endTime } = buildTimeRange()
+  try {
+    const val = await api.value.getEnergyConsumption({ startTime, endTime, mode: queryMode.value })
+    energyConsumption.value = (val != null && !isNaN(Number(val))) ? Number(val) : 0
+  } catch (err) {
+    console.error('获取电能消耗失败:', err)
+    energyConsumption.value = 0
   }
 }
 
@@ -437,11 +455,13 @@ function renderChart() {
         pointHoverBackgroundColor: '#3b82f6',
         pointHoverBorderColor: '#fff',
         pointHoverBorderWidth: 3,
-        borderWidth: 2.5
+        borderWidth: 2.5,
+        pointHitRadius: 24
       }]
     },
     plugins: [crosshairPlugin],
     options: {
+      events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
       responsive: true,
       maintainAspectRatio: false,
       animation: {
@@ -458,11 +478,13 @@ function renderChart() {
       },
       interaction: {
         mode: 'index',
-        intersect: false
+        intersect: false,
+        axis: 'x'
       },
       hover: {
         mode: 'index',
-        intersect: false
+        intersect: false,
+        axis: 'x'
       },
       plugins: {
         legend: {
@@ -482,6 +504,8 @@ function renderChart() {
           }
         },
         tooltip: {
+          mode: 'index',
+          intersect: false,
           backgroundColor: '#fff',
           titleColor: '#1e293b',
           bodyColor: '#475569',
@@ -567,7 +591,7 @@ function renderChart() {
 async function handleQuery() {
   isLoading.value = true
   try {
-    await Promise.all([loadStatistics(), loadChartData(), loadTableData(1)])
+    await Promise.all([loadStatistics(), loadEnergyConsumption(), loadChartData(), loadTableData(1)])
   } finally {
     isLoading.value = false
   }

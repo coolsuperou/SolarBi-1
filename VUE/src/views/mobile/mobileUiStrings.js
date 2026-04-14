@@ -1,0 +1,49 @@
+/** Mobile UI copy (ASCII + \\u escapes for stable encoding) */
+
+export const mTabBar = {
+  navAria: '\u5e95\u90e8\u5bfc\u822a',
+  home: '\u9996\u9875',
+  stats: '\u7edf\u8ba1',
+  workshop: '\u8f66\u95f4',
+  mine: '\u6211\u7684'
+}
+
+export const mStats = {
+  title: '\u7edf\u8ba1\u62a5\u8868',
+  hint: '\u4ece\u6b64\u8fdb\u5165\u5404\u7c7b\u62a5\u8868',
+  monthly: '\u6708\u5ea6\u80fd\u8017',
+  hourly: '\u65e5\u80fd\u8017',
+  cost: '\u7535\u8d39\u5206\u644a',
+  enter: '\u8fdb\u5165',
+  noPerm: '\u6682\u65e0\u53ef\u7528\u62a5\u8868\u6743\u9650'
+}
+
+export const mMine = {
+  title: '\u7528\u6237\u4e2d\u5fc3',
+  hint: '\u8d26\u53f7\u4e0e\u6743\u9650',
+  admin: '\u7ba1\u7406\u5458',
+  user: '\u666e\u901a\u7528\u6237',
+  userMgmt: '\u7528\u6237\u7ba1\u7406',
+  badgeAdmin: '\u7ba1\u7406\u5458',
+  settings: '\u8bbe\u7f6e',
+  about: '\u5173\u4e8e',
+  logout: '\u9000\u51fa\u767b\u5f55',
+  footHint: '\u7535\u8111\u7aef\u5b8c\u6574\u529f\u80fd\u8bf7\u4f7f\u7528\u684c\u9762\u6d4f\u89c8\u5668\u8bbf\u95ee\u540c\u4e00\u5730\u5740\u3002'
+}
+
+export const mWsHub = {
+  title: '\u8f66\u95f4\u76d1\u63a7',
+  hint: '\u6309\u751f\u4ea7\u7ebf\u5206\u7ec4\uff0c\u70b9\u51fb\u8fdb\u5165\u8f66\u95f4\u8be6\u60c5',
+  front: '\u524d\u9053\u751f\u4ea7\u7ebf',
+  back: '\u540e\u9053\u751f\u4ea7\u7ebf',
+  pub: '\u516c\u5171\u6a21\u5757',
+  other: '\u5176\u4ed6',
+  noPerm: '\u6682\u65e0\u8f66\u95f4\u8bbf\u95ee\u6743\u9650'
+}
+
+export const mShellTitles = {
+  monthly: '\u6708\u5ea6\u80fd\u8017\u7edf\u8ba1',
+  hourly: '\u65e5\u80fd\u8017\u7edf\u8ba1',
+  cost: '\u7535\u8d39\u5206\u644a\u8ba1\u7b97',
+  userMgmt: '\u7528\u6237\u7ba1\u7406'
+}

@@ -126,7 +126,7 @@ public class WorkshopEnergyController {
             
             log.info("✅ 统计数据获取成功 - 车间: {}, 设备总数: {}", 
                 workshopEnum.getWorkshopName(), 
-                statistics != null ? statistics.getTotalDevices() : 0);
+                statistics != null && statistics.getTotalDevices() != null ? statistics.getTotalDevices() : 0);
             
             return ResultUtils.success(statistics);
             

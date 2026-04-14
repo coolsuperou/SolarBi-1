@@ -33,7 +33,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '@/api/user'
 import { setUser } from '@/auth'
-import '@/styles/login.css'
+import { resolveRootRedirectPath } from '@/router/rootRedirect'
+import '@/styles/desktop/login.css'
 
 const router = useRouter()
 const userAccount = ref('')
@@ -47,7 +48,7 @@ async function handleLogin() {
   try {
     const loginUserVO = await login(userAccount.value, userPassword.value)
     setUser(loginUserVO)
-    router.push('/monthly-energy')
+    router.push(resolveRootRedirectPath())
   } catch (err) {
     errorMsg.value = err.message || '登录失败'
   } finally {

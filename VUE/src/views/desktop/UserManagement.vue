@@ -283,7 +283,7 @@ import { useRouter } from 'vue-router'
 import { listUserByPage, addUser, updateUser, deleteUser } from '@/api/user'
 import { authState, fetchCurrentUser } from '@/auth'
 import { workshopRoutes } from '@/router/index'
-import '@/styles/user-management.css'
+import '@/styles/desktop/user-management.css'
 
 const router = useRouter()
 

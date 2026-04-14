@@ -284,6 +284,8 @@
   background: linear-gradient(180deg, #f8fafc 0%, #fff 55%);
   flex-wrap: wrap;
   gap: 8px;
+  position: sticky;
+  left: 0;
 }
 
 .workshop-page.workshop-page--mobile .workshop-table-title {
@@ -346,9 +348,11 @@
   display: flex;
   padding: 12px 12px 4px;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
   justify-content: center;
+  position: sticky;
+  left: 0;
 }
 
 .workshop-page.workshop-page--mobile .page-info {
@@ -358,15 +362,18 @@
 }
 
 .workshop-page.workshop-page--mobile .page-btns {
-  flex-wrap: wrap;
+  display: flex;
+  flex-wrap: nowrap;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .workshop-page.workshop-page--mobile .page-btn {
-  min-width: 40px;
-  min-height: 40px;
-  border-radius: 10px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 12px;
 }
 
 .workshop-page.workshop-page--mobile .page-btn.active {

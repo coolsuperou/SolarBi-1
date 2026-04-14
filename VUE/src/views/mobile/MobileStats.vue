@@ -8,22 +8,19 @@
       <li v-if="canMonthly">
         <RouterLink :to="M.MONTHLY_ENERGY">
           <i class="bi bi-calendar3" style="color: #1677ff"></i> {{ mStats.monthly }}
-          <span style="margin-left: auto; font-size: 12px; color: #94a3b8">{{ mStats.enter }}</span>
-          <i class="bi bi-chevron-right"></i>
+          <span class="m-list__trailing"><span>{{ mStats.enter }}</span><i class="bi bi-chevron-right"></i></span>
         </RouterLink>
       </li>
       <li v-if="canHourly">
         <RouterLink :to="M.HOURLY_ENERGY">
           <i class="bi bi-clock" style="color: #1677ff"></i> {{ mStats.hourly }}
-          <span style="margin-left: auto; font-size: 12px; color: #94a3b8">{{ mStats.enter }}</span>
-          <i class="bi bi-chevron-right"></i>
+          <span class="m-list__trailing"><span>{{ mStats.enter }}</span><i class="bi bi-chevron-right"></i></span>
         </RouterLink>
       </li>
       <li v-if="canCost">
         <RouterLink :to="M.ELECTRICITY_COST">
           <i class="bi bi-calculator" style="color: #1677ff"></i> {{ mStats.cost }}
-          <span style="margin-left: auto; font-size: 12px; color: #94a3b8">{{ mStats.enter }}</span>
-          <i class="bi bi-chevron-right"></i>
+          <span class="m-list__trailing"><span>{{ mStats.enter }}</span><i class="bi bi-chevron-right"></i></span>
         </RouterLink>
       </li>
       <li v-if="!canMonthly && !canHourly && !canCost">

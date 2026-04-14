@@ -116,7 +116,7 @@ function onMonthChange() {
 }
 
 function formatNumber(val) {
-  if (val == null) return '-'
+  if (val == null || Number(val) === 0) return '-'
   return Number(val).toFixed(2)
 }
 

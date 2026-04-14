@@ -420,6 +420,20 @@ a {
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.m-group__head:active {
+  background: #cbd5e1;
+}
+
+.m-group__arrow {
+  transition: transform 0.25s ease;
+}
+
+.m-group__arrow.is-collapsed {
+  transform: rotate(-90deg);
 }
 
 .m-list {

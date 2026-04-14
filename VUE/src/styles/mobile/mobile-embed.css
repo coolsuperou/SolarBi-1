@@ -20,13 +20,11 @@
 }
 
 .m-desktop-embed .electricity-cost-page,
-.m-desktop-embed .workshop-page,
-.m-desktop-embed .user-management-page {
+.m-desktop-embed .workshop-page {
   max-width: 100%;
 }
 
-.m-desktop-embed .search-card,
-.m-desktop-embed .um-toolbar {
+.m-desktop-embed .search-card {
   flex-wrap: wrap;
 }
 

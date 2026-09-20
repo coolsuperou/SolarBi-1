@@ -14,7 +14,7 @@
     <!-- 分页查询温湿电能数据 -->
     <select id="selectPageByCondition" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
         SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop
-        FROM RSWS_TempMonitor_Copy
+        FROM RSWS_TempMonitor
         WHERE Workshop = #{workshop}
         <if test="startTime != null">
             AND UpdateTime &gt;= #{startTime}
@@ -38,7 +38,7 @@
                 Name,
                 ElectricEnergy,
                 ROW_NUMBER() OVER (PARTITION BY Name ORDER BY UpdateTime DESC) as rn
-            FROM RSWS_TempMonitor_Copy
+            FROM RSWS_TempMonitor
             WHERE Workshop = #{workshop}
                 AND ElectricEnergy IS NOT NULL
                 <if test="startTime != null">
@@ -58,7 +58,7 @@
     <!-- 查询小时原始数据（不分页，用于能耗计算） -->
     <select id="selectHourlyRawData" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
         SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop
-        FROM RSWS_TempMonitor_Copy
+        FROM RSWS_TempMonitor
         WHERE Workshop = #{workshop}
         AND ElectricEnergy IS NOT NULL
         <if test="startTime != null">
@@ -73,7 +73,7 @@
     <!-- 查询嵌套表原始数据（仅用于 Beading107 车间） -->
     <select id="selectNestedTablesRawData" resultType="com.yupi.springbootinit.model.entity.TempMonitor">
         SELECT Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, ElectricEnergy, NodeID, Workshop
-        FROM RSWS_TempMonitor_Copy
+        FROM RSWS_TempMonitor
         WHERE (
             (Workshop = '105_无压烧结' AND Name IN ('105_无压烧结_1#', '105_无压烧结_2#'))
             OR (Workshop = '112_终检' AND Name IN ('112_终检_1#', '112_终检_2#'))
@@ -140,7 +140,7 @@
                 FROM DailyBoundaries db
                 CROSS JOIN (
                 SELECT DISTINCT DeviceID, Name, Workshop
-                FROM RSWS_TempMonitor_Copy
+                FROM RSWS_TempMonitor
                 WHERE Workshop = #{workshop}
                 AND ElectricEnergy IS NOT NULL
                 <if test="startTime != null">
@@ -150,14 +150,14 @@
                     AND UpdateTime &lt;= #{endTime}
                 </if>
                 ) devices
-                LEFT JOIN RSWS_TempMonitor_Copy tm_start ON (
+                LEFT JOIN RSWS_TempMonitor tm_start ON (
                 tm_start.DeviceID = devices.DeviceID
                 AND tm_start.Name = devices.Name
                 AND tm_start.Workshop = #{workshop}
                 AND tm_start.ElectricEnergy IS NOT NULL
                 AND tm_start.UpdateTime = (
                 SELECT TOP 1 UpdateTime
-                FROM RSWS_TempMonitor_Copy inner_tm
+                FROM RSWS_TempMonitor inner_tm
                 WHERE inner_tm.DeviceID = devices.DeviceID
                 AND inner_tm.Name = devices.Name
                 AND inner_tm.Workshop = #{workshop}
@@ -166,14 +166,14 @@
                 ORDER BY inner_tm.UpdateTime ASC
                 )
                 )
-                LEFT JOIN RSWS_TempMonitor_Copy tm_end ON (
+                LEFT JOIN RSWS_TempMonitor tm_end ON (
                 tm_end.DeviceID = devices.DeviceID
                 AND tm_end.Name = devices.Name
                 AND tm_end.Workshop = #{workshop}
                 AND tm_end.ElectricEnergy IS NOT NULL
                 AND tm_end.UpdateTime = (
                 SELECT TOP 1 UpdateTime
-                FROM RSWS_TempMonitor_Copy inner_tm
+                FROM RSWS_TempMonitor inner_tm
                 WHERE inner_tm.DeviceID = devices.DeviceID
                 AND inner_tm.Name = devices.Name
                 AND inner_tm.Workshop = #{workshop}
@@ -205,7 +205,7 @@
                         FIRST_VALUE(ElectricEnergy) OVER (PARTITION BY DeviceID, Name ORDER BY UpdateTime ASC) AS StartEnergy,
                         FIRST_VALUE(ElectricEnergy) OVER (PARTITION BY DeviceID, Name ORDER BY UpdateTime DESC) AS EndEnergy,
                         ROW_NUMBER() OVER (PARTITION BY DeviceID, Name ORDER BY UpdateTime ASC) AS rn
-                    FROM RSWS_TempMonitor_Copy
+                    FROM RSWS_TempMonitor
                     WHERE Workshop = #{workshop}
                     AND ElectricEnergy IS NOT NULL
                     <if test="startTime != null">

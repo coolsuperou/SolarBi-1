@@ -11,12 +11,12 @@ import java.util.Date;
 
 /**
  * 温湿电能监控数据实体
- * 对应 SQL Server 表：RSWS_TempMonitor_Copy
+ * 对应 SQL Server 表：RSWS_TempMonitor
  * 
  * @author yupi
  */
 @Data
-@TableName("RSWS_TempMonitor_Copy")
+@TableName("RSWS_TempMonitor")
 public class TempMonitor implements Serializable {
 
     private static final long serialVersionUID = 1L;

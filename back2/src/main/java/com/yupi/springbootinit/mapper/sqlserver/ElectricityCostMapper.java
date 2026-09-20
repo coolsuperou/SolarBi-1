@@ -28,7 +28,7 @@ public interface ElectricityCostMapper extends BaseMapper<PowerSupplyData> {
     @Select("SELECT " +
             "Id, DeviceID, Name, Tem, Hum, MAC, UpdateTime, " +
             "ElectricEnergy, NodeID, Workshop " +
-            "FROM RSWS_TempMonitor_Copy " +
+            "FROM RSWS_TempMonitor " +
             "WHERE ElectricEnergy IS NOT NULL " +
             "AND Workshop != '备用' " +
             "AND Workshop != '备用总表' " +

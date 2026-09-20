@@ -65,12 +65,34 @@ cd VUE   && npm test           # vitest --run
 
 ## Git 流程
 
+### 分支
+
 - **单主线**：只有 `master`（永远保持可编译、可部署）
 - 功能/修复从 `master` 切短生命周期分支：`feat/<主题>`、`fix/<主题>`，合回后删除。纯文档、配置类的小改动可以直接提交到 `master`，不必为它开分支
 - ❌ 不要再用技术栈 / 数据库 / 平台名当分支名（`react`、`vue`、`dnpt`、`wx` 是历史遗留，已清理）
 - 历史分支内容已归档为 tag：`archive/react`、`archive/dnpt`、`archive/vue`、`archive/wx`；恢复用 `git checkout -b <名字> archive/<名字>`
-- 提交信息用中文，带类型前缀：`feat(电费分摊): ...`、`fix(移动端): ...`、`chore: ...`
 - 生产发布打 tag；`master` 已设为默认分支
+
+### 提交信息（Conventional Commits，强制）
+
+格式：`<类型>(<范围>): <描述>`，例如 `feat(电费分摊): 新增电费计算页`
+
+- 类型必须小写，冒号必须是**英文冒号加一个空格**（中文全角 `：` 不合规）
+- 描述用中文、不加句号，首行不超过 72 字符
+- 范围可选，写受影响的模块：`电费分摊`、`月度能耗`、`日能耗`、`车间`、`用户`、`缓存`、`图表`、`VUE`、`front`、`IDE`、`mapper`
+- 破坏性变更加 `!`（`feat(接口)!: ...`），或在正文写 `BREAKING CHANGE: 说明`
+- **一条提交只做一件事**。三件事挤在一条里就拆成三条，出问题时才能精确回滚
+
+类型与版本号影响：
+
+| 类型 | 用途 | 版本号 |
+|---|---|---|
+| `feat` | 新功能 | MINOR |
+| `fix` | 修缺陷 | PATCH |
+| `refactor` / `perf` / `style` | 重构 / 性能 / 格式 | 不参与 |
+| `docs` / `test` / `build` / `ci` / `chore` / `revert` | 文档 / 测试 / 构建依赖 / CI / 杂项 / 回滚 | 不参与 |
+
+> **2026-09-20 历史已重写**：全部 113 个提交按上述规范改名，因此该日期之前的所有提交 SHA 都变了。若在别的机器上还有旧克隆，请重新 clone，不要 `pull`。重写前的完整历史保留在 `backup/pre-conventional-rewrite` tag 和 `archive/*` tag 里，可随时恢复。
 
 ## IDE / 构建环境的坑（本机）
 
@@ -87,5 +109,6 @@ cd VUE   && npm test           # vitest --run
 3. 修了 IDE 的 Maven 失效配置与模块链接
 4. 新增仓库根级 `.gitignore`；`node_modules` 全部移出版本控制
 5. 分支从 9 条收敛到 1 条 `master`，历史分支转为归档 tag
+6. 全部 113 个提交按 Conventional Commits 重写（SHA 全变，旧克隆需重新 clone），其中原来三合一的提交拆成了三条原子提交
 
 **待办**：`design/` 下 1636 个未跟踪文件的处置方式尚未决定；切换表后需要用同一月份的电费分摊结果与切换前做一次数据对比验收。

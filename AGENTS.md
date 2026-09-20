@@ -6,7 +6,7 @@
 
 | 目录 | 说明 |
 |---|---|
-| `back2/` | **唯一在跑的后端**，Spring Boot 2.7.2，端口 `8101`，context-path `/api`，74 个 Java 文件 |
+| `backend/` | **唯一在跑的后端**，Spring Boot 2.7.2，端口 `8101`，context-path `/api`，74 个 Java 文件 |
 | `react/` | React 前端（`@umijs/max`），依赖未入库 |
 | `VUE/` | Vue + Vite 前端（移动端）。`node_modules` 已移出版本控制，克隆后需在 `VUE/` 下 `npm install` |
 | `design/` | 设计资产（610M，含 `.glb` 模型），441 个已跟踪 + 1636 个未跟踪，处置待定 |
@@ -34,7 +34,7 @@ SQL Server 侧的表：
 
 ## 常用命令
 
-后端（在 `back2/` 下）：
+后端（在 `backend/` 下）：
 
 ```bash
 mvn -o -B compile          # 编译；离线可用，依赖已在 ~/.m2
@@ -96,16 +96,16 @@ cd VUE   && npm test           # vitest --run
 
 ## IDE / 构建环境的坑（本机）
 
-- 根工程 `.idea/misc.xml` 的 Maven 链接必须指向 `back2/pom.xml`
+- 根工程 `.idea/misc.xml` 的 Maven 链接必须指向 `backend/pom.xml`
 - Maven 的 **User settings file 不要 Override**。两个工程的 `workspace.xml` 历史上各自指向过已删除的 Maven 安装目录（`D:\BaiduNetdiskDownload\...`、`D:\programe\java\...`），一 Override 就会出现「The specified user settings file does not exist」，Maven 面板全部功能失效
-- 本地仓库统一用默认的 `C:\Users\23323\.m2\repository`（不要再用 `back2` 工程里那个 `D:\programe\java\...\mvn-repository`）
+- 本地仓库统一用默认的 `C:\Users\23323\.m2\repository`（不要再用 `backend` 工程里那个 `D:\programe\java\...\mvn-repository`）
 - 模块 `springboot-init` 的 Language level 应为 **8**
 - 查看归档 tag 那种老提交时，可能报 `untracked working tree files would be overwritten`（老提交仍跟踪着 `VUE/node_modules`），属预期现象
 
 ## 近期重要变更（2026-09-20）
 
 1. 能耗表从 `RSWS_TempMonitor_Copy` 切换到 `RSWS_TempMonitor`（6 个文件 17 处），性能上从无索引的副表换到带三个覆盖索引的主表
-2. `back2/pom.xml` 补了显式编译级别
+2. `backend/pom.xml` 补了显式编译级别
 3. 修了 IDE 的 Maven 失效配置与模块链接
 4. 新增仓库根级 `.gitignore`；`node_modules` 全部移出版本控制
 5. 分支从 9 条收敛到 1 条 `master`，历史分支转为归档 tag

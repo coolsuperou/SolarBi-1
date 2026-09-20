@@ -1,6 +1,6 @@
 /**
  * \u8f66\u95f4\u8def\u7531\u5143\u6570\u636e\uff08\u4ec5 path + meta\uff0c\u65e0 component\uff09
- * title / workshop\uff1a\u4e0e back2 WorkshopEnum \u4e00\u81f4\uff0c\u4e2d\u6587\u7528 \\u \u8f6c\u4e49\u907f\u514d\u7f16\u7801\u635f\u574f
+ * title / workshop\uff1a\u4e0e backend WorkshopEnum \u4e00\u81f4\uff0c\u4e2d\u6587\u7528 \\u \u8f6c\u4e49\u907f\u514d\u7f16\u7801\u635f\u574f
  */
 export const workshopRouteEntries = [
   { path: '/feeding-workshop', meta: { title: '101\u914d\u6599', apiBase: 'feeding-workshop', workshop: '101\u914d\u6599', permKey: 'feeding-workshop', icon: 'bi-funnel', group: 'front' } },

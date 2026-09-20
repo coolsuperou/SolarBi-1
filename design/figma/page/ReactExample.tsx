@@ -2,7 +2,7 @@
  * 现代化深色主题数据可视化页面 - React示例
  * 
  * 这是一个完整的示例，展示如何将dashboard.html的设计应用到React项目中
- * 可以直接复制到 front/src/pages/ 目录下使用
+ * 可以直接复制到 react/src/pages/ 目录下使用
  */
 
 import React, { useState, useEffect, useRef } from 'react';

@@ -1,4 +1,4 @@
-# AGENTS.md — SolarBi-1 工作区说明
+# AGENTS.md — tsy-tpr 工作区说明
 
 工厂能耗 / 电费分摊 BI 系统（甲方：天石源）。单仓库同时放后端、两个前端和设计资产。
 
@@ -7,7 +7,7 @@
 | 目录 | 说明 |
 |---|---|
 | `back2/` | **唯一在跑的后端**，Spring Boot 2.7.2，端口 `8101`，context-path `/api`，74 个 Java 文件 |
-| `front/` | React 前端（`@umijs/max`），依赖未入库 |
+| `react/` | React 前端（`@umijs/max`），依赖未入库 |
 | `VUE/` | Vue + Vite 前端（移动端）。`node_modules` 已移出版本控制，克隆后需在 `VUE/` 下 `npm install` |
 | `design/` | 设计资产（610M，含 `.glb` 模型），441 个已跟踪 + 1636 个未跟踪，处置待定 |
 | `sql/` | 业务导入模板（xlsx），无建表脚本 |
@@ -48,9 +48,9 @@ mvn spring-boot:run        # 启动（或 IDE 直接运行 MainApplication）
 前端：
 
 ```bash
-cd front && npm run dev        # umi max，API 代理指向 8101
-cd front && npm run build      # 产物 dist/
-cd front && npm run lint       # eslint + prettier + tsc
+cd react && npm run dev        # umi max，API 代理指向 8101
+cd react && npm run build      # 产物 dist/
+cd react && npm run lint       # eslint + prettier + tsc
 cd VUE   && npm run dev        # vite，vite.config.js 里 proxy → localhost:8101
 cd VUE   && npm test           # vitest --run
 ```
@@ -79,7 +79,7 @@ cd VUE   && npm test           # vitest --run
 
 - 类型必须小写，冒号必须是**英文冒号加一个空格**（中文全角 `：` 不合规）
 - 描述用中文、不加句号，首行不超过 72 字符
-- 范围可选，写受影响的模块：`电费分摊`、`月度能耗`、`日能耗`、`车间`、`用户`、`缓存`、`图表`、`VUE`、`front`、`IDE`、`mapper`
+- 范围可选，写受影响的模块：`电费分摊`、`月度能耗`、`日能耗`、`车间`、`用户`、`缓存`、`图表`、`VUE`、`react`、`IDE`、`mapper`
 - 破坏性变更加 `!`（`feat(接口)!: ...`），或在正文写 `BREAKING CHANGE: 说明`
 - **一条提交只做一件事**。三件事挤在一条里就拆成三条，出问题时才能精确回滚
 

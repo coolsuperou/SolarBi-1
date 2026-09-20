@@ -1,0 +1,38 @@
+# ===== 依赖与构建产物 =====
+node_modules/
+dist/
+target/
+out/
+output/
+
+# ===== 备份压缩包 =====
+*.zip
+*.rar
+
+# ===== JVM 崩溃日志 =====
+hs_err_pid*
+replay_pid*
+
+# ===== 调试 / 临时产物 =====
+.playwright-mcp/
+.playwright/
+.vscode/
+
+# ===== AI 工具状态目录（本机私有，不应入库）=====
+.cursor/
+.kiro/
+.spec-workflow/
+.zcode/
+.v2c/
+.agents/
+
+# ===== 操作系统垃圾文件 =====
+.DS_Store
+Thumbs.db
+
+# ===== IntelliJ 本机状态（其余 .idea 配置仍保留在版本控制中）=====
+.idea/workspace.xml
+.idea/shelf/
+.idea/httpRequests/
+.idea/dataSources/
+.idea/dataSources.local.xml
